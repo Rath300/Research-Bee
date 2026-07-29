@@ -79,7 +79,7 @@ const PostCard = ({ post }: { post: TrendingProject }) => {
 
   return (
     <motion.div 
-      className="bg-white border border-border-light rounded-xl shadow-lg overflow-hidden transition-all hover:shadow-2xl hover:border-border-medium"
+      className="bg-surface-primary border border-border-medium rounded-md overflow-hidden transition-colors hover:bg-surface-hover"
       variants={postCardItemVariants}
     >
       <div className="p-5">
@@ -88,7 +88,7 @@ const PostCard = ({ post }: { post: TrendingProject }) => {
                 src={post.profiles?.avatar_url || undefined} 
                 alt={authorName} 
                 size="md"
-                fallback={<FiUser className="h-5 w-5 text-accent-purple" />}
+                fallback={<FiUser className="h-5 w-5 text-accent-primary" />}
                 className="mr-3 flex-shrink-0"
             />
             <div>
@@ -111,7 +111,7 @@ const PostCard = ({ post }: { post: TrendingProject }) => {
 
         {usernameTag && (
           <div className="flex flex-wrap gap-2 mb-4">
-            <span className="bg-text-secondary/10 text-text-secondary px-2.5 py-1 rounded-full text-xs font-medium">
+            <span className="bg-surface-secondary text-text-secondary px-2.5 py-1 rounded-sm text-xs font-medium">
               <FiTag className="inline mr-1 -mt-px h-3 w-3"/> {usernameTag}
             </span>
           </div>
@@ -153,7 +153,7 @@ const PostCard = ({ post }: { post: TrendingProject }) => {
           </div>
         )}
       </div>
-      <div className="bg-gray-50 px-5 py-3 border-t border-border-light flex items-center justify-between text-text-secondary">
+      <div className="bg-surface-secondary px-5 py-3 border-t border-border-light flex items-center justify-between text-text-secondary">
         <div className="flex items-center gap-3">
             <button className="hover:text-accent-primary transition-colors flex items-center"><FiMessageSquare size={16} className="mr-1" /> <span className="text-xs">{/* count */}</span></button>
         </div>
@@ -164,7 +164,7 @@ const PostCard = ({ post }: { post: TrendingProject }) => {
 };
 
 const HomeButton = () => (
-  <Link href="/dashboard" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-sans text-sm mb-4">
+  <Link href="/dashboard" className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-surface-secondary hover:bg-surface-hover text-text-primary font-sans text-sm mb-4 border border-border-light">
     <FiHome className="h-5 w-5" /> Home
   </Link>
 );
@@ -273,7 +273,7 @@ export default function TrendingPage() {
               {hotTopics.map(topic => (
                 <motion.div 
                   key={topic.name} 
-                  className="bg-white p-4 rounded-lg border border-border-light hover:bg-gray-50 transition-colors cursor-pointer"
+                  className="bg-surface-primary p-4 rounded-md border border-border-medium hover:bg-surface-hover transition-colors cursor-pointer"
                   whileHover={{ scale: 1.03 }}
                 >
                   <p className="font-sans font-medium text-text-primary text-sm truncate">{topic.name}</p>
@@ -282,7 +282,7 @@ export default function TrendingPage() {
               ))}
             </div>
           ) : (
-            !loading && <p className="font-sans text-sm text-neutral-500">No trending topics to show right now.</p>
+            !loading && <p className="font-sans text-sm text-text-muted">No trending topics to show right now.</p>
           )}
         </motion.section>
         
@@ -295,18 +295,18 @@ export default function TrendingPage() {
           
           {loading && !posts.length && (
             <div className="flex justify-center items-center py-10">
-              <FiLoader className="animate-spin text-accent-purple text-5xl" />
+              <FiLoader className="animate-spin text-accent-primary text-5xl" />
             </div>
           )}
 
           {error && (
-            <div className="bg-neutral-900 border border-red-500/30 rounded-xl shadow-lg p-6 text-center font-sans my-6">
+            <div className="bg-surface-primary border border-border-medium rounded-md p-6 text-center font-sans my-6">
               <FiAlertCircle className="mx-auto text-red-500 text-4xl mb-3" />
-              <h3 className="text-lg font-heading text-neutral-100 mb-1">Error Loading Posts</h3>
-              <p className="text-neutral-400 text-sm mb-3">{error}</p>
+              <h3 className="text-lg font-heading text-text-primary mb-1">Error Loading Posts</h3>
+              <p className="text-text-secondary text-sm mb-3">{error}</p>
               <button 
                 onClick={loadTrendingData}
-                className="px-3 py-1.5 bg-accent-purple hover:bg-accent-purple-hover text-white font-sans text-sm rounded-md transition-colors"
+                className="px-3 py-1.5 bg-accent-primary hover:bg-accent-primary-hover text-white font-sans text-sm rounded-md transition-colors"
               >
                 Try Again
               </button>
@@ -325,10 +325,10 @@ export default function TrendingPage() {
           )}
 
           {!loading && !error && posts.length === 0 && (
-            <div className="text-center py-12 bg-neutral-900 rounded-lg border border-neutral-800">
-              <FiAlertCircle className="mx-auto text-5xl text-neutral-600 mb-4" />
-              <h3 className="text-xl font-heading text-neutral-300 mb-2">No Trending Posts Yet</h3>
-              <p className="text-neutral-500 font-sans text-sm">Check back later to see what's trending!</p>
+            <div className="text-center py-12 bg-surface-primary rounded-md border border-border-medium">
+              <FiAlertCircle className="mx-auto text-5xl text-text-muted mb-4" />
+              <h3 className="text-xl font-heading text-text-primary mb-2">No Trending Posts Yet</h3>
+              <p className="text-text-secondary font-sans text-sm">Check back later to see what's trending!</p>
             </div>
           )}
         </motion.section>

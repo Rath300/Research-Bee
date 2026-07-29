@@ -8,45 +8,49 @@ export function Header() {
   const { user } = useAuthStore();
 
   return (
-    <header className="w-full py-4 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-gray-800">
-      <div className="container mx-auto px-4 md:px-6">
+    <header className="w-full py-3 bg-bg-primary border-b border-border-medium">
+      <div className="max-w-5xl mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center">
-              <span className="text-lg font-bold text-white">🐝</span>
-            </div>
-            <span className="text-xl font-bold">Research Bee</span>
+          <Link
+            href="/"
+            className="font-display text-xl font-semibold text-text-primary no-underline hover:text-text-primary"
+          >
+            ResearchBee
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/research" className="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400">
-              Research Feed
+          <nav className="hidden md:flex items-center gap-5">
+            <Link
+              href="/research"
+              className="text-sm text-text-secondary hover:text-accent-primary no-underline"
+            >
+              Research
             </Link>
-            <Link href="/collaborators" className="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400">
-              Find Collaborators
+            <Link
+              href="/collaborators"
+              className="text-sm text-text-secondary hover:text-accent-primary no-underline"
+            >
+              Collaborators
             </Link>
-            <Link href="/projects" className="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400">
-              Project Hub
+            <Link
+              href="/projects"
+              className="text-sm text-text-secondary hover:text-accent-primary no-underline"
+            >
+              Projects
             </Link>
           </nav>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-2">
             {user ? (
-              <>
-                <Button onClick={() => router.push('/dashboard')}>
-                  Dashboard
-                </Button>
-                <Button variant="outline" onClick={() => router.push('/profile')}>
-                  Profile
-                </Button>
-              </>
+              <Button size="sm" onClick={() => router.push('/dashboard')}>
+                Dashboard
+              </Button>
             ) : (
               <>
-                <Button variant="outline" onClick={() => router.push('/login')}>
-                  Log In
+                <Button variant="ghost" size="sm" onClick={() => router.push('/login')}>
+                  Log in
                 </Button>
-                <Button onClick={() => router.push('/signup')}>
-                  Sign Up
+                <Button size="sm" onClick={() => router.push('/signup')}>
+                  Get started
                 </Button>
               </>
             )}
@@ -55,4 +59,4 @@ export function Header() {
       </div>
     </header>
   );
-} 
+}

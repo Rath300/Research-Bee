@@ -7,7 +7,6 @@ import { supabase } from "@/lib/supabaseClient";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { motion } from 'framer-motion';
 import { useAuthStore } from '@/lib/store';
 import { trackSignUp } from '@/lib/analytics';
 
@@ -18,28 +17,26 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const router = useRouter();
-  const { user, isLoading: authLoading } = useAuthStore();
+  const { isLoading: authLoading } = useAuthStore();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
+
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
-    
+
     setIsLoading(true);
 
     try {
-      // Parse the full name into first and last name
       const nameParts = fullName.trim().split(/\s+/);
       const firstName = nameParts[0] || '';
       const lastName = nameParts.slice(1).join(' ') || '';
 
-      // supabase is already imported as a singleton
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -52,14 +49,10 @@ export default function Signup() {
         },
       });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       if (data?.user) {
-        // Track successful signup
         trackSignUp('email');
-        // Redirect to profile setup instead of dashboard
         router.push("/profile-setup");
       }
     } catch (err: any) {
@@ -71,154 +64,105 @@ export default function Signup() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-950">
-        <span className="text-neutral-400 font-sans animate-pulse">Loading...</span>
+      <div className="min-h-screen flex items-center justify-center bg-bg-primary">
+        <span className="text-text-muted font-ui text-sm">Loading…</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
-      <div className="absolute top-6 left-6 sm:top-8 sm:left-8">
-        <Link href="/" className="font-heading text-2xl font-bold text-neutral-200 hover:text-neutral-100 transition-colors">
-          RESEARCH-BEE
+    <div className="min-h-screen bg-bg-primary flex flex-col items-center justify-center p-4">
+      <div className="absolute top-6 left-6">
+        <Link href="/" className="font-display text-xl font-semibold text-text-primary no-underline hover:text-text-primary">
+          ResearchBee
         </Link>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-sm sm:max-w-md lg:max-w-lg"
-      >
-        <Card className="w-full bg-neutral-950 border-none shadow-none p-4 sm:p-6 lg:p-8">
-          <CardHeader className="text-center mb-6">
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <CardTitle className="font-heading text-2xl sm:text-3xl lg:text-4xl font-semibold text-neutral-100">
-                Create Account
-              </CardTitle>
-              <CardDescription className="mt-2 text-xs sm:text-sm text-neutral-400 font-sans">
-                Start your collaboration journey today.
-              </CardDescription>
-            </motion.div>
+      <div className="w-full max-w-sm">
+        <Card className="w-full border-border-medium bg-surface-primary p-6">
+          <CardHeader className="text-center border-0 pb-0 mb-4">
+            <CardTitle className="font-display text-2xl font-semibold text-text-primary">
+              Create account
+            </CardTitle>
+            <CardDescription className="mt-1.5 text-sm text-text-muted">
+              Start finding research collaborators.
+            </CardDescription>
           </CardHeader>
 
           <CardContent>
             {error && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="p-3 mb-4 bg-red-900/30 border border-red-700/50 rounded-md text-red-300 text-sm"
-              >
+              <div className="p-3 mb-4 bg-red-50 border border-red-200 rounded-md text-accent-error text-sm">
                 {error}
-              </motion.div>
+              </div>
             )}
 
-            <motion.form
-              onSubmit={handleSignup}
-              className="space-y-4 sm:space-y-5"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <div className="space-y-3 sm:space-y-4">
-                <div>
-                  <label htmlFor="fullName" className="sr-only">
-                    Full Name
-                  </label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                    placeholder="Full name"
-                    className="w-full bg-[#1C1C1C] border border-transparent text-neutral-200 placeholder:text-neutral-500 rounded-md focus:outline-none focus:ring-1 focus:ring-neutral-600 focus:border-neutral-600 transition-colors text-base sm:text-sm"
-                  />
-                </div>
+            <form onSubmit={handleSignup} className="space-y-3">
+              <div>
+                <label htmlFor="fullName" className="label">Full name</label>
+                <Input
+                  id="fullName"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  placeholder="Jane Doe"
+                />
+              </div>
 
-                <div>
-                  <label htmlFor="email" className="sr-only">
-                    Email Address
-                  </label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    placeholder="Work email"
-                    className="w-full bg-[#1C1C1C] border border-transparent text-neutral-200 placeholder:text-neutral-500 rounded-md focus:outline-none focus:ring-1 focus:ring-neutral-600 focus:border-neutral-600 transition-colors text-base sm:text-sm"
-                  />
-                </div>
+              <div>
+                <label htmlFor="email" className="label">Email</label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="you@university.edu"
+                />
+              </div>
 
-                <div>
-                  <label htmlFor="password" className="sr-only">
-                    Password
-                  </label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    placeholder="Password (min. 6 characters)"
-                    minLength={6}
-                    className="w-full bg-[#1C1C1C] border border-transparent text-neutral-200 placeholder:text-neutral-500 rounded-md focus:outline-none focus:ring-1 focus:ring-neutral-600 focus:border-neutral-600 transition-colors text-base sm:text-sm"
-                  />
-                </div>
+              <div>
+                <label htmlFor="password" className="label">Password</label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="At least 6 characters"
+                  minLength={6}
+                />
+              </div>
 
-                <div>
-                  <label htmlFor="confirmPassword" className="sr-only">
-                    Confirm Password
-                  </label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    placeholder="Confirm password"
-                    minLength={6}
-                    className="w-full bg-[#1C1C1C] border border-transparent text-neutral-200 placeholder:text-neutral-500 rounded-md focus:outline-none focus:ring-1 focus:ring-neutral-600 focus:border-neutral-600 transition-colors text-base sm:text-sm"
-                  />
-                </div>
+              <div>
+                <label htmlFor="confirmPassword" className="label">Confirm password</label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  placeholder="Confirm password"
+                  minLength={6}
+                />
               </div>
 
               <div className="pt-2">
-                <Button
-                  type="submit"
-                  isLoading={isLoading}
-                  isFullWidth
-                  className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-neutral-800 hover:bg-neutral-700 text-neutral-100 font-sans font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-600 focus:ring-offset-2 focus:ring-offset-neutral-950 transition-colors text-base sm:text-sm min-h-[44px] sm:min-h-[48px]"
-                  size="lg"
-                >
-                  {isLoading ? "Creating Account..." : "Create Account"}
+                <Button type="submit" isLoading={isLoading} isFullWidth size="lg">
+                  {isLoading ? "Creating account…" : "Create account"}
                 </Button>
               </div>
-            </motion.form>
+            </form>
 
-            <motion.div
-              className="text-center mt-6"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <p className="text-sm text-neutral-400 font-sans">
-                Already have an account?{" "}
-                <Link href="/login" className="font-medium text-neutral-300 hover:text-neutral-100 underline underline-offset-4 transition-colors">
-                  Log in
-                </Link>
-              </p>
-            </motion.div>
+            <p className="text-center mt-6 text-sm text-text-muted">
+              Already have an account?{" "}
+              <Link href="/login" className="font-medium text-accent-primary hover:text-accent-primary-hover">
+                Log in
+              </Link>
+            </p>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
     </div>
   );
-} 
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import { api } from '@/lib/trpc';
-import { FiFile, FiDownload, FiTrash, FiUpload, FiLoader } from 'react-icons/fi';
+import { FiFile, FiDownload, FiTrash, FiUpload, FiLoader, FiImage, FiFileText } from 'react-icons/fi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { FileUpload } from '@/components/research/FileUpload';
@@ -39,16 +39,16 @@ export function FileManager({ projectId, userRole }: FileManagerProps) {
   };
 
   const getFileTypeIcon = (fileType: string) => {
-    if (fileType.startsWith('image/')) return '🖼️';
-    if (fileType.includes('pdf')) return '📄';
-    if (fileType.includes('doc')) return '📝';
-    if (fileType.includes('sheet') || fileType.includes('excel')) return '📊';
-    return '📁';
+    if (fileType.startsWith('image/')) return <FiImage className="w-5 h-5 text-accent-primary" />;
+    if (fileType.includes('pdf')) return <FiFileText className="w-5 h-5 text-accent-primary" />;
+    if (fileType.includes('doc')) return <FiFileText className="w-5 h-5 text-text-secondary" />;
+    if (fileType.includes('sheet') || fileType.includes('excel')) return <FiFileText className="w-5 h-5 text-text-secondary" />;
+    return <FiFile className="w-5 h-5 text-text-muted" />;
   };
 
   if (isLoading) {
     return (
-      <Card className="bg-white border-border-light">
+      <Card className="bg-surface-primary border-border-medium">
         <CardContent className="p-6">
           <div className="flex items-center justify-center">
             <FiLoader className="animate-spin text-2xl" />
@@ -61,7 +61,7 @@ export function FileManager({ projectId, userRole }: FileManagerProps) {
 
   if (error) {
     return (
-      <Card className="bg-white border-border-light">
+      <Card className="bg-surface-primary border-border-medium">
         <CardContent className="p-6">
           <div className="text-red-500">Error loading files: {error.message}</div>
         </CardContent>
@@ -70,7 +70,7 @@ export function FileManager({ projectId, userRole }: FileManagerProps) {
   }
 
   return (
-    <Card className="bg-white border-border-light">
+    <Card className="bg-surface-primary border-border-medium">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-2xl font-bold flex items-center">
@@ -90,7 +90,7 @@ export function FileManager({ projectId, userRole }: FileManagerProps) {
       </CardHeader>
       <CardContent>
         {showUpload && userRole !== 'viewer' && (
-          <div className="mb-6 p-4 border border-border-light rounded-lg bg-gray-50">
+          <div className="mb-6 p-4 border border-border-light rounded-md bg-surface-secondary">
             <FileUpload 
               projectId={projectId} 
               onUploadComplete={() => setShowUpload(false)}
@@ -99,8 +99,8 @@ export function FileManager({ projectId, userRole }: FileManagerProps) {
         )}
 
         {!files || files.length === 0 ? (
-          <div className="text-center py-8 text-neutral-400">
-            <FiFile className="mx-auto text-4xl mb-4" />
+          <div className="text-center py-8 text-text-muted">
+            <FiFile className="mx-auto text-4xl mb-4 text-text-secondary" />
             <p>No files uploaded yet.</p>
             {userRole !== 'viewer' && (
               <p className="text-sm">Upload your first file to get started!</p>
@@ -111,13 +111,13 @@ export function FileManager({ projectId, userRole }: FileManagerProps) {
             {files.map((file) => (
               <div
                 key={file.id}
-                className="flex items-center justify-between p-4 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors"
+                className="flex items-center justify-between p-4 bg-surface-secondary border border-border-light rounded-md hover:bg-surface-hover transition-colors"
               >
                 <div className="flex items-center space-x-3 flex-1 min-w-0">
-                  <span className="text-2xl">{getFileTypeIcon(file.file_type)}</span>
+                  <span>{getFileTypeIcon(file.file_type)}</span>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-white truncate">{file.file_name}</h4>
-                    <div className="text-sm text-neutral-400">
+                    <h4 className="font-medium text-text-primary truncate">{file.file_name}</h4>
+                    <div className="text-sm text-text-muted">
                       <span>By {file.uploader_name}</span>
                       <span className="mx-2">•</span>
                       <span>{formatFileSize(file.file_size)}</span>

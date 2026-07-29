@@ -27,20 +27,20 @@ export default function MyProjectsPage() {
 
       {isLoading && (
         <div className="flex justify-center items-center p-8">
-          <FiLoader className="animate-spin text-accent-purple text-3xl" />
+          <FiLoader className="animate-spin text-accent-primary text-3xl" />
         </div>
       )}
 
       {error && <p className="text-red-500">Error: {error.message || 'Failed to load projects.'}</p>}
 
       {!isLoading && !error && projects && projects.length === 0 && (
-        <Card className="bg-neutral-900 border-neutral-800 text-center">
+        <Card className="bg-surface-primary border-border-medium text-center">
             <CardHeader>
-                <FiHome className="mx-auto text-4xl text-neutral-500" />
+                <FiHome className="mx-auto text-4xl text-text-muted" />
             </CardHeader>
             <CardContent>
-                <CardTitle className="text-xl text-white">No projects yet</CardTitle>
-                <CardDescription className="text-neutral-400 mt-2">
+                <CardTitle className="text-xl text-text-primary">No projects yet</CardTitle>
+                <CardDescription className="text-text-secondary mt-2">
                     Get started by creating your first research project.
                 </CardDescription>
             </CardContent>
@@ -50,16 +50,16 @@ export default function MyProjectsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projects?.map((project) => (
           <Link key={project.id} href={`/projects/${project.id}`} passHref>
-            <Card className="bg-white border-border-light hover:border-border-medium transition-colors cursor-pointer h-full flex flex-col">
+            <Card className="bg-surface-primary border-border-medium hover:bg-surface-hover transition-colors cursor-pointer h-full flex flex-col">
               <CardHeader>
                 <CardTitle className="text-xl text-text-primary">{project.title}</CardTitle>
-                <div className="text-xs text-text-primary font-bold px-2 py-1 rounded-full bg-text-secondary/10 text-text-secondary w-min mt-2">{project.role?.toUpperCase() || ''}</div>
+                <div className="text-xs text-text-secondary font-bold px-2 py-1 rounded-sm bg-surface-secondary w-min mt-2">{project.role?.toUpperCase() || ''}</div>
                 {project.tags && project.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
                     {project.tags.map((tag: string) => (
                       <span
                         key={tag}
-                        className="bg-text-secondary/10 text-text-secondary px-2 py-1 rounded-full text-xs"
+                        className="bg-accent-soft text-text-secondary px-2 py-1 rounded-sm text-xs"
                       >
                         {tag}
                       </span>

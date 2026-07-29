@@ -113,9 +113,9 @@ export function ChatInterface({
   };
   
   return (
-    <div className="flex flex-col h-full bg-white border border-border-light rounded-xl shadow-lg overflow-hidden">
+    <div className="flex flex-col h-full bg-surface-primary border border-border-medium rounded-md overflow-hidden">
       {/* Chat header */}
-      <div className="p-4 border-b border-border-light flex items-center space-x-3 shadow-sm bg-gray-50">
+      <div className="p-4 border-b border-border-medium flex items-center space-x-3 bg-surface-secondary">
         <div className="w-11 h-11 rounded-full bg-text-secondary/10 flex items-center justify-center overflow-hidden ring-1 ring-border-light">
           <Avatar 
             src={recipientAvatar} 
@@ -133,7 +133,7 @@ export function ChatInterface({
       </div>
       
       {/* Messages Area: White background */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 bg-white">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-thin scrollbar-thumb-border-medium scrollbar-track-bg-primary bg-bg-primary">
         {isLoading ? (
           <motion.div 
             className="flex flex-col items-center justify-center h-full"
@@ -141,8 +141,8 @@ export function ChatInterface({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
           >
-            <FiLoader className="animate-spin text-researchbee-yellow text-5xl" />
-            <p className="mt-4 text-gray-300 text-lg">Loading messages...</p>
+            <FiLoader className="animate-spin text-accent-primary text-5xl" />
+            <p className="mt-4 text-text-secondary text-lg">Loading messages...</p>
           </motion.div>
         ) : messages.length === 0 ? (
           <motion.div 
@@ -151,9 +151,9 @@ export function ChatInterface({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <FiSmile className="text-researchbee-yellow text-6xl mb-5 opacity-80" />
-            <h3 className="text-xl font-semibold text-white mb-2">It&apos;s quiet in here...</h3>
-            <p className="text-gray-400 text-md max-w-xs">
+            <FiSmile className="text-accent-primary text-6xl mb-5 opacity-80" />
+            <h3 className="text-xl font-semibold text-text-primary mb-2">It&apos;s quiet in here...</h3>
+            <p className="text-text-secondary text-md max-w-xs">
               No messages in this chat yet. Why not break the ice and send the first message?
             </p>
           </motion.div>
@@ -182,10 +182,10 @@ export function ChatInterface({
                 >
                   <div className={`flex items-end max-w-[80%] sm:max-w-[70%] ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'} space-x-2 space-x-reverse`}>
                     <div 
-                      className={`rounded-xl px-3.5 py-2.5 shadow-md break-words whitespace-pre-wrap text-sm sm:text-base leading-relaxed ${
+                      className={`rounded-md px-3.5 py-2.5 break-words whitespace-pre-wrap text-sm sm:text-base leading-relaxed ${
                         isCurrentUser 
                           ? 'bg-accent-primary text-white rounded-br-none' 
-                          : 'bg-gray-100 text-text-primary rounded-bl-none'
+                          : 'bg-surface-secondary text-text-primary rounded-bl-none border border-border-light'
                       }`}
                     >
                       {message.content}
@@ -206,13 +206,13 @@ export function ChatInterface({
       </div>
       
       {/* Message input area */} 
-      <div className="p-3 sm:p-4 border-t border-border-light bg-gray-50">
+      <div className="p-3 sm:p-4 border-t border-border-medium bg-surface-secondary">
         <form onSubmit={handleSendMessage} className="flex items-center space-x-2 sm:space-x-3">
           <Input
             placeholder="Type a message..."
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
-            className="flex-1 bg-white border-border-light placeholder-text-secondary text-text-primary !py-2.5 sm:!py-3"
+            className="flex-1 bg-surface-primary border-border-medium placeholder-text-muted text-text-primary !py-2.5 sm:!py-3"
             disabled={isSending}
             autoComplete="off"
           />
@@ -220,7 +220,7 @@ export function ChatInterface({
             type="submit"
             disabled={!messageText.trim() || isSending}
             isLoading={isSending}
-            className="bg-accent-primary hover:bg-accent-primary/80 text-white rounded-lg !p-0 w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center flex-shrink-0 shadow-md"
+            className="bg-accent-primary hover:bg-accent-primary/90 text-white rounded-md !p-0 w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center flex-shrink-0"
             aria-label="Send message"
           >
             {!isSending && <FiSend size={18} />}

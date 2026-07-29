@@ -15,7 +15,7 @@ type Project = Database['public']['Tables']['projects']['Row'];
 type ProjectWithProfile = Project & { profiles?: any };
 
 const HomeButton = () => (
-  <Link href="/dashboard" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-sans text-sm mb-4">
+  <Link href="/dashboard" className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-surface-secondary hover:bg-surface-hover text-text-primary font-sans text-sm mb-4 border border-border-light">
     <FiHome className="h-5 w-5" /> Home
   </Link>
 );
@@ -77,8 +77,8 @@ export default function ResearchPage() {
     return (
       <PageContainer title="Project Feed" className="bg-bg-primary min-h-screen text-text-primary flex items-center justify-center">
         <div className="flex flex-col items-center font-sans">
-          <FiLoader className="animate-spin text-accent-purple text-6xl mb-4" />
-          <p className="text-xl text-neutral-300">Loading project feed...</p>
+          <FiLoader className="animate-spin text-accent-primary text-6xl mb-4" />
+          <p className="text-xl text-text-secondary">Loading project feed...</p>
         </div>
       </PageContainer>
     );
@@ -87,13 +87,13 @@ export default function ResearchPage() {
   if (error) {
     return (
       <PageContainer title="Error" className="bg-bg-primary min-h-screen text-text-primary flex items-center justify-center">
-                  <div className="bg-white border border-border-light rounded-xl shadow-lg p-8 text-center font-sans">
+                  <div className="bg-surface-primary border border-border-medium rounded-md p-8 text-center font-sans">
           <FiAlertCircle className="mx-auto text-red-500 text-6xl mb-4" />
                       <h2 className="text-2xl font-heading text-text-primary mb-2">Oops! Something went wrong.</h2>
-          <p className="text-neutral-300 mb-4">Error: {error}</p>
+          <p className="text-text-secondary mb-4">Error: {error}</p>
           <button 
             onClick={loadProjects}
-            className="px-4 py-2 bg-accent-purple hover:bg-accent-purple-hover text-white font-sans rounded-md transition-colors"
+            className="px-4 py-2 bg-accent-primary hover:bg-accent-primary-hover text-white font-sans rounded-md transition-colors"
           >
             Try Again
           </button>
@@ -120,19 +120,19 @@ export default function ResearchPage() {
               const usernameTag = project.profiles?.first_name || project.profiles?.email || 'Unknown';
 
               return (
-                <div key={project.id} className="bg-white border border-border-light rounded-xl shadow-lg overflow-hidden transition-all hover:shadow-2xl hover:border-border-medium">
+                <div key={project.id} className="bg-surface-primary border border-border-medium rounded-md overflow-hidden transition-colors hover:bg-surface-hover">
                   <div className="p-5 sm:p-6">
                     <div className="flex items-center mb-3">
                         <Avatar 
                             src={project.profiles?.avatar_url || undefined} 
                             alt={authorName || 'Unknown Author'} 
                             size="md"
-                            fallback={<FiUser className="text-accent-purple" />} 
+                            fallback={<FiUser className="text-accent-primary" />} 
                             className="mr-3"
                         />
                         <div>
-                            <p className="text-sm font-medium text-neutral-200 group-hover:text-white transition-colors">{authorName || 'Unknown Author'}</p>
-                            <p className="text-xs text-neutral-500">{project.profiles?.institution || 'Independent Researcher'} • {postDate}</p>
+                            <p className="text-sm font-medium text-text-primary">{authorName || 'Unknown Author'}</p>
+                            <p className="text-xs text-text-muted">{project.profiles?.institution || 'Independent Researcher'} • {postDate}</p>
           </div>
         </div>
         
@@ -143,21 +143,21 @@ export default function ResearchPage() {
                     </Link>
                     
                     {truncatedContent && (
-                        <p className="text-neutral-400 text-sm mb-4 line-clamp-3">
+                        <p className="text-text-secondary text-sm mb-4 line-clamp-3">
                         {truncatedContent}
                         </p>
                     )}
 
                     {usernameTag && (
                       <div className="flex flex-wrap gap-2 mb-4">
-                        <span className="bg-accent-purple/20 text-accent-purple px-2.5 py-1 rounded-full text-xs font-medium">
+                        <span className="bg-accent-soft text-accent-primary px-2.5 py-1 rounded-sm text-xs font-medium">
                           <FiTag className="inline mr-1 -mt-px"/> {usernameTag}
                         </span>
                       </div>
                     )}
                   </div>
-                  <div className="bg-neutral-800/50 px-5 sm:px-6 py-3 border-t border-neutral-800">
-                    <Link href={`/projects/${project.id}`} className="text-sm font-sans font-medium text-accent-purple hover:text-accent-purple-hover inline-flex items-center">
+                  <div className="bg-surface-secondary px-5 sm:px-6 py-3 border-t border-border-light">
+                    <Link href={`/projects/${project.id}`} className="text-sm font-sans font-medium text-accent-primary hover:text-accent-primary-hover inline-flex items-center">
                         View Project <FiExternalLink className="ml-1.5 h-4 w-4" />
                     </Link>
                   </div>
@@ -167,11 +167,11 @@ export default function ResearchPage() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <FiAlertCircle className="mx-auto text-6xl text-neutral-600 mb-4" />
-            <h2 className="text-xl font-heading text-neutral-300 mb-2">No Project Posts Yet</h2>
-            <p className="text-neutral-500 font-sans">Check back later or be the first to share your work!</p>
+            <FiAlertCircle className="mx-auto text-6xl text-text-muted mb-4" />
+            <h2 className="text-xl font-heading text-text-primary mb-2">No Project Posts Yet</h2>
+            <p className="text-text-secondary font-sans">Check back later or be the first to share your work!</p>
             {/* Optional: Add a link to create a new post if applicable */}
-            {/* <Link href="/projects/new" className="mt-4 inline-block px-4 py-2 bg-accent-purple hover:bg-accent-purple-hover text-white font-sans rounded-md transition-colors">
+            {/* <Link href="/projects/new" className="mt-4 inline-block px-4 py-2 bg-accent-primary hover:bg-accent-primary-hover text-white font-sans rounded-md transition-colors">
               Create New Post
             </Link> */}
         </div>

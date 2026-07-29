@@ -15,7 +15,7 @@ import { Avatar } from '@/components/ui/Avatar';
 const ProfileForm = dynamic(() => import('@/components/profile/ProfileForm').then(mod => mod.ProfileForm), {
   loading: () => (
     <div className="flex justify-center items-center p-8">
-      <FiLoader className="animate-spin text-accent-purple text-3xl" />
+      <FiLoader className="animate-spin text-accent-primary text-3xl" />
     </div>
   ),
   ssr: false, 
@@ -87,8 +87,8 @@ export default function SettingsPage() {
     return (
       <PageContainer title="Settings" className="bg-bg-primary min-h-screen text-text-primary flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <FiLoader className="animate-spin text-accent-purple text-5xl mb-4" />
-          <p className="text-xl text-neutral-300 font-sans">Loading your settings...</p>
+          <FiLoader className="animate-spin text-accent-primary text-5xl mb-4" />
+          <p className="text-xl text-text-secondary font-sans">Loading your settings...</p>
         </div>
       </PageContainer>
     );
@@ -97,14 +97,14 @@ export default function SettingsPage() {
   if (pageError) {
     return (
       <PageContainer title="Error" className="bg-bg-primary min-h-screen text-text-primary flex items-center justify-center">
-        <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl shadow-xl text-center max-w-md w-full">
+        <div className="bg-surface-primary border border-border-medium p-8 rounded-md text-center max-w-md w-full">
           <FiAlertCircle className="mx-auto text-red-500 text-5xl mb-4" />
-          <h2 className="text-2xl font-heading text-neutral-100 mb-2">Oops! Something went wrong.</h2>
-          <p className="text-neutral-400 mb-6 font-sans">{pageError}</p>
+          <h2 className="text-2xl font-heading text-text-primary mb-2">Oops! Something went wrong.</h2>
+          <p className="text-text-secondary mb-6 font-sans">{pageError}</p>
           <Button 
             variant="primary"
             onClick={() => router.refresh()} 
-            className="w-full bg-accent-purple hover:bg-accent-purple-hover text-white font-sans"
+            className="w-full font-sans"
           >
             Try Again
           </Button>
@@ -120,8 +120,8 @@ export default function SettingsPage() {
      return (
       <PageContainer title="Settings" className="bg-bg-primary min-h-screen text-text-primary flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <FiLoader className="animate-spin text-accent-purple text-5xl mb-4" />
-          <p className="text-xl text-neutral-300 font-sans">Preparing settings...</p>
+          <FiLoader className="animate-spin text-accent-primary text-5xl mb-4" />
+          <p className="text-xl text-text-secondary font-sans">Preparing settings...</p>
         </div>
       </PageContainer>
      );
@@ -131,23 +131,16 @@ export default function SettingsPage() {
     <PageContainer title="Account Settings" className="bg-bg-primary min-h-screen text-text-primary font-sans">
       <div className="container mx-auto max-w-4xl px-4 py-12 sm:py-16 lg:py-20">
         <div className="mb-12 sm:mb-16 text-center">
-          <FiSettings className="mx-auto text-accent-purple text-5xl mb-4" />
-          <h1 className="text-4xl sm:text-5xl font-heading text-white tracking-tight">
+          <FiSettings className="mx-auto text-accent-primary text-5xl mb-4" />
+          <h1 className="text-4xl sm:text-5xl font-heading text-text-primary tracking-tight">
             Account Settings
           </h1>
         </div>
         
-        {/* 
-          The original layout had a side card for avatar/name and a main card for the form.
-          For simplicity and to align with settings/account/page.tsx's directness, 
-          we can make ProfileForm the primary content here. If a sidebar is desired later,
-          it can be re-added. For now, let's have a single column layout for the form.
-        */}
-        
-        <Card className="bg-neutral-900 border border-neutral-800 shadow-xl">
-          <CardHeader className="border-b border-neutral-700 pb-4">
-            <CardTitle className="text-2xl sm:text-3xl font-heading text-neutral-100">Profile Information</CardTitle>
-            <CardDescription className="text-neutral-400 mt-1 font-sans">
+        <Card className="bg-surface-primary border border-border-medium">
+          <CardHeader className="border-b border-border-light pb-4">
+            <CardTitle className="text-2xl sm:text-3xl font-heading text-text-primary">Profile Information</CardTitle>
+            <CardDescription className="text-text-secondary mt-1 font-sans">
               Keep your personal details and preferences up to date.
             </CardDescription>
           </CardHeader>

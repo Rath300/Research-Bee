@@ -15,7 +15,7 @@ interface RichTextEditorProps {
 }
 
 const editorProseClasses =
-  'prose prose-sm sm:prose lg:prose-lg xl:prose-xl dark:prose-invert prose-headings:font-heading prose-p:font-sans prose-li:font-sans min-h-[150px] max-w-full focus:outline-none p-3';
+  'prose prose-sm sm:prose lg:prose-lg xl:prose-xl prose-headings:font-heading prose-p:font-sans prose-li:font-sans min-h-[150px] max-w-full focus:outline-none p-3 text-text-primary';
 
 const ToolbarButton = ({ onClick, isActive, title, children }: {
   onClick: () => void;
@@ -27,8 +27,8 @@ const ToolbarButton = ({ onClick, isActive, title, children }: {
     type="button"
     onClick={onClick}
     title={title}
-    className={`p-2 rounded transition-colors duration-150 
-      ${isActive ? 'bg-neutral-700 text-accent-purple' : 'text-neutral-400 hover:bg-neutral-700 hover:text-neutral-100'}`}
+    className={`p-2 rounded-md transition-colors duration-150 
+      ${isActive ? 'bg-accent-soft text-accent-primary' : 'text-text-muted hover:bg-surface-hover hover:text-text-primary'}`}
   >
     {children}
   </button>
@@ -52,7 +52,7 @@ export function RichTextEditor({ value, onChange, placeholder, hasError }: RichT
     content: value,
     editorProps: {
       attributes: {
-        class: `${editorProseClasses} ${hasError ? 'border-red-600 focus-within:border-red-500' : 'border-neutral-700 focus-within:border-accent-purple'} bg-neutral-800 rounded-b-md`,
+        class: `${editorProseClasses} ${hasError ? 'border-red-600 focus-within:border-red-500' : 'border-border-medium focus-within:border-accent-primary'} bg-surface-primary rounded-b-md`,
       },
     },
     onUpdate: ({ editor }) => {
@@ -65,8 +65,8 @@ export function RichTextEditor({ value, onChange, placeholder, hasError }: RichT
   }
 
   return (
-    <div className={`bg-neutral-800 rounded-md shadow-sm border ${hasError ? 'border-red-600' : 'border-neutral-700'}`}>
-      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-neutral-700 bg-neutral-800 rounded-t-md">
+    <div className={`bg-surface-primary rounded-md shadow-sm border ${hasError ? 'border-red-600' : 'border-border-medium'}`}>
+      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-border-light bg-surface-secondary rounded-t-md">
         <ToolbarButton title="Bold" onClick={() => editor.chain().focus().toggleBold().run()} isActive={editor.isActive('bold')}><FiBold size={18} /></ToolbarButton>
         <ToolbarButton title="Italic" onClick={() => editor.chain().focus().toggleItalic().run()} isActive={editor.isActive('italic')}><FiItalic size={18} /></ToolbarButton>
         <ToolbarButton title="Strikethrough" onClick={() => editor.chain().focus().toggleStrike().run()} isActive={editor.isActive('strike')}><FiType size={18} /></ToolbarButton>
@@ -78,4 +78,4 @@ export function RichTextEditor({ value, onChange, placeholder, hasError }: RichT
       <EditorContent editor={editor} placeholder={placeholder} />
     </div>
   );
-} 
+}

@@ -34,8 +34,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   // Don't show loading during regular navigation or when already redirecting
   if (authIsLoading) {
     return (
-              <div className="flex h-screen w-screen items-center justify-center bg-bg-primary">
-        <FiLoader className="animate-spin text-accent-primary text-4xl" />
+      <div className="flex h-screen w-screen items-center justify-center bg-bg-primary">
+        <FiLoader className="animate-spin text-accent-primary text-2xl" />
       </div>
     );
   }
@@ -64,9 +64,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             toggleSidebar={toggleSidebar} 
             isSidebarCollapsed={isSidebarCollapsed} 
           />
-          <main className="flex-1 overflow-y-auto">
-            {/* The div with padding is important here for the PageContainer to fill correctly */}
-            <div className="p-6 md:p-8">
+          <main className="flex-1 overflow-y-auto bg-bg-primary">
+            <div className="p-5 md:p-6">
               {children}
             </div>
           </main>

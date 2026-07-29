@@ -47,30 +47,30 @@ export function NotificationBell() {
 
   return (
     <div className="relative">
-      <button onClick={handleOpen} className="relative focus:outline-none">
-        <FiBell className="w-6 h-6 text-neutral-200" />
+      <button onClick={handleOpen} className="relative focus:outline-none p-1 rounded-md hover:bg-surface-hover transition-colors">
+        <FiBell className="w-6 h-6 text-text-secondary" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-sm px-1.5 py-0.5">
             {unreadCount}
           </span>
         )}
       </button>
       {open && (
-        <div className="absolute right-0 mt-2 w-80 bg-neutral-900 border border-neutral-700 rounded-lg shadow-lg z-50">
-          <div className="p-4 border-b border-neutral-800 font-semibold text-neutral-100">New Matches</div>
+        <div className="absolute right-0 mt-2 w-80 bg-surface-primary border border-border-medium rounded-md shadow-lg z-50">
+          <div className="p-4 border-b border-border-light font-semibold text-text-primary">New Matches</div>
           <div className="max-h-80 overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="p-4 text-neutral-400 text-center">No new matches</div>
+              <div className="p-4 text-text-muted text-center">No new matches</div>
             ) : (
               notifications.map((n) => (
-                <div key={n.id} className="flex items-center px-4 py-3 border-b border-neutral-800 last:border-b-0">
-                  <FiUser className="w-5 h-5 text-accent-purple mr-3" />
+                <div key={n.id} className="flex items-center px-4 py-3 border-b border-border-light last:border-b-0 hover:bg-surface-hover transition-colors">
+                  <FiUser className="w-5 h-5 text-accent-primary mr-3" />
                   <div className="flex-1">
-                    <div className="text-neutral-200 text-sm font-medium">{n.content}</div>
-                    <div className="text-xs text-neutral-500">{new Date(n.created_at).toLocaleString()}</div>
+                    <div className="text-text-primary text-sm font-medium">{n.content}</div>
+                    <div className="text-xs text-text-muted">{new Date(n.created_at).toLocaleString()}</div>
                   </div>
                   {n.link_to && (
-                    <Link href={n.link_to} className="ml-3 text-accent-purple hover:underline flex items-center">
+                    <Link href={n.link_to} className="ml-3 text-accent-primary hover:underline flex items-center">
                       <FiMessageSquare className="mr-1" /> Chat
                     </Link>
                   )}
@@ -82,4 +82,4 @@ export function NotificationBell() {
       )}
     </div>
   );
-} 
+}

@@ -11,69 +11,64 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Legacy colors (keeping for backward compatibility during transition)
-        'researchbee-yellow': '#FFD54F',
-        'researchbee-yellow-dark': '#FFC107',
-        'researchbee-black': '#121212',
-        'researchbee-dark-gray': '#1E1E1E',
-        'researchbee-medium-gray': '#2C2C2C',
-        'researchbee-light-gray': '#B3B3B3',
+        // Legacy aliases (mapped to warm system)
+        'researchbee-yellow': '#3F6F54',
+        'researchbee-yellow-dark': '#345C46',
+        'researchbee-black': '#1C1917',
+        'researchbee-dark-gray': '#292524',
+        'researchbee-medium-gray': '#57534E',
+        'researchbee-light-gray': '#A8A29E',
         'researchbee-white': '#FFFFFF',
 
-        // MINIMAL BLACK/WHITE/GREY THEME - Pure Monochrome
-        // Background Colors (Pure White Theme)
-        'bg-primary': '#FFFFFF',        // Main background (pure white)
-        'bg-secondary': '#FFFFFF',      // Card/section backgrounds (pure white)
-        'bg-tertiary': '#FFFFFF',       // Input fields, modals (pure white)
-        'bg-quaternary': '#F8F9FA',     // Subtle dividers, disabled states (very light grey)
+        // Warm paper backgrounds
+        'bg-primary': '#FBF9F6',
+        'bg-secondary': '#FFFFFF',
+        'bg-tertiary': '#FFFFFF',
+        'bg-quaternary': '#F3F1ED',
 
-        // Text Colors (Darker for better readability)
-        'text-primary': '#111827',      // Main text (very dark grey - almost black)
-        'text-secondary': '#374151',    // Secondary text (dark grey)
-        'text-muted': '#6B7280',        // Placeholder, captions (medium grey)
-        'text-inverse': '#FFFFFF',      // White text for rare dark backgrounds
+        // Warm charcoal text
+        'text-primary': '#1C1917',
+        'text-secondary': '#57534E',
+        'text-muted': '#78716C',
+        'text-inverse': '#FFFFFF',
 
-        // Accent Colors (Monochrome Only)
-        'accent-primary': '#000000',    // Primary actions (black)
-        'accent-primary-hover': '#374151', // Primary hover state (dark grey)
-        'accent-secondary': '#6B7280',  // Secondary actions (grey)
-        'accent-secondary-hover': '#4B5563', // Secondary hover state (darker grey)
-        'accent-success': '#059669',    // Success states (minimal green)
-        'accent-warning': '#D97706',    // Warnings (minimal orange)
-        'accent-error': '#DC2626',      // Errors (minimal red)
+        // Sage green accents
+        'accent-primary': '#3F6F54',
+        'accent-primary-hover': '#345C46',
+        'accent-secondary': '#78716C',
+        'accent-secondary-hover': '#57534E',
+        'accent-success': '#3F6F54',
+        'accent-warning': '#B45309',
+        'accent-error': '#B91C1C',
+        'accent-soft': '#E8F0EB',
 
-        // Borders & Dividers (Minimal Grey)
-        'border-light': '#F3F4F6',      // Very subtle borders
-        'border-medium': '#E5E7EB',     // Form inputs, cards
-        'border-dark': '#D1D5DB',       // Focused states, emphasis
-        'border-accent': '#000000',     // Accent borders (black)
+        // Warm stone borders
+        'border-light': '#F5F5F4',
+        'border-medium': '#E7E5E4',
+        'border-dark': '#D6D3D1',
+        'border-accent': '#3F6F54',
 
-        // Surface Colors (Very Light Grey Cards)
-        'surface-primary': '#FAFBFC',    // Main cards, panels (very light grey - almost white)
-        'surface-secondary': '#F8F9FA',  // Secondary panels (very light grey)
-        'surface-hover': '#F1F3F4',      // Hover states (light grey)
-        'surface-active': '#E8EAED',     // Active/selected states (slightly darker grey)
+        // Warm surfaces
+        'surface-primary': '#FFFFFF',
+        'surface-secondary': '#F3F1ED',
+        'surface-hover': '#F5F5F4',
+        'surface-active': '#E8F0EB',
 
-        // Legacy support (keeping old names mapped to new values)
-        'ic-text-primary': '#000000',    // Now maps to black text
-        'ic-text-secondary': '#6B7280',  // Now maps to grey text
-        'ic-border': '#E5E7EB',          // Now maps to light border
-        'accent-purple': '#000000',      // Maps to black (no purple)
-        'accent-purple-hover': '#374151', // Maps to dark grey
+        // Legacy name remaps
+        'ic-text-primary': '#1C1917',
+        'ic-text-secondary': '#57534E',
+        'ic-border': '#E7E5E4',
+        'accent-purple': '#3F6F54',
+        'accent-purple-hover': '#345C46',
       },
       fontFamily: {
-        // Primary font system
-        sans: ['var(--font-inter)', ...fontFamily.sans],
-        
-        // Specialized fonts for different use cases
-        display: ['var(--font-cal-sans)', 'var(--font-inter)', ...fontFamily.sans],  // Hero text, large headings
-        heading: ['var(--font-inter)', ...fontFamily.sans],                          // Section headings
-        body: ['var(--font-inter)', ...fontFamily.sans],                             // Body text
-        ui: ['var(--font-inter)', ...fontFamily.sans],                               // UI elements, buttons
-        mono: ['var(--font-jetbrains-mono)', ...fontFamily.mono],                    // Code, monospace
-        
-        // Legacy support
-        'geist-sans': ['var(--font-geist-sans)', ...fontFamily.sans],
+        sans: ['var(--font-source-sans)', ...fontFamily.sans],
+        display: ['var(--font-newsreader)', ...fontFamily.serif],
+        heading: ['var(--font-newsreader)', ...fontFamily.serif],
+        body: ['var(--font-source-sans)', ...fontFamily.sans],
+        ui: ['var(--font-source-sans)', ...fontFamily.sans],
+        mono: ['var(--font-jetbrains-mono)', ...fontFamily.mono],
+        'geist-sans': ['var(--font-source-sans)', ...fontFamily.sans],
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in-out',
@@ -90,14 +85,13 @@ module.exports = {
         },
       },
       boxShadow: {
-        'netflix': '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1)',
-        'netflix-hover': '0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
-        'netflix-button': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        soft: '0 1px 2px 0 rgba(28, 25, 23, 0.04)',
+        panel: '0 1px 3px 0 rgba(28, 25, 23, 0.06)',
       },
       zIndex: {
-        'netflix-dropdown': 40,
-        'netflix-modal': 50,
-        'netflix-tooltip': 60,
+        dropdown: 40,
+        modal: 50,
+        tooltip: 60,
       },
       spacing: {
         '18': '4.5rem',
@@ -109,44 +103,41 @@ module.exports = {
       typography: (theme) => ({
         DEFAULT: {
           css: {
-            color: theme('colors.ic-text-primary'),
+            color: theme('colors.text-primary'),
             a: {
-              color: theme('colors.accent-purple'),
+              color: theme('colors.accent-primary'),
               '&:hover': {
-                color: theme('colors.accent-purple-hover'),
+                color: theme('colors.accent-primary-hover'),
               },
             },
             h1: {
-              color: theme('colors.ic-text-primary'),
-              fontFamily: theme('fontFamily.heading')[0],
+              color: theme('colors.text-primary'),
+              fontFamily: theme('fontFamily.heading').join(', '),
             },
             h2: {
-              color: theme('colors.ic-text-primary'),
-              fontFamily: theme('fontFamily.heading')[0],
+              color: theme('colors.text-primary'),
+              fontFamily: theme('fontFamily.heading').join(', '),
             },
             h3: {
-              color: theme('colors.ic-text-primary'),
-              fontFamily: theme('fontFamily.heading')[0],
+              color: theme('colors.text-primary'),
+              fontFamily: theme('fontFamily.heading').join(', '),
             },
             h4: {
-              color: theme('colors.ic-text-primary'),
-              fontFamily: theme('fontFamily.heading')[0],
+              color: theme('colors.text-primary'),
+              fontFamily: theme('fontFamily.heading').join(', '),
             },
             strong: {
-              color: theme('colors.ic-text-primary'),
+              color: theme('colors.text-primary'),
             },
             blockquote: {
-              color: theme('colors.ic-text-secondary'),
-              borderLeftColor: theme('colors.ic-border'),
+              color: theme('colors.text-secondary'),
+              borderLeftColor: theme('colors.border-medium'),
             },
             code: {
-              color: theme('colors.accent-purple'),
-            },
-            pre: {
-              backgroundColor: theme('colors.ic-dark-bg'),
+              color: theme('colors.accent-primary'),
             },
             hr: {
-              borderColor: theme('colors.ic-border'),
+              borderColor: theme('colors.border-medium'),
             },
           },
         },
@@ -154,8 +145,7 @@ module.exports = {
     },
   },
   plugins: [
-    // require('tailwindcss-font-inter'),
     require('@tailwindcss/typography'),
     require('@tailwindcss/forms'),
   ],
-} 
+};

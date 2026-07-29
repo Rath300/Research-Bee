@@ -385,7 +385,7 @@ export default function ChatsPage() {
   if (authLoading || (!user && !error)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-bg-primary text-text-secondary p-4">
-        <FiLoader className="animate-spin text-4xl text-accent-purple mb-4" />
+        <FiLoader className="animate-spin text-4xl text-accent-primary mb-4" />
         <p>Loading authentication...</p>
       </div>
     );
@@ -394,7 +394,7 @@ export default function ChatsPage() {
   if (isInitializingSession) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-bg-primary text-text-secondary p-4">
-        <FiLoader className="animate-spin text-4xl text-accent-purple mb-4" />
+        <FiLoader className="animate-spin text-4xl text-accent-primary mb-4" />
         <p>Initializing chat session...</p>
       </div>
     );
@@ -403,7 +403,7 @@ export default function ChatsPage() {
   if (isLoadingConversations && conversations.length === 0 && !selectedConversationPartner) {
      return (
       <div className="h-screen flex flex-col items-center justify-center bg-bg-primary text-text-primary font-sans p-4">
-        <FiLoader className="animate-spin text-accent-purple text-5xl mb-4" />
+        <FiLoader className="animate-spin text-accent-primary text-5xl mb-4" />
         <p className="text-lg">Loading conversations...</p>
       </div>
     );
@@ -417,7 +417,7 @@ export default function ChatsPage() {
         <p className="text-text-secondary text-center mb-6">{error}</p>
         <button 
             onClick={fetchConversations} 
-            className="px-4 py-2 bg-accent-purple hover:bg-accent-purple-hover text-white rounded-md font-sans transition-colors"
+            className="px-4 py-2 bg-accent-primary hover:bg-accent-primary/90 text-white rounded-md font-sans transition-colors"
         >
             Try Again
         </button>
@@ -481,12 +481,12 @@ export default function ChatsPage() {
             />
         ) : (
             !isLoadingConversations && conversations.length === 0 && (
-                 <div className="h-full flex flex-col items-center justify-center bg-neutral-950 text-neutral-500 p-8">
-                    <FiMessageSquare size={64} className="mb-4 text-neutral-700"/>
-                    <p className="text-xl font-heading text-neutral-300">No conversations yet</p>
-                    <p className="mt-1 text-sm">Start a new chat by finding a collaborator or from a user's profile.</p>
+                 <div className="h-full flex flex-col items-center justify-center bg-bg-primary text-text-muted p-8">
+                    <FiMessageSquare size={64} className="mb-4 text-text-secondary"/>
+                    <p className="text-xl font-heading text-text-primary">No conversations yet</p>
+                    <p className="mt-1 text-sm text-text-secondary">Start a new chat by finding a collaborator or from a user's profile.</p>
                     <Link href="/match" className="mt-4">
-                        <button className="px-4 py-2 bg-accent-purple hover:bg-accent-purple-hover text-white rounded-md font-sans transition-colors">Find Collaborators</button>
+                        <button className="px-4 py-2 bg-accent-primary hover:bg-accent-primary/90 text-white rounded-md font-sans transition-colors">Find Collaborators</button>
                     </Link>
                 </div>
             )

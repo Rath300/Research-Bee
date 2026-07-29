@@ -75,7 +75,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
     return (
       <PageContainer title="Loading...">
         <div className="flex justify-center items-center p-8">
-          <FiLoader className="animate-spin text-accent-purple text-3xl" />
+          <FiLoader className="animate-spin text-accent-primary text-3xl" />
         </div>
       </PageContainer>
     );

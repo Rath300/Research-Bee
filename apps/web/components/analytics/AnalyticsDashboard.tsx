@@ -153,10 +153,10 @@ export function AnalyticsDashboard() {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-8 bg-surface-secondary rounded-md w-1/4"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+              <div key={i} className="h-32 bg-surface-secondary rounded-md"></div>
             ))}
           </div>
         </div>
@@ -167,7 +167,7 @@ export function AnalyticsDashboard() {
   if (error) {
     return (
       <div className="p-6">
-        <Card className="bg-white border border-border-light">
+        <Card className="bg-surface-primary border border-border-medium rounded-md">
           <CardContent className="p-6">
             <div className="text-center">
               <p className="text-red-500 mb-4">{error}</p>
@@ -195,50 +195,50 @@ export function AnalyticsDashboard() {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-white border border-border-light">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+        <Card className="bg-surface-primary border border-border-medium rounded-md">
+          <CardContent className="p-4">
+            <div className="flex items-baseline gap-3">
+              <FiUsers className="w-4 h-4 text-text-muted flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm text-text-secondary">Total Users</p>
                 <p className="text-2xl font-heading text-text-primary">{data.totalUsers}</p>
+                <p className="text-sm text-text-secondary">Total Users</p>
               </div>
-              <FiUsers className="w-8 h-8 text-accent-primary" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border border-border-light">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+        <Card className="bg-surface-primary border border-border-medium rounded-md">
+          <CardContent className="p-4">
+            <div className="flex items-baseline gap-3">
+              <FiTrendingUp className="w-4 h-4 text-text-muted flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm text-text-secondary">New This Week</p>
                 <p className="text-2xl font-heading text-text-primary">{data.newUsersThisWeek}</p>
+                <p className="text-sm text-text-secondary">New This Week</p>
               </div>
-              <FiTrendingUp className="w-8 h-8 text-green-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border border-border-light">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+        <Card className="bg-surface-primary border border-border-medium rounded-md">
+          <CardContent className="p-4">
+            <div className="flex items-baseline gap-3">
+              <FiActivity className="w-4 h-4 text-text-muted flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm text-text-secondary">Active Today</p>
                 <p className="text-2xl font-heading text-text-primary">{data.activeUsersToday}</p>
+                <p className="text-sm text-text-secondary">Active Today</p>
               </div>
-              <FiActivity className="w-8 h-8 text-blue-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border border-border-light">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+        <Card className="bg-surface-primary border border-border-medium rounded-md">
+          <CardContent className="p-4">
+            <div className="flex items-baseline gap-3">
+              <FiCalendar className="w-4 h-4 text-text-muted flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm text-text-secondary">Total Matches</p>
                 <p className="text-2xl font-heading text-text-primary">{data.totalMatches}</p>
+                <p className="text-sm text-text-secondary">Total Matches</p>
               </div>
-              <FiCalendar className="w-8 h-8 text-purple-500" />
             </div>
           </CardContent>
         </Card>
@@ -246,7 +246,7 @@ export function AnalyticsDashboard() {
 
       {/* Additional Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="bg-white border border-border-light">
+        <Card className="bg-surface-primary border border-border-medium rounded-md">
           <CardHeader>
             <CardTitle className="text-lg font-heading text-text-primary">Monthly Growth</CardTitle>
           </CardHeader>
@@ -256,7 +256,7 @@ export function AnalyticsDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white border border-border-light">
+        <Card className="bg-surface-primary border border-border-medium rounded-md">
           <CardHeader>
             <CardTitle className="text-lg font-heading text-text-primary">Projects Created</CardTitle>
           </CardHeader>
@@ -268,7 +268,7 @@ export function AnalyticsDashboard() {
       </div>
 
       {/* Signup Trend Chart */}
-      <Card className="bg-white border border-border-light">
+      <Card className="bg-surface-primary border border-border-medium rounded-md">
         <CardHeader>
           <CardTitle className="text-lg font-heading text-text-primary">Signup Trend (Last 30 Days)</CardTitle>
         </CardHeader>

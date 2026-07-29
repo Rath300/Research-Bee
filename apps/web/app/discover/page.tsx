@@ -67,8 +67,8 @@ export default function DiscoverPage() {
     return (
       <PageContainer title="Discover Projects" className="bg-bg-primary min-h-screen text-text-primary flex items-center justify-center">
         <div className="flex flex-col items-center font-sans">
-          <FiLoader className="animate-spin text-accent-purple text-6xl mb-4" />
-          <p className="text-xl text-neutral-300">Loading projects...</p>
+          <FiLoader className="animate-spin text-accent-primary text-6xl mb-4" />
+          <p className="text-xl text-text-secondary">Loading projects...</p>
         </div>
       </PageContainer>
     );
@@ -77,14 +77,14 @@ export default function DiscoverPage() {
   if (error) {
     return (
       <PageContainer title="Error" className="bg-bg-primary min-h-screen text-text-primary flex items-center justify-center">
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl shadow-lg p-8 text-center font-sans">
+        <div className="bg-surface-primary border border-border-medium rounded-md p-8 text-center font-sans">
           <FiAlertCircle className="mx-auto text-red-500 text-6xl mb-4" />
-          <h2 className="text-2xl font-heading text-neutral-100 mb-2">Oops! Something went wrong.</h2>
-          <p className="text-neutral-300 mb-4">Error: {error}</p>
+          <h2 className="text-2xl font-heading text-text-primary mb-2">Oops! Something went wrong.</h2>
+          <p className="text-text-secondary mb-4">Error: {error}</p>
           <Button 
             onClick={loadProjects}
             variant="primary"
-            className="bg-accent-purple hover:bg-accent-purple-hover text-white font-sans"
+            className="font-sans"
           >
             Try Again
           </Button>
@@ -96,31 +96,23 @@ export default function DiscoverPage() {
   return (
     <PageContainer title="Discover Projects" className="bg-bg-primary min-h-screen text-text-primary font-sans">
       <div className="p-4 sm:p-6 md:p-8 space-y-8">
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl shadow-lg p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="bg-surface-primary border border-border-medium rounded-md p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center">
-            <FiSearch className="text-3xl text-accent-purple mr-3" />
-            <h1 className="text-3xl font-heading text-neutral-100">Discover Projects</h1>
+            <FiSearch className="text-3xl text-accent-primary mr-3" />
+            <h1 className="text-3xl font-heading text-text-primary">Discover Projects</h1>
           </div>
           <div className="flex gap-3">
             <Button
               variant={filter === 'trending' ? 'primary' : 'outline'}
               onClick={() => setFilter('trending')}
-              className={`font-sans ${
-                filter === 'trending' 
-                  ? 'bg-accent-purple hover:bg-accent-purple-hover text-white'
-                  : 'border-accent-purple text-accent-purple hover:bg-accent-purple/10 hover:text-accent-purple-hover'
-              } transition-all`}
+              className="font-sans"
             >
               <FiTrendingUp className="mr-2" /> Trending
             </Button>
             <Button
               variant={filter === 'recent' ? 'primary' : 'outline'}
               onClick={() => setFilter('recent')}
-              className={`font-sans ${
-                filter === 'recent'
-                  ? 'bg-accent-purple hover:bg-accent-purple-hover text-white'
-                  : 'border-accent-purple text-accent-purple hover:bg-accent-purple/10 hover:text-accent-purple-hover'
-              } transition-all`}
+              className="font-sans"
             >
               <FiClock className="mr-2" /> Recent
             </Button>
@@ -130,10 +122,10 @@ export default function DiscoverPage() {
         {projects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {projects.map((project) => (
-              <Link href={`/research/${project.id}`} key={project.id} className="block group h-full">
-                <div className="bg-white border border-border-light rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out flex flex-col justify-between h-full transform group-hover:-translate-y-1 p-5">
+              <Link href={`/research/${project.id}`} key={project.id} className="block h-full">
+                <div className="bg-surface-primary border border-border-medium rounded-md flex flex-col justify-between h-full p-5 hover:bg-surface-hover transition-colors">
                   <div>
-                    <h2 className="text-xl font-heading text-text-primary mb-2 truncate group-hover:text-accent-primary transition-colors" title={project.title}>
+                    <h2 className="text-xl font-heading text-text-primary mb-2 truncate hover:text-accent-primary transition-colors" title={project.title}>
                       {project.title}
                     </h2>
                     <p className="text-text-secondary text-sm mb-3 line-clamp-3 font-sans" title={project.description || undefined}>
@@ -161,7 +153,7 @@ export default function DiscoverPage() {
                       {(project.tags || []).map((tag: string) => (
                         <span
                           key={tag}
-                          className="bg-accent-purple/20 text-accent-purple px-2 py-1 rounded-full text-xs"
+                          className="bg-accent-soft text-accent-primary px-2 py-1 rounded-sm text-xs"
                         >
                           {tag}
                         </span>
@@ -169,7 +161,7 @@ export default function DiscoverPage() {
                     </div>
                   </div>
 
-                  <div className="mt-auto pt-3 border-t border-neutral-700 flex justify-between items-center text-xs text-neutral-400 font-sans">
+                  <div className="mt-auto pt-3 border-t border-border-light flex justify-between items-center text-xs text-text-muted font-sans">
                     <span>{project.created_at ? new Date(project.created_at).toLocaleDateString() : 'Date N/A'}</span>
                   </div>
                 </div>
@@ -177,16 +169,16 @@ export default function DiscoverPage() {
             ))}
           </div>
         ) : (
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl shadow-lg p-10 text-center col-span-full font-sans">
-            <FiSearch className="mx-auto text-6xl text-neutral-500 mb-6" />
-            <h2 className="text-2xl font-heading text-neutral-100 mb-3">No Projects Found</h2>
-            <p className="text-neutral-400 mb-6">
+          <div className="bg-surface-primary border border-border-medium rounded-md p-10 text-center col-span-full font-sans">
+            <FiSearch className="mx-auto text-6xl text-text-muted mb-6" />
+            <h2 className="text-2xl font-heading text-text-primary mb-3">No Projects Found</h2>
+            <p className="text-text-secondary mb-6">
               {filter === 'trending' ? "There are no trending projects matching your criteria right now." : "No recent projects found. Check back later!"}
             </p>
             <Button
               variant="secondary"
               onClick={() => setFilter(filter === 'trending' ? 'recent' : 'trending')}
-              className="bg-accent-purple/20 hover:bg-accent-purple/30 text-accent-purple font-sans"
+              className="font-sans"
             >
               {filter === 'trending' ? 'View Recent Projects' : 'View Trending Projects'}
             </Button>

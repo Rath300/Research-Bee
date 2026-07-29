@@ -82,8 +82,8 @@ export default function MatchesPage() {
   if (loading) {
     return (
       <PageContainer title="My Matches" className="bg-bg-primary min-h-screen flex flex-col items-center justify-center text-text-primary font-sans">
-        <FiLoader className="animate-spin text-accent-purple text-6xl" />
-        <p className="mt-4 text-neutral-400">Loading your matches...</p>
+        <FiLoader className="animate-spin text-accent-primary text-6xl" />
+        <p className="mt-4 text-text-secondary">Loading your matches...</p>
       </PageContainer>
     );
   }
@@ -93,7 +93,7 @@ export default function MatchesPage() {
       <PageContainer title="Error" className="bg-bg-primary min-h-screen flex flex-col items-center justify-center text-text-primary font-sans p-6">
         <FiAlertCircle className="text-red-500 text-6xl mb-4" />
         <h2 className="text-2xl font-heading mb-2">Oops! Something went wrong.</h2>
-        <p className="text-neutral-400 text-center mb-6">{error}</p>
+        <p className="text-text-secondary text-center mb-6">{error}</p>
         <Button onClick={fetchMatchedProfiles} variant="secondary">Try Again</Button>
       </PageContainer>
     );
@@ -112,7 +112,7 @@ export default function MatchesPage() {
             variant="ghost" 
             size="sm"
             onClick={() => router.back()} 
-            className="mr-3 text-neutral-300 hover:bg-neutral-700 !p-2 rounded-full"
+            className="mr-3 text-text-secondary hover:bg-surface-hover !p-2 rounded-md"
             aria-label="Back"
           >
               <FiArrowLeft size={20} />
@@ -124,7 +124,7 @@ export default function MatchesPage() {
 
         {matchedProfiles.length === 0 && (
           <motion.div 
-            className="text-center py-20 bg-white rounded-lg border border-border-light max-w-3xl mx-auto"
+            className="text-center py-20 bg-surface-primary rounded-md border border-border-medium max-w-3xl mx-auto"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
@@ -151,7 +151,7 @@ export default function MatchesPage() {
               <motion.div
                 key={profile.id}
                 variants={cardItemVariants}
-                className="bg-white rounded-xl border border-border-light shadow-lg overflow-hidden flex flex-col"
+                className="bg-surface-primary rounded-md border border-border-medium overflow-hidden flex flex-col"
               >
                 <div className="p-5 flex-grow">
                     <Avatar 
@@ -170,7 +170,7 @@ export default function MatchesPage() {
                   {profile.interests && profile.interests.length > 0 && (
                     <div className="mb-3 flex flex-wrap justify-center gap-1.5">
                       {profile.interests.slice(0, 3).map(interest => (
-                        <span key={interest} className="px-2 py-0.5 bg-text-secondary/10 text-text-secondary text-[10px] rounded-full font-sans">
+                        <span key={interest} className="px-2 py-0.5 bg-accent-soft text-text-secondary text-[10px] rounded-sm font-sans">
                           {interest}
                         </span>
                       ))}

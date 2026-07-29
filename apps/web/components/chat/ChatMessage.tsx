@@ -24,8 +24,8 @@ interface ChatMessageProps {
 export function ChatMessage({ message, isCurrentUser }: ChatMessageProps) {
   const alignment = isCurrentUser ? 'items-end' : 'items-start';
   const bubbleStyles = isCurrentUser
-    ? 'bg-accent-purple text-white'
-    : 'bg-neutral-700 text-neutral-100';
+    ? 'bg-accent-primary text-white'
+    : 'bg-surface-secondary text-text-primary';
   const borderRadius = isCurrentUser
     ? 'rounded-l-xl rounded-tr-xl'
     : 'rounded-r-xl rounded-tl-xl';
@@ -49,14 +49,14 @@ export function ChatMessage({ message, isCurrentUser }: ChatMessageProps) {
             alt={message.sender_name || 'Sender'} 
             size="sm" 
             className="mr-2 mb-1 flex-shrink-0"
-            fallback={<FiUser className="text-neutral-400"/>}
+            fallback={<FiUser className="text-text-muted"/>}
           />
         )}
-        <div className={`px-4 py-3 ${bubbleStyles} ${borderRadius} shadow-md`}>
+        <div className={`px-4 py-3 ${bubbleStyles} ${borderRadius}`}>
           <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
         </div>
       </div>
-      <p className={`text-xs text-neutral-500 mt-1 ${isCurrentUser ? 'mr-1' : 'ml-10'}`}>
+      <p className={`text-xs text-text-muted mt-1 ${isCurrentUser ? 'mr-1' : 'ml-10'}`}>
         {formattedTime}
       </p>
     </motion.div>

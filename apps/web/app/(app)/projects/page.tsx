@@ -13,19 +13,19 @@ export default function ProjectsPage() {
   const { data: projects, isLoading, error } = getProjects();
 
   if (isLoading) {
-    return <div className="p-8"><FiLoader className="animate-spin text-2xl" /></div>;
+    return <div className="p-8 bg-bg-primary"><FiLoader className="animate-spin text-accent-primary text-2xl" /></div>;
   }
 
   if (error) {
-    return <div className="p-8 text-red-500">Error loading projects: {error.message}</div>;
+    return <div className="p-8 text-red-500 bg-bg-primary">Error loading projects: {error.message}</div>;
   }
 
   return (
-    <div className="p-4 md:p-8 text-white">
-      <Card className="bg-neutral-900 border-neutral-800">
+    <div className="p-4 md:p-8 text-text-primary bg-bg-primary">
+      <Card className="bg-surface-primary border-border-medium">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold flex items-center">
-            <FiBriefcase className="mr-3" /> My Projects
+          <CardTitle className="text-2xl font-bold flex items-center text-text-primary">
+            <FiBriefcase className="mr-3 text-accent-primary" /> My Projects
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -35,20 +35,20 @@ export default function ProjectsPage() {
                 <Link 
                   key={project.id}
                   href={`/projects/${project.id}`}
-                  className="block p-4 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors"
+                  className="block p-4 bg-surface-secondary rounded-md border border-border-light hover:bg-surface-hover transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                        <h3 className="font-semibold text-lg">{project.title}</h3>
-                        <p className="text-sm text-neutral-400">
-                            Role: {project.role} {/* Assuming the procedure returns the user's role */}
+                        <h3 className="font-semibold text-lg text-text-primary">{project.title}</h3>
+                        <p className="text-sm text-text-secondary">
+                            Role: {project.role}
                         </p>
                         {project.tags && project.tags.length > 0 && (
                           <div className="flex flex-wrap gap-2 mt-2">
                             {project.tags.map((tag: string) => (
                               <span
                                 key={tag}
-                                className="bg-accent-purple/20 text-accent-purple px-2 py-1 rounded-full text-xs"
+                                className="bg-accent-soft text-text-secondary px-2 py-1 rounded-sm text-xs"
                               >
                                 {tag}
                               </span>
@@ -56,13 +56,13 @@ export default function ProjectsPage() {
                           </div>
                         )}
                     </div>
-                    <FiChevronRight className="h-5 w-5 text-neutral-500" />
+                    <FiChevronRight className="h-5 w-5 text-text-muted" />
                   </div>
                 </Link>
               ))}
             </div>
           ) : (
-            <p className="text-neutral-500">You are not a part of any projects yet.</p>
+            <p className="text-text-muted">You are not a part of any projects yet.</p>
           )}
         </CardContent>
       </Card>

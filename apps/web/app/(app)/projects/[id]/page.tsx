@@ -28,9 +28,9 @@ interface ProjectPageProps {
 const CollaboratorList = ({ projectId }: { projectId: string }) => {
     const { data: collaborators, isLoading, error } = api.project.listCollaborators.useQuery({ projectId });
 
-    if (isLoading) return <div className="flex items-center text-neutral-400"><FiLoader className="animate-spin mr-2" />Loading collaborators...</div>;
+    if (isLoading) return <div className="flex items-center text-text-secondary"><FiLoader className="animate-spin mr-2" />Loading collaborators...</div>;
     if (error) return <div className="text-red-500">Error loading collaborators: {error.message}</div>;
-    if (!collaborators || collaborators.length === 0) return <p className="text-neutral-500">No collaborators yet.</p>;
+    if (!collaborators || collaborators.length === 0) return <p className="text-text-muted">No collaborators yet.</p>;
 
     return (
         <div className="space-y-4">
@@ -43,7 +43,7 @@ const CollaboratorList = ({ projectId }: { projectId: string }) => {
                 return (
                     <div 
                       key={collab.id} 
-                      className={`flex items-center justify-between p-3 bg-white border border-border-light rounded-lg transition-opacity ${
+                      className={`flex items-center justify-between p-3 bg-surface-primary border border-border-medium rounded-md transition-opacity ${
                         collab.status === 'pending' ? 'opacity-50' : 'opacity-100'
                       }`}
                     >
@@ -64,8 +64,8 @@ const CollaboratorList = ({ projectId }: { projectId: string }) => {
                             </div>
                         </div>
                         <div
-                          className={`px-2.5 py-1 rounded-full ${
-                            collab.role === 'owner' ? 'bg-text-secondary/10 text-text-secondary' : 'bg-text-secondary/5 text-text-secondary'
+                          className={`px-2.5 py-1 rounded-sm ${
+                            collab.role === 'owner' ? 'bg-accent-soft text-accent-primary' : 'bg-surface-secondary text-text-secondary'
                           }`}
                         >
                           <span className="text-xs font-bold">
@@ -175,9 +175,9 @@ const InviteCollaboratorForm = ({ projectId }: { projectId: string }) => {
                     
                     {/* Suggestions Dropdown */}
                     {showSuggestions && suggestions && suggestions.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-neutral-800 border border-neutral-700 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-surface-primary border border-border-medium rounded-md z-50 max-h-60 overflow-y-auto">
                             {isSearching ? (
-                                <div className="p-3 text-center text-neutral-400">
+                                <div className="p-3 text-center text-text-secondary">
                                     <FiLoader className="animate-spin inline mr-2" />
                                     Searching...
                                 </div>
@@ -187,7 +187,7 @@ const InviteCollaboratorForm = ({ projectId }: { projectId: string }) => {
                                         key={suggestion.id}
                                         type="button"
                                         onClick={() => handleSuggestionClick(suggestion.email || `${suggestion.first_name} ${suggestion.last_name}`.trim() || '')}
-                                        className="w-full p-3 text-left hover:bg-neutral-700 border-b border-neutral-700 last:border-b-0 flex items-center space-x-3"
+                                        className="w-full p-3 text-left hover:bg-surface-hover border-b border-border-light last:border-b-0 flex items-center space-x-3"
                                     >
                                         <div className="flex-shrink-0">
                                             {suggestion.avatar_url ? (
@@ -197,16 +197,16 @@ const InviteCollaboratorForm = ({ projectId }: { projectId: string }) => {
                                                     className="w-8 h-8 rounded-full"
                                                 />
                                             ) : (
-                                                <div className="w-8 h-8 rounded-full bg-neutral-600 flex items-center justify-center">
-                                                    <FiUser className="w-4 h-4 text-neutral-400" />
+                                                <div className="w-8 h-8 rounded-full bg-surface-secondary flex items-center justify-center">
+                                                    <FiUser className="w-4 h-4 text-text-muted" />
                                                 </div>
                                             )}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className="text-sm font-medium text-neutral-200 truncate">
+                                            <div className="text-sm font-medium text-text-primary truncate">
                                                 {suggestion.email || `${suggestion.first_name} ${suggestion.last_name}`.trim() || 'Unknown'}
                                             </div>
-                                            <div className="text-xs text-neutral-400 truncate">
+                                            <div className="text-xs text-text-secondary truncate">
                                                 {suggestion.first_name} {suggestion.last_name}
                                                 {suggestion.title && ` • ${suggestion.title}`}
                                             </div>
@@ -243,7 +243,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   const { data: collaborators } = api.project.listCollaborators.useQuery({ projectId });
 
   if (isProjectLoading) {
-    return <div className="p-8"><FiLoader className="animate-spin text-2xl" /></div>;
+    return <div className="p-8 bg-bg-primary"><FiLoader className="animate-spin text-accent-primary text-2xl" /></div>;
   }
 
   if (projectError) {
@@ -255,8 +255,8 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   }
 
   return (
-    <div className="p-4 md:p-8 text-text-primary">
-      <Card className="bg-white border-border-light mb-8">
+    <div className="p-4 md:p-8 text-text-primary bg-bg-primary">
+      <Card className="bg-surface-primary border-border-medium mb-8">
         <CardHeader>
             <div className="flex justify-between items-start">
               <CardTitle className="text-3xl font-bold">{project?.title || 'Loading...'}</CardTitle>
@@ -273,7 +273,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
       </Card>
 
       {(project?.role === 'owner' || project?.role === 'editor') && (
-        <Card className="bg-white border-border-light mb-8">
+        <Card className="bg-surface-primary border-border-medium mb-8">
           <CardHeader>
               <CardTitle className="text-2xl font-bold">Invite a Collaborator</CardTitle>
           </CardHeader>
@@ -294,7 +294,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
         </div>
       )}
       
-      <Card className="bg-white border-border-light mb-8">
+      <Card className="bg-surface-primary border-border-medium mb-8">
         <CardHeader>
             <CardTitle className="text-2xl font-bold">Collaborators</CardTitle>
         </CardHeader>

@@ -220,9 +220,8 @@ export default function MatchPage() {
 
   const buttonVariants = {
     initial: { scale: 1 },
-    hover: { scale: 1.1 },
-    tap: { scale: 0.95 },
-    disabled: { scale: 0.9, opacity: 0.5 }
+    tap: { scale: 0.98 },
+    disabled: { opacity: 0.5 }
   };
 
   if (loading) {
@@ -250,8 +249,8 @@ export default function MatchPage() {
           transition={{ duration: 0.5 }}
           className="text-center"
         >
-          <FiAlertCircle className="text-red-500 text-6xl mb-4 mx-auto" />
-          <h2 className="text-2xl font-heading mb-2">Oops! Something went wrong.</h2>
+          <FiAlertCircle className="text-accent-error text-6xl mb-4 mx-auto" />
+          <h2 className="text-2xl font-heading mb-2 text-text-primary">Oops! Something went wrong.</h2>
           <p className="text-text-secondary text-center mb-6">{error}</p>
           <Button onClick={fetchPotentialMatches} variant="secondary">Try Again</Button>
         </motion.div>
@@ -295,42 +294,52 @@ export default function MatchPage() {
                 preventSwipe={['up', 'down']} // Allow only left/right swipes
               >
                 <motion.div
-                  className='relative w-full h-full rounded-2xl bg-white shadow-2xl border border-border-light overflow-hidden p-6 flex flex-col justify-end'
+                  className='relative w-full h-full rounded-md bg-surface-primary border border-border-medium overflow-hidden flex flex-col'
                   variants={cardVariants}
                   initial="initial"
                   animate="animate"
                   exit="exit"
-                  whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <div className="absolute inset-0 bg-gray-100 z-0">
-                    {character.avatar_url ? (
-                      <img
-                        src={character.avatar_url}
-                        alt={`${character.first_name || 'User'}'s avatar`}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          // Hide the image if it fails to load
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                        <FiUser className="w-24 h-24 text-gray-400" />
+                  {/* Profile header */}
+                  <div className="p-6 pb-4 border-b border-border-light bg-accent-soft/50">
+                    <div className="flex items-center gap-4">
+                      <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-border-light bg-surface-secondary flex-shrink-0">
+                        {character.avatar_url ? (
+                          <img
+                            src={character.avatar_url}
+                            alt={`${character.first_name || 'User'}'s avatar`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <FiUser className="w-8 h-8 text-text-muted" />
+                          </div>
+                        )}
                       </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10"></div>
+                      <div className="min-w-0">
+                        <h3 className='text-xl font-heading text-text-primary truncate'>
+                          {character.first_name || 'Anonymous'} {character.last_name || ''}
+                        </h3>
+                        {character.institution && (
+                          <p className='text-sm text-text-secondary truncate'>{character.institution}</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="relative z-20 text-white">
-                    <h3 className='text-3xl font-heading mb-1'>
-                      {character.first_name || 'Anonymous'} {character.last_name || ''}
-                    </h3>
-                    <p className='text-sm text-neutral-300 line-clamp-2'>{character.bio || 'No bio yet.'}</p>
+
+                  {/* Profile body */}
+                  <div className="flex-1 p-6 overflow-y-auto">
+                    <p className='text-sm text-text-secondary leading-relaxed line-clamp-4'>
+                      {character.bio || 'No bio yet.'}
+                    </p>
                     {character.interests && character.interests.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {character.interests.slice(0, 3).map(interest => (
-                          <span key={interest} className="px-2 py-0.5 bg-text-secondary/20 text-text-secondary text-xs rounded-full font-sans">
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {character.interests.slice(0, 5).map(interest => (
+                          <span key={interest} className="tag-accent">
                             {interest}
                           </span>
                         ))}
@@ -348,16 +357,11 @@ export default function MatchPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: -20 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
-              className="text-center p-8 bg-white rounded-xl border border-border-light shadow-xl max-w-sm mx-auto"
+              className="text-center p-8 bg-surface-primary rounded-md border border-border-medium max-w-sm mx-auto"
             >
-              <motion.div
-                initial={{ rotate: 0 }}
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="mb-6"
-              >
-                <FiUser size={64} className="mx-auto text-text-secondary" />
-              </motion.div>
+              <div className="mb-6">
+                <FiUser size={48} className="mx-auto text-text-muted" />
+              </div>
               <h2 className="text-2xl font-heading text-text-primary mb-3">No More Profiles</h2>
               <p className="text-text-secondary mb-6 text-sm leading-relaxed">
                 You've seen everyone for now! Check back later for new profiles, or try refreshing to see if there are any new matches.
@@ -393,7 +397,6 @@ export default function MatchPage() {
           <motion.div
             variants={buttonVariants}
             initial="initial"
-            whileHover={isSwiping ? "disabled" : "hover"}
             whileTap={isSwiping ? "disabled" : "tap"}
           >
             <Button
@@ -404,17 +407,16 @@ export default function MatchPage() {
               variant="outline"
               size="lg"
               disabled={isSwiping}
-              className="rounded-full !p-5 border-red-500/50 text-red-500 hover:bg-red-500/10 hover:text-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-md !p-4 text-text-secondary hover:text-text-primary disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="Reject"
             >
-              <FiX size={28} />
+              <FiX size={24} />
             </Button>
           </motion.div>
           
           <motion.div
             variants={buttonVariants}
             initial="initial"
-            whileHover={isSwiping ? "disabled" : "hover"}
             whileTap={isSwiping ? "disabled" : "tap"}
           >
             <Button
@@ -422,13 +424,13 @@ export default function MatchPage() {
                 console.log('Like button clicked, currentIndex:', currentIndex);
                 swipe('right');
               }}
-              variant="outline"
+              variant="primary"
               size="lg"
               disabled={isSwiping}
-              className="rounded-full !p-5 border-green-500/50 text-green-500 hover:bg-green-500/10 hover:text-green-400 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-md !p-4 disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="Like"
             >
-              <FiHeart size={28} />
+              <FiHeart size={24} />
             </Button>
           </motion.div>
         </motion.div>

@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  // We can extend with Tamagui props later or use Tamagui's Checkbox directly
   onCheckedChange?: (checked: boolean) => void;
 }
 
@@ -21,7 +21,10 @@ export const Checkbox = React.forwardRef<
     <input
       type="checkbox"
       ref={ref}
-      className={`h-4 w-4 rounded border-neutral-600 text-accent-purple focus:ring-accent-purple ${className}`}
+      className={cn(
+        'h-4 w-4 rounded border-border-medium text-accent-primary focus:ring-accent-primary focus:ring-offset-bg-primary',
+        className
+      )}
       checked={checked}
       onChange={handleChange}
       {...props}
@@ -29,8 +32,4 @@ export const Checkbox = React.forwardRef<
   );
 });
 
-Checkbox.displayName = 'Checkbox'; 
- 
- 
- 
- 
+Checkbox.displayName = 'Checkbox';

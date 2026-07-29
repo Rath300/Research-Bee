@@ -58,8 +58,8 @@
   "devDependencies": {
     "@types/node": "^18.11.9",
     "@types/react-native": "^0.72.2",
-    "@research-collab/eslint-config": "workspace:*",
-    "@research-collab/typescript-config": "workspace:*",
+    "@research-collab/eslint-config": "*",
+    "@research-collab/typescript-config": "*",
     "@tamagui/next-plugin": "^1.94.3",
     "typescript": "^5.1.3",
     "react-native-svg": "13.9.0"

@@ -1,10 +1,9 @@
 'use client';
 
 import React from 'react';
+import { cn } from '@/lib/utils';
 
-interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
-  // We can extend with Tamagui props later or use Tamagui's Label directly
-}
+interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {}
 
 export const Label = React.forwardRef<
   HTMLLabelElement,
@@ -13,14 +12,13 @@ export const Label = React.forwardRef<
   return (
     <label
       ref={ref}
-      className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${className}`}
+      className={cn(
+        'text-sm font-ui font-medium leading-none text-text-primary peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+        className
+      )}
       {...props}
     />
   );
 });
 
-Label.displayName = 'Label'; 
- 
- 
- 
- 
+Label.displayName = 'Label';

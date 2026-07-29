@@ -150,7 +150,7 @@ export default function AccountSettingsPage() {
   if (formLoading && !profile) {
     return (
       <PageContainer title="Account Settings" className="flex items-center justify-center min-h-[calc(100vh-theme(spacing.20))]">
-        <FiLoader className="animate-spin text-accent-purple text-4xl" />
+        <FiLoader className="animate-spin text-accent-primary text-4xl" />
       </PageContainer>
     );
   }
@@ -158,7 +158,7 @@ export default function AccountSettingsPage() {
   return (
     <PageContainer title="Account Settings" className="py-8 px-4 md:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
-        <Card className="bg-white border border-border-light shadow-xl">
+        <Card className="bg-surface-primary border border-border-medium rounded-md">
           <CardHeader>
             <CardTitle className="text-2xl font-heading text-text-primary flex items-center">
               <FiUser className="mr-3 text-accent-primary" /> Your Profile
@@ -199,7 +199,7 @@ export default function AccountSettingsPage() {
                     value={firstName} 
                     onChange={(e) => setFirstName(e.target.value)} 
                     placeholder="Your first name"
-                    className="bg-white border-border-light text-text-primary placeholder:text-text-secondary"
+                    className="bg-surface-primary border-border-medium text-text-primary placeholder:text-text-muted"
                   />
                 </div>
                 <div>
@@ -210,7 +210,7 @@ export default function AccountSettingsPage() {
                     value={lastName} 
                     onChange={(e) => setLastName(e.target.value)} 
                     placeholder="Your last name"
-                    className="bg-white border-border-light text-text-primary placeholder:text-text-secondary"
+                    className="bg-surface-primary border-border-medium text-text-primary placeholder:text-text-muted"
                   />
                 </div>
               </div>
@@ -223,7 +223,7 @@ export default function AccountSettingsPage() {
                   onChange={(e) => setBio(e.target.value)} 
                   placeholder="Tell us a bit about yourself..."
                   rows={4}
-                  className="bg-white border-border-light text-text-primary placeholder:text-text-secondary"
+                  className="bg-surface-primary border-border-medium text-text-primary placeholder:text-text-muted"
                 />
               </div>
 

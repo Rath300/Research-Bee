@@ -3,100 +3,111 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FiBell, FiUser, FiSettings, FiLogOut, FiMenu, FiX } from 'react-icons/fi'; 
+import { FiBell, FiUser, FiSettings, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
 import { Avatar } from '@/components/ui/Avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'; // Corrected path
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/lib/store';
 import { supabase } from '@/lib/supabaseClient';
-// import { Database } from '@/lib/database.types'; // Comment out or remove local Database type import
-import { type Profile as DbProfile } from '@research-collab/db'; // Ensure DbProfile is imported
+import { type Profile as DbProfile } from '@research-collab/db';
 import { titleCase } from '@/lib/utils';
 
-// type Profile = Database['public']['Tables']['profiles']['Row']; // Use DbProfile instead
-
 interface DashboardHeaderProps {
-  profile: DbProfile | null; // Changed to use DbProfile
+  profile: DbProfile | null;
   toggleSidebar: () => void;
   isSidebarCollapsed: boolean;
 }
 
-export function DashboardHeader({ profile, toggleSidebar, isSidebarCollapsed }: DashboardHeaderProps) {
+export function DashboardHeader({
+  profile,
+  toggleSidebar,
+  isSidebarCollapsed,
+}: DashboardHeaderProps) {
   const router = useRouter();
-  // supabase is already imported as a singleton
-  const { clearAuth } = useAuthStore(); // Get clearAuth from the store
+  const { clearAuth } = useAuthStore();
 
   const handleLogout = async () => {
-    console.log('[DashboardHeader] handleLogout CALLED.');
     try {
-      console.log('[DashboardHeader] Attempting Supabase signOut...');
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('[DashboardHeader] Supabase signOut error:', error.message);
-      } else {
-        console.log('[DashboardHeader] Supabase signOut successful.');
       }
     } catch (e: any) {
-      console.error('[DashboardHeader] Exception during Supabase signOut attempt:', e.message);
+      console.error('[DashboardHeader] Exception during signOut:', e.message);
     }
-    
-    clearAuth(); // Explicitly clear Zustand auth state
 
-    console.log('[DashboardHeader] Attempting redirect to /login via window.location.assign().');
+    clearAuth();
+
     if (typeof window !== 'undefined') {
-      window.location.assign('/login'); // Force full page reload and redirect
+      window.location.assign('/login');
     } else {
       router.push('/login');
     }
-    console.log('[DashboardHeader] Redirect attempt made. End of handleLogout.');
   };
 
-
-
-  const displayName = profile?.first_name 
-    ? titleCase(`${profile.first_name} ${profile.last_name ?? ''}`.trim()) 
+  const displayName = profile?.first_name
+    ? titleCase(`${profile.first_name} ${profile.last_name ?? ''}`.trim())
     : 'User';
   const displayAvatarUrl = profile?.avatar_url;
 
   return (
-    <header className="sticky top-0 z-20 flex items-center justify-between h-16 px-4 md:px-6 bg-white border-b border-border-light shadow-sm">
+    <header className="sticky top-0 z-20 flex items-center justify-between h-12 px-4 md:px-6 bg-bg-primary border-b border-border-medium">
       <div className="flex items-center">
-        {/* Sidebar Toggle Button */} 
-        <Button 
+        <Button
           variant="ghost"
           size="sm"
           onClick={toggleSidebar}
-          className="p-2 text-text-secondary hover:text-text-primary"
+          className="p-2 text-text-muted hover:text-text-primary"
         >
-          {isSidebarCollapsed ? <FiMenu className="h-5 w-5" /> : <FiX className="h-5 w-5" />}
+          {isSidebarCollapsed ? <FiMenu className="h-4 w-4" /> : <FiX className="h-4 w-4" />}
         </Button>
       </div>
 
-      <div className="flex items-center space-x-4">
-        {/* Notification Bell */}
-        <Link href="/notifications" className="p-2 rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-hover">
-          <FiBell className="w-5 h-5" />
-          {/* Optional: Add a badge for unread notifications */}
+      <div className="flex items-center gap-1">
+        <Link
+          href="/notifications"
+          className="p-2 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-hover no-underline"
+        >
+          <FiBell className="w-4 h-4" />
         </Link>
 
-        {/* Profile Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-              <Avatar src={displayAvatarUrl} alt={displayName} size="sm" fallback={<FiUser size={16} />} />
+            <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
+              <Avatar
+                src={displayAvatarUrl}
+                alt={displayName}
+                size="sm"
+                fallback={<FiUser size={14} />}
+              />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 bg-neutral-800 border-neutral-700 text-neutral-200" align="end" forceMount>
-            <DropdownMenuItem className="focus:bg-neutral-700 focus:text-neutral-100 cursor-pointer" onClick={() => router.push('/profile/me')}>
+          <DropdownMenuContent className="w-52" align="end" forceMount>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => router.push('/profile/me')}
+            >
               <FiUser className="mr-2 h-4 w-4" />
-              <span>My Profile</span>
+              <span>My profile</span>
             </DropdownMenuItem>
-            <DropdownMenuItem className="focus:bg-neutral-700 focus:text-neutral-100 cursor-pointer" onClick={() => router.push('/settings/account')}>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => router.push('/settings/account')}
+            >
               <FiSettings className="mr-2 h-4 w-4" />
               <span>Settings</span>
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-neutral-700"/>
-            <DropdownMenuItem className="focus:bg-red-900/50 focus:text-red-400 text-red-500 cursor-pointer" onClick={handleLogout}>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-accent-error focus:text-accent-error cursor-pointer"
+              onClick={handleLogout}
+            >
               <FiLogOut className="mr-2 h-4 w-4" />
               <span>Log out</span>
             </DropdownMenuItem>
@@ -105,4 +116,4 @@ export function DashboardHeader({ profile, toggleSidebar, isSidebarCollapsed }: 
       </div>
     </header>
   );
-} 
+}

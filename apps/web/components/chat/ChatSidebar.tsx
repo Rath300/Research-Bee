@@ -64,7 +64,7 @@ export function ChatSidebar({
             <FiSearch className="absolute left-3 text-text-secondary pointer-events-none" />
             <Input 
               placeholder="Search chats..." 
-              className="bg-white border-border-light text-text-primary placeholder:text-text-secondary focus:ring-accent-primary focus:border-accent-primary pl-10 w-full"
+              className="bg-surface-primary border-border-medium text-text-primary placeholder:text-text-muted focus:ring-accent-primary focus:border-accent-primary pl-10 w-full"
             />
         </div>
       </div>
@@ -92,8 +92,8 @@ export function ChatSidebar({
             <motion.li key={convo.id} variants={listItemVariants}>
               <button
                 onClick={() => onSelectConversation(convo.id)}
-                className={`w-full text-left p-4 hover:bg-gray-50 transition-colors duration-150 focus:outline-none ${
-                  selectedConversationId === convo.id ? 'bg-gray-100' : ''
+                className={`w-full text-left p-4 hover:bg-surface-hover transition-colors duration-150 focus:outline-none ${
+                  selectedConversationId === convo.id ? 'bg-surface-secondary' : ''
                 }`}
               >
                 <div className="flex items-center">

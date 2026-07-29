@@ -51,13 +51,13 @@ export default function WorkspaceDocumentsPage() {
   const getIconForDocumentType = (docType: string) => {
     // Add more icons as you define more document types
     // For now, a generic FiFileText for all
-    return <FiFileText className="mr-2 h-5 w-5 text-neutral-500" />;
+    return <FiFileText className="mr-2 h-5 w-5 text-text-muted" />;
   };
 
   if (isLoading) {
     return (
       <PageContainer title={workspaceData?.name ? `Documents in ${workspaceData.name}` : "Loading Documents..."} className="flex items-center justify-center min-h-[calc(100vh-80px)]">
-        <FiLoader className="animate-spin text-3xl text-accent-purple" />
+        <FiLoader className="animate-spin text-3xl text-accent-primary" />
       </PageContainer>
     );
   }
@@ -66,7 +66,7 @@ export default function WorkspaceDocumentsPage() {
     return (
       <PageContainer title="Error Loading Documents" className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)]">
         <FiAlertTriangle className="text-3xl text-red-500 mb-4" />
-        <p className="text-neutral-400">Could not load documents: {error.message}</p>
+        <p className="text-text-secondary">Could not load documents: {error.message}</p>
         <Button onClick={() => refetch()} variant="outline" className="mt-4">Try Again</Button>
       </PageContainer>
     );
@@ -81,16 +81,16 @@ export default function WorkspaceDocumentsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="bg-neutral-900 border-neutral-800 shadow-lg">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-2xl font-heading text-neutral-100">{pageTitle}</CardTitle>
-              <CardDescription className="text-neutral-400">
+              <CardTitle className="text-2xl font-heading text-text-primary">{pageTitle}</CardTitle>
+              <CardDescription className="text-text-secondary">
                 View, create, and manage documents for this workspace.
               </CardDescription>
             </div>
             <Link href={`/workspaces/${workspaceId}/documents/new`}>
-              <Button variant="primary" className="bg-accent-purple hover:bg-accent-purple/90 text-white">
+              <Button variant="primary">
                 <FiPlus className="mr-2 h-5 w-5" /> Create New Document
               </Button>
             </Link>
@@ -99,22 +99,22 @@ export default function WorkspaceDocumentsPage() {
             {documents && documents.length > 0 ? (
               <ul className="space-y-3">
                 {documents.map((doc: WorkspaceDocumentItem) => (
-                  <li key={doc.id} className="border border-neutral-800 bg-neutral-850 rounded-md p-4 hover:bg-neutral-800 transition-colors duration-150 ease-in-out">
+                  <li key={doc.id} className="border border-border-light bg-surface-secondary rounded-md p-4 hover:bg-surface-hover transition-colors duration-150 ease-in-out">
                     <Link href={`/workspaces/${workspaceId}/documents/${doc.id}`} className="block">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           {getIconForDocumentType(doc.document_type)}
                           <div>
-                            <h3 className="text-lg font-medium text-neutral-100 hover:text-accent-purple transition-colors">{doc.title}</h3>
-                            <p className="text-sm text-neutral-500">Type: {doc.document_type}</p>
+                            <h3 className="text-lg font-medium text-text-primary hover:text-accent-primary transition-colors">{doc.title}</h3>
+                            <p className="text-sm text-text-muted">Type: {doc.document_type}</p>
                           </div>
                         </div>
                         <div className="text-right">
-                           <p className="text-xs text-neutral-500">
+                           <p className="text-xs text-text-muted">
                             Updated {formatDistanceToNow(new Date(doc.updated_at), { addSuffix: true })}
                           </p>
                           {doc.created_by && (
-                            <p className="text-xs text-neutral-500 mt-1">
+                            <p className="text-xs text-text-muted mt-1">
                               By: {doc.created_by.first_name || 'User'} {doc.created_by.last_name || ''}
                             </p>
                           )}
@@ -126,11 +126,11 @@ export default function WorkspaceDocumentsPage() {
               </ul>
             ) : (
               <div className="text-center py-10">
-                <FiInbox className="mx-auto h-12 w-12 text-neutral-600" />
-                <h3 className="mt-2 text-lg font-medium text-neutral-300">No documents yet</h3>
-                <p className="mt-1 text-sm text-neutral-500">Get started by creating a new document.</p>
+                <FiInbox className="mx-auto h-12 w-12 text-text-muted" />
+                <h3 className="mt-2 text-lg font-medium text-text-primary">No documents yet</h3>
+                <p className="mt-1 text-sm text-text-muted">Get started by creating a new document.</p>
                  <Link href={`/workspaces/${workspaceId}/documents/new`} className="mt-6">
-                    <Button variant="primary" className="bg-accent-purple hover:bg-accent-purple/90 text-white">
+                    <Button variant="primary">
                         <FiPlus className="mr-2 h-4 w-4" /> Create New Document
                     </Button>
                 </Link>

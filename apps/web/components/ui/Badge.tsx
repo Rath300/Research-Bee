@@ -1,20 +1,22 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
-type BadgeVariant = 'primary' | 'secondary' | 'destructive' | 'outline';
+type BadgeVariant = 'primary' | 'secondary' | 'destructive' | 'outline' | 'accent';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: BadgeVariant;
 }
 
 const getBadgeClasses = (variant: BadgeVariant = 'secondary') => {
-  const baseClasses = 'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2';
-  
+  const baseClasses =
+    'inline-flex items-center rounded-sm border px-2 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-1 focus:ring-accent-primary focus:ring-offset-1';
+
   const variantClasses = {
-    primary: 'border-transparent bg-blue-600 text-blue-50 hover:bg-blue-600/80',
-    secondary: 'border-transparent bg-gray-700 text-gray-200 hover:bg-gray-700/80',
-    destructive: 'border-transparent bg-red-600 text-red-50 hover:bg-red-600/80',
-    outline: 'text-white',
+    primary: 'border-transparent bg-accent-primary text-text-inverse',
+    secondary: 'border-transparent bg-surface-secondary text-text-secondary',
+    accent: 'border-transparent bg-accent-soft text-accent-primary',
+    destructive: 'border-transparent bg-red-50 text-accent-error',
+    outline: 'border-border-medium bg-transparent text-text-secondary',
   };
 
   return `${baseClasses} ${variantClasses[variant]}`;
@@ -26,4 +28,4 @@ function Badge({ className, variant = 'secondary', ...props }: BadgeProps) {
   );
 }
 
-export { Badge }; 
+export { Badge };

@@ -69,7 +69,7 @@ export default function ChatPage() {
   if (authLoading || loadingRecipient) {
     return (
       <PageContainer title="Loading Chat..." className="flex items-center justify-center min-h-screen">
-        <FiLoader className="animate-spin text-researchbee-yellow text-5xl" />
+        <FiLoader className="animate-spin text-accent-primary text-5xl" />
       </PageContainer>
     );
   }
@@ -77,11 +77,11 @@ export default function ChatPage() {
   if (error) {
     return (
       <PageContainer title="Error" className="flex flex-col items-center justify-center min-h-screen">
-        <div className="glass-card p-8 rounded-xl shadow-lg text-center max-w-md">
-          <FiAlertCircle className="mx-auto text-red-400 text-5xl mb-4" />
-          <h2 className="text-2xl font-semibold text-white mb-2">Error Loading Chat</h2>
-          <p className="text-gray-300 mb-6">{error}</p>
-          <Button variant="outline" onClick={() => router.back()} className="border-researchbee-yellow text-researchbee-yellow hover:bg-researchbee-yellow/10">
+        <div className="bg-surface-primary border border-border-medium p-8 rounded-md text-center max-w-md">
+          <FiAlertCircle className="mx-auto text-red-500 text-5xl mb-4" />
+          <h2 className="text-2xl font-semibold text-text-primary mb-2">Error Loading Chat</h2>
+          <p className="text-text-secondary mb-6">{error}</p>
+          <Button variant="outline" onClick={() => router.back()}>
             <FiArrowLeft className="mr-2" /> Go Back
           </Button>
         </div>
@@ -94,11 +94,11 @@ export default function ChatPage() {
     // but as a fallback or if user logs out during load:
     return (
         <PageContainer title="Chat Unavailable" className="flex flex-col items-center justify-center min-h-screen">
-            <div className="glass-card p-8 rounded-xl shadow-lg text-center max-w-md">
-                <FiAlertCircle className="mx-auto text-gray-500 text-5xl mb-4" />
-                <h2 className="text-2xl font-semibold text-white">Chat Not Available</h2>
-                <p className="text-gray-300 mb-6">Could not load chat details. Please try again or ensure you are logged in.</p>
-                <Button variant="primary" onClick={() => router.push('/discover')} className="bg-researchbee-yellow hover:bg-researchbee-darkyellow text-black">
+            <div className="bg-surface-primary border border-border-medium p-8 rounded-md text-center max-w-md">
+                <FiAlertCircle className="mx-auto text-text-muted text-5xl mb-4" />
+                <h2 className="text-2xl font-semibold text-text-primary">Chat Not Available</h2>
+                <p className="text-text-secondary mb-6">Could not load chat details. Please try again or ensure you are logged in.</p>
+                <Button variant="primary" onClick={() => router.push('/discover')}>
                     Back to Discover
                 </Button>
             </div>

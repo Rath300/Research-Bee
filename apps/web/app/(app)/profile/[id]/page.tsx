@@ -221,19 +221,19 @@ export default function ProfilePage() {
   
   if (isLoading || (userId === 'me' && !user && !error)) {
     return (
-      <div className="min-h-[calc(100vh-150px)] flex flex-col items-center justify-center text-neutral-100 p-6">
-        <FiLoader className="animate-spin text-accent-purple text-5xl mb-4" />
-        <p className="text-neutral-400">Loading profile...</p>
+      <div className="min-h-[calc(100vh-150px)] flex flex-col items-center justify-center text-text-primary p-6">
+        <FiLoader className="animate-spin text-accent-primary text-5xl mb-4" />
+        <p className="text-text-muted">Loading profile...</p>
       </div>
     );
   }
   
   if (!profile && error) { // Show error page if there's an error AND profile is not loaded
     return (
-      <div className="min-h-[calc(100vh-150px)] flex flex-col items-center justify-center text-neutral-100 p-6 text-center">
+      <div className="min-h-[calc(100vh-150px)] flex flex-col items-center justify-center text-text-primary p-6 text-center">
         <FiAlertTriangle size={48} className="text-red-500 mb-4" />
-        <h1 className="text-2xl font-heading text-neutral-100 mb-2">Profile Error</h1>
-        <p className="text-neutral-400 mb-6">{error || 'The requested profile could not be found or an error occurred.'}</p>
+        <h1 className="text-2xl font-heading text-text-primary mb-2">Profile Error</h1>
+        <p className="text-text-secondary mb-6">{error || 'The requested profile could not be found or an error occurred.'}</p>
         <Button variant="secondary" onClick={() => router.push('/discover')}>Back to Discover</Button>
       </div>
     );
@@ -241,10 +241,10 @@ export default function ProfilePage() {
 
   if (!profile && !isLoading) { // If not loading, and no specific error message, but profile is null
     return (
-      <div className="min-h-[calc(100vh-150px)] flex flex-col items-center justify-center text-neutral-100 p-6 text-center">
+      <div className="min-h-[calc(100vh-150px)] flex flex-col items-center justify-center text-text-primary p-6 text-center">
         <FiAlertTriangle size={48} className="text-yellow-500 mb-4" />
-        <h1 className="text-2xl font-heading text-neutral-100 mb-2">Profile Unavailable</h1>
-        <p className="text-neutral-400 mb-6">This profile could not be loaded. It may not exist or there was a temporary issue.</p>
+        <h1 className="text-2xl font-heading text-text-primary mb-2">Profile Unavailable</h1>
+        <p className="text-text-secondary mb-6">This profile could not be loaded. It may not exist or there was a temporary issue.</p>
         <Button variant="secondary" onClick={() => router.push('/discover')}>Back to Discover</Button>
       </div>
     );
@@ -252,17 +252,17 @@ export default function ProfilePage() {
  
   if (!profile) { // Final fallback if profile is still null after loading and error checks
     return (
-        <div className="min-h-[calc(100vh-150px)] flex flex-col items-center justify-center text-neutral-100 p-6">
-            <FiLoader className="animate-spin text-accent-purple text-5xl mb-4" />
-            <p className="text-neutral-400">Preparing profile data...</p>
+        <div className="min-h-[calc(100vh-150px)] flex flex-col items-center justify-center text-text-primary p-6">
+            <FiLoader className="animate-spin text-accent-primary text-5xl mb-4" />
+            <p className="text-text-muted">Preparing profile data...</p>
         </div>
     );
   }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
-      <Card className="bg-white border border-border-light shadow-xl overflow-hidden rounded-lg">
-        <div className="h-40 md:h-48 bg-gray-100" />
+      <Card className="bg-surface-primary border border-border-medium overflow-hidden rounded-md">
+        <div className="h-40 md:h-48 bg-surface-secondary" />
 
         <div className="px-6 sm:px-8 pb-8">
           <div className="relative flex flex-col sm:flex-row sm:items-end sm:space-x-5 -mt-16 sm:-mt-20">
@@ -380,10 +380,10 @@ export default function ProfilePage() {
 
                 {profile.interests && profile.interests.length > 0 && (
                   <div className="pt-4">
-                    <h3 className="text-lg font-semibold text-neutral-200 mb-2 font-heading">Interests</h3>
+                    <h3 className="text-lg font-semibold text-text-primary mb-2 font-heading">Interests</h3>
                     <div className="flex flex-wrap gap-2">
                       {profile.interests.map((interest) => (
-                        <span key={interest} className="px-3 py-1 bg-neutral-700 text-neutral-300 text-xs rounded-full font-sans">
+                        <span key={interest} className="px-2 py-1 bg-accent-soft text-accent-primary text-xs rounded-sm font-sans border border-border-light">
                           {interest}
                         </span>
                       ))}

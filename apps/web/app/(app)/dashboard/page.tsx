@@ -86,12 +86,12 @@ const ActivityFeed = ({ notifications }: { notifications: UserNotification[] }) 
   return (
     <div className="mb-6 md:mb-8">
       <div className="flex items-center mb-4">
-        <div className="p-2 bg-text-secondary/10 rounded-lg mr-3 shadow">
+        <div className="p-2 bg-accent-soft rounded-md mr-3">
           <FiActivity className="w-5 h-5 text-accent-primary" />
         </div>
         <h3 className="text-xl font-heading text-text-primary">Recent Activity</h3>
       </div>
-      <div className="font-sans text-text-secondary bg-white p-5 md:p-6 rounded-xl shadow-md border border-border-light min-h-[200px]">
+      <div className="font-sans text-text-secondary bg-surface-primary p-5 md:p-6 rounded-md border border-border-medium min-h-[200px]">
         {hasActualActivity ? (
           <motion.ul
             variants={{ 
@@ -166,7 +166,7 @@ const CollaborationStatsDisplay = ({ stats }: { stats: DashboardStats }) => {
           </div>
         );
 
-        const kpiBlockClasses = "block p-3 md:p-4 bg-white rounded-lg shadow-md hover:bg-gray-50 border border-border-light transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 cursor-pointer";
+        const kpiBlockClasses = "block p-3 md:p-4 bg-surface-primary rounded-md hover:bg-surface-hover border border-border-medium transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 cursor-pointer";
 
         return item.href ? (
           <Link href={item.href} key={item.label} className={kpiBlockClasses}>
@@ -188,16 +188,16 @@ const RecentMatchesDisplay = ({ matches }: { matches: ProfileMatch[] }) => {
   return (
     <div className="mb-6 md:mb-8">
       <div className="flex items-center mb-4">
-        <div className="p-2 bg-text-secondary/10 rounded-lg mr-3 shadow">
+        <div className="p-2 bg-accent-soft rounded-md mr-3">
           <FiUsers className="w-5 h-5 text-accent-primary" />
         </div>
         <h3 className="text-xl font-heading text-text-primary">Recent Matches</h3>
       </div>
-      <div className="font-sans text-text-secondary bg-white p-5 md:p-6 rounded-xl shadow-md border border-border-light">
+      <div className="font-sans text-text-secondary bg-surface-primary p-5 md:p-6 rounded-md border border-border-medium">
         {matches.length > 0 ? (
           <ul className="space-y-3">
             {matches.map(match => (
-              <li key={match.id} className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-50 transition-colors">
+              <li key={match.id} className="flex items-center space-x-3 p-2 rounded-md hover:bg-surface-hover transition-colors">
                 <Avatar src={match.matched_profile?.avatar_url} alt={titleCase(match.matched_profile?.full_name) || 'User'} size="sm" fallback={<FiUser size={18}/>} />
                 <div>
                   <Link href={`/profile/${match.matchee_user_id}`} className="font-sans font-medium text-text-primary hover:underline">
@@ -323,8 +323,8 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-bg-primary">
-        <FiLoader className="animate-spin text-accent-purple text-4xl" />
-        <p className="text-neutral-400 font-sans ml-3">Loading dashboard...</p>
+        <FiLoader className="animate-spin text-accent-primary text-4xl" />
+        <p className="text-text-muted font-sans ml-3">Loading dashboard...</p>
       </div>
     );
   }

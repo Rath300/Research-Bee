@@ -267,28 +267,28 @@ export function ProfileForm({ initialData, onProfileUpdate }: ProfileFormProps) 
     );
   };
 
-  const commonLabelClass = "block text-sm font-medium text-gray-200 mb-1.5";
-  const commonInputClass = "w-full bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-500 focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm";
-  const tagClass = "flex items-center bg-indigo-600/80 text-white px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm border border-indigo-500/60 shadow-sm";
-  const tagRemoveButtonClass = "ml-2 text-indigo-200 hover:text-white focus:outline-none";
+  const commonLabelClass = "block text-sm font-medium text-text-primary mb-1.5";
+  const commonInputClass = "w-full bg-surface-primary border-border-medium text-text-primary placeholder-text-muted focus:ring-accent-primary focus:border-accent-primary rounded-md";
+  const tagClass = "flex items-center bg-accent-soft text-accent-primary px-2 py-1 rounded-sm text-xs font-medium border border-border-light";
+  const tagRemoveButtonClass = "ml-2 text-accent-primary hover:text-text-primary focus:outline-none";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 text-neutral-100">
+    <form onSubmit={handleSubmit} className="space-y-8 text-text-primary">
       <div className="flex flex-col items-center space-y-4">
         <div className="relative">
-          <div className="w-32 h-32 rounded-full bg-neutral-700/50 backdrop-blur-md border border-neutral-600/50 flex items-center justify-center overflow-hidden shadow-lg">
+          <div className="w-32 h-32 rounded-full bg-surface-secondary border border-border-medium flex items-center justify-center overflow-hidden">
             <Avatar 
               src={avatarPreview} 
               alt="Profile Avatar" 
               size="xl"
-              fallback={<FiUser className="text-gray-400" size={60} />}
+              fallback={<FiUser className="text-text-muted" size={60} />}
             />
           </div>
            <Button
             type="button"
-            variant="glass"
+            variant="secondary"
             size="sm"
-            className="absolute -bottom-2 -right-2 !p-2 rounded-full shadow-md bg-neutral-800 hover:bg-neutral-700 border border-neutral-600"
+            className="absolute -bottom-2 -right-2 !p-2 rounded-full border border-border-medium"
             onClick={() => fileInputRef.current?.click()}
             aria-label="Change profile photo"
           >
@@ -352,7 +352,7 @@ export function ProfileForm({ initialData, onProfileUpdate }: ProfileFormProps) 
           <label htmlFor="availability" className={commonLabelClass}>Availability</label>
           <Select value={formData.availability} onValueChange={(value) => handleSelectChange('availability', value)}>
             <SelectTrigger className={commonInputClass} id="availability"><SelectValue placeholder="Select availability" /></SelectTrigger>
-            <SelectContent className="bg-neutral-800 border-neutral-700 text-neutral-100">
+            <SelectContent className="bg-surface-primary border-border-medium text-text-primary">
               <SelectItem value="full-time">Full-time</SelectItem>
               <SelectItem value="part-time">Part-time</SelectItem>
               <SelectItem value="weekends">Weekends only</SelectItem>
@@ -368,7 +368,7 @@ export function ProfileForm({ initialData, onProfileUpdate }: ProfileFormProps) 
         <label htmlFor="project_preference" className={commonLabelClass}>Project Preference</label>
         <Select value={formData.project_preference} onValueChange={(value) => handleSelectChange('project_preference', value)}>
           <SelectTrigger className={commonInputClass} id="project_preference"><SelectValue placeholder="Select project preference" /></SelectTrigger>
-          <SelectContent className="bg-neutral-800 border-neutral-700 text-neutral-100">
+          <SelectContent className="bg-surface-primary border-border-medium text-text-primary">
             <SelectItem value="remote">Remote</SelectItem>
             <SelectItem value="local">Local</SelectItem>
             <SelectItem value="hybrid">Hybrid</SelectItem>
@@ -405,22 +405,22 @@ export function ProfileForm({ initialData, onProfileUpdate }: ProfileFormProps) 
         <label htmlFor="visibility" className={commonLabelClass}>Profile Visibility</label>
         <Select value={formData.visibility} onValueChange={(value) => handleSelectChange('visibility', value)}>
           <SelectTrigger className={commonInputClass} id="visibility"><SelectValue placeholder="Select visibility" /></SelectTrigger>
-          <SelectContent className="bg-neutral-800 border-neutral-700 text-neutral-100">
+          <SelectContent className="bg-surface-primary border-border-medium text-text-primary">
             <SelectItem value="public">Public (Visible to everyone)</SelectItem>
             <SelectItem value="private">Private (Only you can see)</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      <div className="pt-6 border-t border-neutral-800">
+      <div className="pt-6 border-t border-border-light">
         {error && (
-          <div className="mb-4 flex items-center text-red-400 bg-red-900/30 p-3 rounded-md border border-red-700/50">
+          <div className="mb-4 flex items-center text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
             <FiAlertCircle className="mr-2 flex-shrink-0" size={20}/> 
             <span className="text-sm">{error}</span>
           </div>
         )}
         {success && (
-          <div className="mb-4 flex items-center text-green-300 bg-green-800/30 p-3 rounded-md border border-green-600/50">
+          <div className="mb-4 flex items-center text-accent-primary bg-accent-soft p-3 rounded-md border border-border-light">
             <FiCheckCircle className="mr-2 flex-shrink-0" size={20}/> 
             <span className="text-sm">{success}</span>
           </div>

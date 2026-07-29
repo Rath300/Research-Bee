@@ -56,8 +56,8 @@ export default function ExternalResearchPage() {
   };
 
   // Basic styling classes - can be refined with Tamagui or specific CSS
-  const commonLabelClass = "block text-sm font-medium text-neutral-300 mb-1.5 font-sans";
-  const inputBaseClass = "flex h-10 w-full rounded-md border border-neutral-700 bg-neutral-800 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50 font-sans";
+  const commonLabelClass = "block text-sm font-medium text-text-primary mb-1.5 font-sans";
+  const inputBaseClass = "flex h-10 w-full rounded-md border border-border-medium bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary disabled:cursor-not-allowed disabled:opacity-50 font-sans";
 
   return (
     <PageContainer title="External Research Discovery" className="bg-bg-primary min-h-screen text-text-primary font-sans">
@@ -72,7 +72,7 @@ export default function ExternalResearchPage() {
           </p>
         </header>
 
-        <div className="bg-white border border-border-light rounded-lg shadow-xl p-6 mb-8">
+        <div className="bg-surface-primary border border-border-medium rounded-md p-6 mb-8">
           <div className="mb-4">
             <Label htmlFor="searchQuery" className={commonLabelClass}>Search Query</Label>
             <Input
@@ -89,14 +89,14 @@ export default function ExternalResearchPage() {
             <Label className={commonLabelClass}>Data Sources</Label>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
               {availableSources.map(source => (
-                <div key={source.id} className="flex items-center space-x-2 bg-neutral-800/50 p-3 rounded-md border border-neutral-700 hover:border-accent-purple transition-colors">
+                <div key={source.id} className="flex items-center space-x-2 bg-surface-secondary p-3 rounded-md border border-border-light hover:border-border-medium transition-colors">
                   <Checkbox
                     id={`source-${source.id}`}
                     checked={selectedSources.includes(source.id)}
                     onCheckedChange={() => handleSourceChange(source.id)}
-                    className="border-neutral-600 data-[state=checked]:bg-accent-purple data-[state=checked]:border-accent-purple"
+                    className="border-border-medium data-[state=checked]:bg-accent-primary data-[state=checked]:border-accent-primary"
                   />
-                  <Label htmlFor={`source-${source.id}`} className="text-sm font-sans text-neutral-200 cursor-pointer">
+                  <Label htmlFor={`source-${source.id}`} className="text-sm font-sans text-text-primary cursor-pointer">
                     {source.name}
                   </Label>
                 </div>
@@ -107,7 +107,7 @@ export default function ExternalResearchPage() {
           <Button 
             onClick={handleSearch}
             disabled={isLoading}
-            className="w-full font-sans bg-accent-purple hover:bg-accent-purple/90 text-white focus-visible:ring-accent-purple/80"
+            className="w-full font-sans"
           >
             {isLoading ? (
               <><FiLoader className="animate-spin mr-2" /> Searching...</>
@@ -130,7 +130,7 @@ export default function ExternalResearchPage() {
         {isLoading && (
           <div className="text-center py-10">
             <FiLoader className="animate-spin text-accent-primary text-5xl mx-auto mb-4" />
-            <p className="text-neutral-400 font-sans">Fetching results from external sources...</p>
+            <p className="text-text-secondary font-sans">Fetching results from external sources...</p>
           </div>
         )}
 
@@ -138,19 +138,19 @@ export default function ExternalResearchPage() {
           <div className="space-y-6">
             <h2 className="text-2xl font-heading text-text-primary mb-4">Search Results ({papers.length})</h2>
             {papers.map((paper) => (
-              <div key={paper.id} className="bg-white border border-border-light rounded-lg shadow-lg p-5 hover:border-border-medium transition-colors">
+              <div key={paper.id} className="bg-surface-primary border border-border-medium rounded-md p-5 hover:bg-surface-hover transition-colors">
                                   <h3 className="text-lg font-semibold font-heading text-accent-primary mb-1">{paper.title}</h3>
                 {paper.abstract && (
-                  <p className="text-sm text-neutral-400 mb-3 line-clamp-3 font-sans">{paper.abstract}</p>
+                  <p className="text-sm text-text-secondary mb-3 line-clamp-3 font-sans">{paper.abstract}</p>
                 )}
                 <div className="flex flex-wrap gap-3 items-center">
                   {paper.pdf_url && (
-                    <a href={paper.pdf_url} target="_blank" rel="noopener noreferrer" className="text-sm font-sans text-green-400 hover:text-green-300 hover:underline transition-colors">
+                    <a href={paper.pdf_url} target="_blank" rel="noopener noreferrer" className="text-sm font-sans text-accent-primary hover:text-accent-primary-hover hover:underline transition-colors">
                       Download PDF
                     </a>
                   )}
                   {paper.doi && (
-                    <a href={`https://doi.org/${paper.doi}`} target="_blank" rel="noopener noreferrer" className="text-sm font-sans text-blue-400 hover:text-blue-300 hover:underline transition-colors">
+                    <a href={`https://doi.org/${paper.doi}`} target="_blank" rel="noopener noreferrer" className="text-sm font-sans text-text-secondary hover:text-text-primary hover:underline transition-colors">
                       View DOI
                     </a>
                   )}
@@ -165,9 +165,9 @@ export default function ExternalResearchPage() {
         
         {!isLoading && !error && papers.length === 0 && searchQuery && (
              <div className="text-center py-12">
-                <FiBookOpen className="mx-auto text-6xl text-neutral-600 mb-4" />
-                <h2 className="text-xl font-heading text-neutral-300 mb-2">No Results Found</h2>
-                <p className="text-neutral-500 font-sans">Try adjusting your search query or selecting different data sources.</p>
+                <FiBookOpen className="mx-auto text-6xl text-text-muted mb-4" />
+                <h2 className="text-xl font-heading text-text-primary mb-2">No Results Found</h2>
+                <p className="text-text-secondary font-sans">Try adjusting your search query or selecting different data sources.</p>
             </div>
         )}
       </div>

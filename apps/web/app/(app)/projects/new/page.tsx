@@ -54,9 +54,9 @@ function formatFileSize(bytes: number): string {
 }
 
 function getFileIcon(fileType: string): React.ReactElement {
-  if (fileType.startsWith('image/')) return <FiFilePlus className="text-blue-400" />;
-  if (fileType === 'application/pdf') return <FiFileText className="text-red-400" />;
-  return <FiFile className="text-neutral-400" />;
+  if (fileType.startsWith('image/')) return <FiFilePlus className="text-accent-primary" />;
+  if (fileType === 'application/pdf') return <FiFileText className="text-accent-primary" />;
+  return <FiFile className="text-text-muted" />;
 }
 
 export default function NewProjectPage() {
@@ -198,16 +198,16 @@ export default function NewProjectPage() {
   };
 
   const commonLabelClass = "block text-sm font-medium text-text-primary mb-1.5 font-sans";
-  const tagItemClass = "flex items-center bg-text-secondary/10 text-text-secondary px-3 py-1.5 rounded-full text-xs font-sans shadow-sm transition-all hover:bg-text-secondary/20";
+  const tagItemClass = "flex items-center bg-accent-soft text-text-secondary px-3 py-1.5 rounded-sm text-xs font-sans transition-all hover:bg-surface-active";
   const tagRemoveButtonClass = "ml-2 text-text-secondary hover:text-text-primary focus:outline-none transition-colors";
-  const inputBaseClass = "flex h-10 w-full rounded-md border border-border-light bg-white px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-50 font-sans";
+  const inputBaseClass = "flex h-10 w-full rounded-md border border-border-medium bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary disabled:cursor-not-allowed disabled:opacity-50 font-sans";
   const textareaBaseClass = inputBaseClass.replace('h-10', 'min-h-[80px]');
 
   if (authLoading) {
     return (
       <div className="bg-bg-primary min-h-screen text-text-primary flex items-center justify-center font-sans">
         <div className="flex flex-col items-center">
-          <FiLoader className="animate-spin text-neutral-500 text-5xl mb-4" />
+          <FiLoader className="animate-spin text-accent-primary text-5xl mb-4" />
           <p className="text-xl">Loading...</p>
         </div>
       </div>
@@ -221,7 +221,7 @@ export default function NewProjectPage() {
       className="bg-bg-primary min-h-screen text-text-primary font-sans p-4 sm:p-6 lg:p-8"
     >
       <div className="max-w-4xl mx-auto">
-        <Card className="bg-white border border-border-light rounded-lg shadow-xl overflow-hidden">
+        <Card className="bg-surface-primary border border-border-medium rounded-md overflow-hidden">
           <CardHeader className="p-6">
             <CardTitle className="text-2xl font-semibold text-text-primary font-heading">Create New Research Project</CardTitle>
             <CardDescription className="text-text-secondary mt-2">
@@ -329,7 +329,7 @@ export default function NewProjectPage() {
             animate={{ opacity: 1, y: 0 }}
             className="mt-8"
           >
-            <Card className="bg-white border border-border-light rounded-lg shadow-xl">
+            <Card className="bg-surface-primary border border-border-medium rounded-md">
               <CardHeader>
                 <CardTitle className="text-xl font-semibold text-text-primary flex items-center">
                   <FiPaperclip className="mr-3 text-accent-primary" />
@@ -349,12 +349,12 @@ export default function NewProjectPage() {
                   {uploadedFiles.length > 0 ? (
                     <ul className="space-y-3">
                       {uploadedFiles.map(file => (
-                        <li key={file.path} className="flex items-center justify-between bg-neutral-800 p-3 rounded-md">
+                        <li key={file.path} className="flex items-center justify-between bg-surface-secondary border border-border-light p-3 rounded-md">
                           <div className="flex items-center">
-                            <span className="mr-3 text-2xl">{getFileIcon(file.type)}</span>
+                            <span className="mr-3">{getFileIcon(file.type)}</span>
                             <div>
-                              <p className="text-sm font-medium text-neutral-100">{file.name}</p>
-                              <p className="text-xs text-neutral-400">{formatFileSize(file.size)}</p>
+                              <p className="text-sm font-medium text-text-primary">{file.name}</p>
+                              <p className="text-xs text-text-muted">{formatFileSize(file.size)}</p>
                             </div>
                           </div>
                           <Button 
@@ -369,7 +369,7 @@ export default function NewProjectPage() {
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-neutral-500">No files uploaded yet.</p>
+                    <p className="text-sm text-text-muted">No files uploaded yet.</p>
                   )}
                 </div>
               </CardContent>

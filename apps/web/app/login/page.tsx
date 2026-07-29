@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from "@/lib/supabaseClient";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { motion } from 'framer-motion';
 import { useAuthStore } from '@/lib/store';
 
 export default function Login() {
@@ -15,9 +14,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { user, isLoading: authLoading } = useAuthStore();
   const router = useRouter();
-  // supabase is already imported as a singleton
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,121 +22,88 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (signInError) {
-        // Handle Supabase specific errors if needed, e.g., invalid credentials
         console.error("Supabase Sign-In Error:", signInError);
         setError(signInError.message || "Invalid login credentials.");
-        setIsLoading(false); // Stop loading on specific errors
-        return; // Stop execution here
+        setIsLoading(false);
+        return;
       }
 
-      // Wait for Zustand store to update user (AuthProvider will do this)
-      const waitForUser = async () => {
-        let tries = 0;
-        while (!useAuthStore.getState().user && tries < 20) {
-          await new Promise(res => setTimeout(res, 100));
-          tries++;
-        }
-      };
-      await waitForUser();
+      let tries = 0;
+      while (!useAuthStore.getState().user && tries < 20) {
+        await new Promise(res => setTimeout(res, 100));
+        tries++;
+      }
       router.replace('/dashboard');
     } catch (err: any) {
-      // Catch any other unexpected errors during the process
       console.error("Generic Login Error:", err);
       setError(err.message || "An unexpected error occurred. Please try again.");
-      setIsLoading(false); // Ensure loading is stopped on generic errors
+      setIsLoading(false);
     }
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-950">
-        <span className="text-neutral-400 font-sans animate-pulse">Loading...</span>
+      <div className="min-h-screen flex items-center justify-center bg-bg-primary">
+        <span className="text-text-muted font-ui text-sm">Signing in…</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
-      <div className="absolute top-6 left-6 sm:top-8 sm:left-8">
-        <Link href="/" className="font-heading text-2xl font-bold text-neutral-200 hover:text-neutral-100 transition-colors">
-          RESEARCH-BEE
+    <div className="min-h-screen bg-bg-primary flex flex-col items-center justify-center p-4">
+      <div className="absolute top-6 left-6">
+        <Link href="/" className="font-display text-xl font-semibold text-text-primary no-underline hover:text-text-primary">
+          ResearchBee
         </Link>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-sm sm:max-w-md lg:max-w-lg"
-      >
-        <Card className="w-full bg-neutral-950 border-none shadow-none p-4 sm:p-6 lg:p-8">
-          <CardHeader className="text-center mb-6">
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <CardTitle className="font-heading text-2xl sm:text-3xl lg:text-4xl font-semibold text-neutral-100">
-                Sign In
-              </CardTitle>
-              <CardDescription className="mt-2 text-xs sm:text-sm text-neutral-400 font-sans">
-                Welcome back, please enter your details.
-              </CardDescription>
-            </motion.div>
+      <div className="w-full max-w-sm">
+        <Card className="w-full border-border-medium bg-surface-primary p-6">
+          <CardHeader className="text-center mb-2 border-0 pb-0 mb-4">
+            <CardTitle className="font-display text-2xl font-semibold text-text-primary">
+              Sign in
+            </CardTitle>
+            <CardDescription className="mt-1.5 text-sm text-text-muted">
+              Welcome back. Enter your details to continue.
+            </CardDescription>
           </CardHeader>
 
           <CardContent>
             {error && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="p-3 mb-4 bg-red-900/30 border border-red-700/50 rounded-md text-red-300 text-sm"
-              >
+              <div className="p-3 mb-4 bg-red-50 border border-red-200 rounded-md text-accent-error text-sm">
                 {error}
-              </motion.div>
+              </div>
             )}
 
-            <motion.form
-              onSubmit={handleLogin}
-              className="space-y-4 sm:space-y-5"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
+            <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label htmlFor="email" className="sr-only"> 
-                  Email Address
-                </label>
+                <label htmlFor="email" className="label">Email</label>
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder="Email"
-                  className="w-full bg-[#1C1C1C] border border-transparent text-neutral-200 placeholder:text-neutral-500 rounded-md focus:outline-none focus:ring-1 focus:ring-neutral-600 focus:border-neutral-600 transition-colors text-base sm:text-sm"
+                  placeholder="you@university.edu"
                 />
               </div>
 
               <div>
-                <div className="flex items-center justify-end mb-1">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label htmlFor="password" className="label mb-0">Password</label>
                   <Link
                     href="/reset-password"
-                    className="text-xs font-sans text-neutral-400 hover:text-neutral-200 transition-colors"
+                    className="text-xs font-ui text-text-muted hover:text-accent-primary no-underline"
                   >
                     Forgot password?
                   </Link>
                 </div>
-                <label htmlFor="password" className="sr-only">
-                  Password
-                </label>
                 <Input
                   id="password"
                   type="password"
@@ -147,51 +111,27 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="Password"
-                  className="w-full bg-[#1C1C1C] border border-transparent text-neutral-200 placeholder:text-neutral-500 rounded-md focus:outline-none focus:ring-1 focus:ring-neutral-600 focus:border-neutral-600 transition-colors text-base sm:text-sm mb-2"
                 />
               </div>
 
-              <div className="pt-2">
-                <Button
-                  type="submit"
-                  isLoading={isLoading}
-                  isFullWidth={true}
-                  className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-neutral-800 hover:bg-neutral-700 text-neutral-100 font-sans font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-600 focus:ring-offset-2 focus:ring-offset-neutral-950 transition-colors text-base sm:text-sm min-h-[44px] sm:min-h-[48px]"
-                  size="lg"
-                >
-                  Sign In
-                </Button>
-              </div>
-            </motion.form>
+              <Button type="submit" isLoading={isLoading} isFullWidth size="lg">
+                Sign in
+              </Button>
+            </form>
 
-            <motion.div
-              className="text-center mt-6"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <p className="text-sm font-sans text-neutral-400">
-                Don&apos;t have an account?{" "}
-                <Link
-                  href="/signup"
-                  className="font-medium text-neutral-300 hover:text-neutral-100 transition-colors"
-                >
-                  Sign up
-                </Link>
-              </p>
-            </motion.div>
+            <p className="text-center mt-6 text-sm text-text-muted">
+              Don&apos;t have an account?{" "}
+              <Link href="/signup" className="font-medium text-accent-primary hover:text-accent-primary-hover">
+                Sign up
+              </Link>
+            </p>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
 
-      <motion.footer
-        className="absolute bottom-6 text-center w-full text-xs text-neutral-500 font-sans"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-      >
-        &copy; {new Date().getFullYear()} Research-Bee. All rights reserved.
-      </motion.footer>
+      <footer className="absolute bottom-6 text-center w-full text-xs text-text-muted">
+        &copy; {new Date().getFullYear()} ResearchBee
+      </footer>
     </div>
   );
-} 
+}

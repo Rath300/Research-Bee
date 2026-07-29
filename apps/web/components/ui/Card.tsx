@@ -12,9 +12,8 @@ export const Card = ({ children, className, hoverEffect = false, as: Component =
   return (
     <Component
       className={twMerge(
-        'rounded-lg bg-white border border-border-light',
-        'p-4',
-        hoverEffect && 'transition-all duration-200 hover:border-border-medium hover:bg-surface-hover',
+        'rounded-md bg-surface-primary border border-border-medium p-4',
+        hoverEffect && 'transition-colors duration-150 hover:bg-surface-hover',
         className
       )}
     >
@@ -30,7 +29,7 @@ interface CardHeaderProps {
 
 export const CardHeader = ({ children, className }: CardHeaderProps) => {
   return (
-    <div className={twMerge('pb-3 mb-3 border-b border-border-light', className)}>
+    <div className={twMerge('pb-3 mb-3 border-b border-border-medium', className)}>
       {children}
     </div>
   );
@@ -82,8 +81,8 @@ interface CardFooterProps {
 
 export const CardFooter = ({ children, className }: CardFooterProps) => {
   return (
-    <div className={twMerge('pt-3 mt-3 border-t border-border-light flex items-center', className)}>
+    <div className={twMerge('pt-3 mt-3 border-t border-border-medium flex items-center', className)}>
       {children}
     </div>
   );
-}; 
+};

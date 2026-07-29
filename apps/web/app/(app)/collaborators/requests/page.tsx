@@ -26,35 +26,35 @@ type CollaborationRequest = z.infer<typeof collaboratorMatchSchema> & {
 };
 
 const RequestCard = ({ request, onRespond, isSubmitting }: { request: CollaborationRequest, onRespond: (requestId: string, status: 'matched' | 'rejected') => void, isSubmitting: boolean }) => (
-    <Card className="bg-neutral-800 border-neutral-700 shadow-lg overflow-hidden">
+    <Card className="overflow-hidden">
         <CardHeader className="pb-4">
             <div className="flex items-start justify-between">
                 <div>
-                    <CardTitle className="text-xl text-accent-purple mb-1">
+                    <CardTitle className="text-xl text-accent-primary mb-1">
                       Request from: {request.requester_profile?.first_name || ''} {request.requester_profile?.last_name || 'User'}
                     </CardTitle>
-                    <CardDescription className="text-neutral-400 text-sm">
-                      Project: <span className="font-semibold text-neutral-200">{request.research_post?.title || 'General Collaboration'}</span>
+                    <CardDescription className="text-text-secondary text-sm">
+                      Project: <span className="font-semibold text-text-primary">{request.research_post?.title || 'General Collaboration'}</span>
                     </CardDescription>
                 </div>
                 <Avatar
                     src={request.requester_profile?.avatar_url || undefined}
                     alt={`${request.requester_profile?.first_name || ''} ${request.requester_profile?.last_name || 'User'}'s avatar`}
-                    fallback={<FiUser className="w-5 h-5 text-neutral-400" />}
-                    className="w-12 h-12 border-2 border-neutral-600"
+                    fallback={<FiUser className="w-5 h-5 text-text-muted" />}
+                    className="w-12 h-12 border-2 border-border-medium"
                 />
             </div>
         </CardHeader>
         <CardContent>
-            <p className="text-neutral-400 text-xs mb-4">
+            <p className="text-text-muted text-xs mb-4">
               Received: {new Date(request.created_at).toLocaleDateString()}
             </p>
-            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-neutral-700/50">
+            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-border-light">
                 <Button variant="outline" onClick={() => onRespond(request.id, 'rejected')} disabled={isSubmitting}>
                     {isSubmitting ? <FiLoader className="animate-spin mr-2" /> : <FiXCircle className="mr-2" />}
                     Decline
                 </Button>
-                <Button onClick={() => onRespond(request.id, 'matched')} disabled={isSubmitting} className="bg-green-600 hover:bg-green-500 text-white">
+                <Button onClick={() => onRespond(request.id, 'matched')} disabled={isSubmitting} variant="primary">
                     {isSubmitting ? <FiLoader className="animate-spin mr-2" /> : <FiCheckCircle className="mr-2" />}
                     Accept
                 </Button>
@@ -101,7 +101,7 @@ export default function CollaboratorsRequestsPage() {
   if (authLoading || requestsLoading) {
     return (
       <PageContainer title="Collaboration Requests" className="flex items-center justify-center min-h-screen">
-        <FiLoader className="animate-spin text-accent-purple text-5xl" />
+        <FiLoader className="animate-spin text-accent-primary text-5xl" />
       </PageContainer>
     );
   }
@@ -109,14 +109,14 @@ export default function CollaboratorsRequestsPage() {
   if (error) {
     return (
       <PageContainer title="Error" className="flex items-center justify-center min-h-screen">
-        <Card className="w-full max-w-md bg-neutral-800 border-red-700">
+        <Card className="w-full max-w-md border-red-300">
           <CardHeader>
-            <CardTitle className="flex items-center text-red-400">
+            <CardTitle className="flex items-center text-red-600">
               <FiAlertCircle className="mr-2" /> Error Loading Requests
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-neutral-300">{error.message}</p>
+            <p className="text-text-secondary">{error.message}</p>
           </CardContent>
         </Card>
       </PageContainer>
@@ -125,14 +125,14 @@ export default function CollaboratorsRequestsPage() {
 
   return (
     <PageContainer title="Collaboration Requests" className="max-w-3xl mx-auto py-8 px-4">
-      <h1 className="text-3xl font-heading text-neutral-100 mb-8 text-center sm:text-left">
+      <h1 className="text-3xl font-heading text-text-primary mb-8 text-center sm:text-left">
         Collaboration Requests
       </h1>
 
       {!requests || requests.length === 0 ? (
-        <Card className="bg-neutral-800 border-neutral-700 py-12 text-center">
-          <FiInbox className="text-6xl text-neutral-500 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-neutral-100">No Pending Requests</h3>
+        <Card className="py-12 text-center">
+          <FiInbox className="text-6xl text-text-muted mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-text-primary">No Pending Requests</h3>
         </Card>
       ) : (
         <div className="space-y-6">

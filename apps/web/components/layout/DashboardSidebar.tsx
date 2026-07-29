@@ -41,12 +41,12 @@ const NavLink: React.FC<NavLinkProps> = ({ href, icon: Icon, label, isActive, is
       href={href}
       title={isCollapsed ? label : undefined}
       className={cn(
-        'flex items-center h-10 rounded-lg text-sm transition-colors relative',
+        'flex items-center h-10 rounded-md text-sm transition-colors relative',
         isSubItem ? 'pr-3' : 'px-3',
         isSubItem && !isCollapsed ? 'pl-10' : '',
         isActive
-          ? 'bg-accent-primary/10 text-accent-primary font-medium'
-          : 'text-text-primary hover:bg-gray-100 hover:text-accent-primary',
+          ? 'bg-accent-soft text-accent-primary font-medium'
+          : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary',
         isCollapsed ? 'justify-center' : ''
       )}
     >
@@ -84,7 +84,7 @@ const SidebarHeader: React.FC<{ isCollapsed: boolean; children: React.ReactNode 
       leaveFrom="opacity-100"
       leaveTo="opacity-0"
     >
-      <h3 className="px-3 pt-4 pb-2 text-xs font-semibold uppercase text-text-primary">
+      <h3 className="px-3 pt-4 pb-2 text-xs font-semibold uppercase text-text-muted">
         {children}
       </h3>
     </Transition>
@@ -159,17 +159,17 @@ export function DashboardSidebar({ profile, isCollapsed, toggleSidebar }: Sideba
   return (
     <aside
       className={cn(
-        'fixed inset-y-0 left-0 z-30 flex flex-col bg-neutral-950 text-neutral-300 transition-all duration-300 ease-in-out shadow-lg',
+        'fixed inset-y-0 left-0 z-30 flex flex-col bg-surface-secondary text-text-secondary border-r border-border-medium transition-all duration-300 ease-in-out',
         isCollapsed ? 'w-[68px]' : 'w-64'
       )}
     >
-      <div className={cn('flex items-center p-3 border-b border-neutral-800', isCollapsed ? 'justify-center h-[68px]' : 'h-16')}>
+      <div className={cn('flex items-center p-3 border-b border-border-medium', isCollapsed ? 'justify-center h-[68px]' : 'h-16')}>
         {!isCollapsed && (
           <Button 
             variant="ghost" 
             size="sm"
             onClick={toggleSidebar} 
-            className="mr-2 text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 p-2"
+            className="mr-2 text-text-muted hover:text-text-primary hover:bg-surface-hover p-2"
             aria-label="Collapse sidebar"
           >
             <FiChevronsLeft className="h-5 w-5" />
@@ -187,8 +187,8 @@ export function DashboardSidebar({ profile, isCollapsed, toggleSidebar }: Sideba
           leaveTo="opacity-0"
         >
           <div className="ml-3 overflow-hidden">
-            <p className="text-sm font-semibold text-neutral-100 truncate" title={displayName}>{displayName}</p>
-            <p className="text-xs text-neutral-400 truncate" title={displayRole}>{displayRole}</p>
+            <p className="text-sm font-semibold text-text-primary truncate" title={displayName}>{displayName}</p>
+            <p className="text-xs text-text-muted truncate" title={displayRole}>{displayRole}</p>
           </div>
         </Transition>
       </div>
@@ -214,10 +214,10 @@ export function DashboardSidebar({ profile, isCollapsed, toggleSidebar }: Sideba
                 <Disclosure.Button 
                   title={isCollapsed ? "Projects" : undefined}
                   className={cn(
-                    'w-full flex items-center h-10 rounded-lg text-sm font-medium transition-colors',
+                    'w-full flex items-center h-10 rounded-md text-sm font-medium transition-colors',
                     isProjectsActive
-                      ? 'bg-accent-primary/10 text-accent-primary'
-                      : 'text-text-primary hover:bg-gray-100 hover:text-accent-primary',
+                      ? 'bg-accent-soft text-accent-primary'
+                      : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary',
                     isCollapsed ? 'justify-center px-3' : 'px-3 text-left'
                   )}
                 >
@@ -300,7 +300,7 @@ export function DashboardSidebar({ profile, isCollapsed, toggleSidebar }: Sideba
                   );
                 })}
                 {recentChats.length > 3 && (
-                    <Link href="/chats" className="relative flex items-center justify-center w-7 h-7 rounded-full bg-neutral-700 text-neutral-400 text-xs" title={`+${recentChats.length - 3} more chats`}>
+                    <Link href="/chats" className="relative flex items-center justify-center w-7 h-7 rounded-md bg-surface-primary text-text-muted text-xs border border-border-light" title={`+${recentChats.length - 3} more chats`}>
                          +{recentChats.length - 3}
                     </Link>
                 )}
@@ -313,7 +313,7 @@ export function DashboardSidebar({ profile, isCollapsed, toggleSidebar }: Sideba
               {recentChats.slice(0, 3).map((chat) => {
                  const unreadCount = unreadMessages[chat.id] || 0;
                  return (
-                   <Link key={chat.id} href={`/chats/${chat.id}`} className='flex items-center px-3 h-8 rounded-md hover:bg-neutral-800 transition-colors relative'>
+                   <Link key={chat.id} href={`/chats/${chat.id}`} className='flex items-center px-3 h-8 rounded-md hover:bg-surface-hover transition-colors relative'>
                      <Avatar src={chat.avatar_url} alt={chat.name} size="sm" fallback={<FiUser size={16} />} className="mr-2.5" />
                      <Transition
                          as={Fragment}
@@ -325,7 +325,7 @@ export function DashboardSidebar({ profile, isCollapsed, toggleSidebar }: Sideba
                          leaveFrom="opacity-100"
                          leaveTo="opacity-0"
                        >
-                       <span className="text-sm text-neutral-300 truncate flex-grow">{chat.name}</span>
+                       <span className="text-sm text-text-secondary truncate flex-grow">{chat.name}</span>
                      </Transition>
                      {unreadCount > 0 && (
                        <Transition
@@ -347,7 +347,7 @@ export function DashboardSidebar({ profile, isCollapsed, toggleSidebar }: Sideba
                  );
               })}
               {recentChats.length > 3 && (
-                 <Link href="/chats" className='flex items-center px-3 h-8 rounded-md hover:bg-neutral-800 transition-colors'>
+                 <Link href="/chats" className='flex items-center px-3 h-8 rounded-md hover:bg-surface-hover transition-colors'>
                     <Transition
                       as={Fragment}
                       show={!isCollapsed}
@@ -358,11 +358,11 @@ export function DashboardSidebar({ profile, isCollapsed, toggleSidebar }: Sideba
                       leaveFrom="opacity-100"
                       leaveTo="opacity-0"
                     >
-                      <span className="text-sm text-neutral-400 truncate flex-grow pl-7">+{recentChats.length-3} more chats</span>
+                      <span className="text-sm text-text-muted truncate flex-grow pl-7">+{recentChats.length-3} more chats</span>
                     </Transition>
                  </Link>
               )}
-              <Button variant="ghost" size="sm" className='w-full justify-start text-neutral-400 hover:text-neutral-100 px-3 mt-1'>
+              <Button variant="ghost" size="sm" className='w-full justify-start text-text-muted hover:text-text-primary px-3 mt-1'>
                   <FiPlus className='mr-2.5 h-4 w-4' />
                   <Transition
                       as={Fragment}
@@ -381,13 +381,13 @@ export function DashboardSidebar({ profile, isCollapsed, toggleSidebar }: Sideba
           )}
         </nav>
         
-        <div className="mt-auto p-2 border-t border-neutral-800 space-y-2">
+        <div className="mt-auto p-2 border-t border-border-medium space-y-2">
            {isCollapsed && (
              <Button 
                variant="ghost" 
                size="sm"
                onClick={toggleSidebar} 
-               className="w-full h-10 text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700" 
+               className="w-full h-10 text-text-muted hover:text-text-primary hover:bg-surface-hover" 
                aria-label="Expand sidebar"
                title="Expand sidebar"
               >
@@ -398,7 +398,7 @@ export function DashboardSidebar({ profile, isCollapsed, toggleSidebar }: Sideba
              <Button 
                variant="secondary"
                size="md"
-               className='w-full text-neutral-100'
+               className='w-full'
                onClick={() => router.push('/projects/new')}
              >
                <FiFilePlus className="mr-2 h-4 w-4" />
@@ -422,7 +422,7 @@ export function DashboardSidebar({ profile, isCollapsed, toggleSidebar }: Sideba
              size={isCollapsed ? "sm" : "md"}
              onClick={handleLogout}
              className={cn(
-               'w-full flex items-center text-neutral-400 hover:text-red-500 hover:bg-red-900/30 transition-colors',
+               'w-full flex items-center text-text-muted hover:text-red-600 hover:bg-red-50 transition-colors',
                isCollapsed ? 'justify-center h-10' : 'justify-start h-10 px-3'
              )}
              title="Logout"

@@ -52,7 +52,7 @@ export function ChatView({
 
   if (!chatPartner && !isLoadingMessages) {
     return (
-      <div className="h-full flex flex-col items-center justify-center bg-white text-text-secondary p-8">
+      <div className="h-full flex flex-col items-center justify-center bg-surface-primary text-text-secondary p-8">
         <FiMessageSquare size={64} className="mb-4 text-text-secondary"/>
         <p className="text-xl font-heading text-text-primary">Select a conversation</p>
         <p className="mt-1 text-sm">Choose a chat from the sidebar to start messaging.</p>
@@ -62,17 +62,17 @@ export function ChatView({
 
   return (
     <motion.div 
-      className="flex flex-col h-full bg-white"
+      className="flex flex-col h-full bg-surface-primary"
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
     >
       {/* Chat Header */} 
       {chatPartner && (
-        <header className="bg-gray-50 border-b border-border-light p-3 sm:p-4 flex items-center justify-between sticky top-0 z-10">
+        <header className="bg-surface-secondary border-b border-border-medium p-3 sm:p-4 flex items-center justify-between sticky top-0 z-10">
           <div className="flex items-center">
             {onBack && (
-                <Button variant="ghost" size="sm" onClick={onBack} className="mr-2 sm:hidden text-text-secondary hover:bg-gray-100 !p-2 rounded-full">
+                <Button variant="ghost" size="sm" onClick={onBack} className="mr-2 sm:hidden text-text-secondary hover:bg-surface-hover !p-2 rounded-md">
                     <FiArrowLeft size={22} />
                 </Button>
             )}
@@ -86,11 +86,11 @@ export function ChatView({
             <div>
               <h2 className="font-semibold text-base sm:text-lg text-text-primary font-heading truncate max-w-[150px] sm:max-w-xs">{chatPartner.name}</h2>
               <p className="text-xs text-text-secondary font-sans">
-                {chatPartner.isOnline ? <span className='text-green-500'>Online</span> : (chatPartner.lastSeen || 'Offline')}
+                {chatPartner.isOnline ? <span className='text-accent-primary'>Online</span> : (chatPartner.lastSeen || 'Offline')}
               </p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" className="text-text-secondary hover:text-text-primary hover:bg-gray-100 !p-2 rounded-full">
+          <Button variant="ghost" size="sm" className="text-text-secondary hover:text-text-primary hover:bg-surface-hover !p-2 rounded-md">
             <FiInfo size={20} />
           </Button>
         </header>
@@ -98,7 +98,7 @@ export function ChatView({
 
       {/* Messages Area */} 
       <motion.div 
-        className="flex-grow p-4 sm:p-6 space-y-2 overflow-y-auto bg-white"
+        className="flex-grow p-4 sm:p-6 space-y-2 overflow-y-auto bg-bg-primary"
         variants={containerVariants}
         initial="hidden"
         animate="visible"

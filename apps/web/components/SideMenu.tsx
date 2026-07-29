@@ -127,13 +127,13 @@ export default function SideMenu() {
     }
   };
 
-  const commonLinkClass = "flex items-center w-full px-3 py-2.5 rounded-lg transition-all duration-200 ease-in-out group";
-  const activeLinkClass = "bg-purple-600 text-white shadow-md";
-  const inactiveLinkClass = "text-gray-300 hover:bg-white/10 hover:text-white";
-  const iconClass = (isActive: boolean, isHighlight: boolean = false) => 
-    `h-5 w-5 flex-shrink-0 ${isActive || isHighlight ? (isHighlight ? 'text-black group-hover:text-black' : 'text-white') : 'text-gray-400 group-hover:text-white'} transition-colors duration-200`;
-  const labelClass = (isActive: boolean, isHighlight: boolean = false) => 
-    `truncate ${isHighlight? 'text-black group-hover:text-black' : (isActive ? 'text-researchbee-yellow' : 'text-gray-200 group-hover:text-researchbee-yellow')} transition-colors duration-150`;
+  const commonLinkClass = "flex items-center w-full px-3 py-2 rounded-md transition-colors duration-150 ease-in-out group";
+  const activeLinkClass = "bg-accent-soft text-accent-primary";
+  const inactiveLinkClass = "text-text-secondary hover:bg-surface-hover hover:text-text-primary";
+  const iconClass = (isActive: boolean, isHighlight: boolean = false) =>
+    `h-4 w-4 flex-shrink-0 ${isActive || isHighlight ? 'text-accent-primary' : 'text-text-muted group-hover:text-text-primary'} transition-colors duration-150`;
+  const labelClass = (isActive: boolean, isHighlight: boolean = false) =>
+    `truncate text-sm font-ui ${isHighlight || isActive ? 'text-accent-primary' : 'text-text-secondary group-hover:text-text-primary'} transition-colors duration-150`;
 
   interface NavigationItem {
     name: string;
@@ -146,18 +146,19 @@ export default function SideMenu() {
   }
 
   return (
-    <aside 
-      className={`fixed inset-y-0 left-0 z-40 flex flex-col bg-gray-900/70 backdrop-blur-xl border-r border-white/10 shadow-2xl transition-all duration-300 ease-in-out 
-        ${isCollapsed ? 'w-20' : 'w-72'}
+    <aside
+      className={`fixed inset-y-0 left-0 z-40 flex flex-col bg-surface-secondary border-r border-border-medium transition-all duration-200 ease-in-out
+        ${isCollapsed ? 'w-20' : 'w-64'}
         md:translate-x-0 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
     >
-      <div className={`flex items-center border-b border-white/10 ${isCollapsed ? 'justify-center h-[73px]' : 'px-6 h-[73px]'}`}>
-        <Link href="/dashboard" className="flex items-center space-x-3" onClick={() => isMobileOpen && setIsMobileOpen(false)}>
-          <FiStar className={`text-3xl transition-colors duration-300 ${isCollapsed ? 'text-researchbee-yellow' : 'text-purple-500'}`} />
-          {!isCollapsed && (
-            <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-orange-400 whitespace-nowrap">
-              ResearchCollab
+      <div className={`flex items-center border-b border-border-medium ${isCollapsed ? 'justify-center h-12' : 'px-4 h-12'}`}>
+        <Link href="/dashboard" className="flex items-center no-underline" onClick={() => isMobileOpen && setIsMobileOpen(false)}>
+          {!isCollapsed ? (
+            <span className="font-display text-lg font-semibold text-text-primary whitespace-nowrap">
+              ResearchBee
             </span>
+          ) : (
+            <span className="font-display text-sm font-semibold text-accent-primary">RB</span>
           )}
         </Link>
       </div>
@@ -167,41 +168,41 @@ export default function SideMenu() {
         <div className="p-3">
           <div className="relative">
             <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FiSearch className="h-4 w-4 text-gray-400" />
+              <FiSearch className="h-4 w-4 text-text-muted" />
             </span>
             <Input 
               type="text"
               placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-black/20 border-white/10 hover:border-researchbee-yellow/70 focus:border-researchbee-yellow focus:ring-1 focus:ring-researchbee-yellow transition-colors duration-150 placeholder-gray-500 text-sm text-gray-200 !pl-9 !py-2.5 rounded-lg shadow-sm"
+              className="w-full bg-surface-primary border-border-light hover:border-border-medium focus:border-accent-primary focus:ring-1 focus:ring-accent-primary transition-colors duration-150 placeholder:text-text-muted text-sm text-text-primary !pl-9 !py-2.5 rounded-md shadow-sm"
             />
           </div>
         </div>
       )}
 
       {/* Main Navigation */}
-      <nav className="flex-1 space-y-1.5 overflow-y-auto p-3 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800/50">
+      <nav className="flex-1 space-y-1.5 overflow-y-auto p-3 scrollbar-thin scrollbar-thumb-border-medium scrollbar-track-transparent">
         {/* Display filtered items if search term exists, otherwise all items */}
         {(searchTerm ? filteredNavigationItems : navigationItems).map((item) => {
           const isActive = item.href ? (pathname === item.href || (item.href === '/projects' && pathname?.startsWith('/research/'))) : false;
           
           // Common classes for all items
-          let itemBaseClass = `relative flex items-center w-full px-3 py-2.5 rounded-lg transition-all duration-200 ease-in-out group ${isCollapsed ? "justify-center" : ""}`;
+          let itemBaseClass = `relative flex items-center w-full px-3 py-2.5 rounded-md transition-all duration-200 ease-in-out group ${isCollapsed ? "justify-center" : ""}`;
           let itemSpecificClass = "";
 
           if (isActive) {
-            itemSpecificClass = `bg-researchbee-yellow/10 text-researchbee-yellow shadow-md`;
+            itemSpecificClass = `bg-accent-soft text-accent-primary`;
           } else if (item.highlight) {
-            itemSpecificClass = `bg-researchbee-yellow text-black hover:bg-researchbee-darkyellow`;
+            itemSpecificClass = `bg-accent-primary text-text-inverse hover:bg-accent-primary-hover`;
           } else {
-            itemSpecificClass = `text-gray-300 hover:bg-white/5 hover:text-researchbee-yellow`;
+            itemSpecificClass = `text-text-secondary hover:bg-surface-hover hover:text-text-primary`;
           }
           const combinedClasses = `${itemBaseClass} ${itemSpecificClass}`;
 
           // Active indicator style (left border)
           const activeIndicator = isActive ? 
-            <span className="absolute inset-y-0 left-0 w-1 bg-researchbee-yellow rounded-r-md shadow-lg"></span> : null;
+            <span className="absolute inset-y-0 left-0 w-1 bg-accent-primary rounded-r-md shadow-lg"></span> : null;
 
           if (item.type === 'dropdown') {
             return (
@@ -216,13 +217,13 @@ export default function SideMenu() {
                   <item.icon className={`${iconClass(false, false)} ${isCollapsed ? '' : 'mr-3'}`} /> 
                   {!isCollapsed && <span className={labelClass(false, false)}>{item.name}</span>}
                   {!isCollapsed && item.badgeCount && item.badgeCount > 0 && (
-                    <span className="ml-auto px-2 py-0.5 text-xs font-semibold bg-red-500 text-white rounded-full">
+                    <span className="ml-auto px-2 py-0.5 text-xs font-semibold bg-red-500 text-white rounded-sm">
                       {item.badgeCount}
                     </span>
                   )}
                   {!isCollapsed && (showConversations ? 
-                    <FiChevronDown className={`h-5 w-5 ${item.badgeCount ? 'ml-1' : 'ml-auto'} text-gray-400 group-hover:text-white`} /> : 
-                    <FiChevronRight className={`h-5 w-5 ${item.badgeCount ? 'ml-1' : 'ml-auto'} text-gray-400 group-hover:text-white`} />
+                    <FiChevronDown className={`h-5 w-5 ${item.badgeCount ? 'ml-1' : 'ml-auto'} text-text-muted group-hover:text-text-primary`} /> : 
+                    <FiChevronRight className={`h-5 w-5 ${item.badgeCount ? 'ml-1' : 'ml-auto'} text-text-muted group-hover:text-text-primary`} />
                   )}
                 </button>
                 <AnimatePresence>
@@ -232,13 +233,13 @@ export default function SideMenu() {
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.3, ease: "easeInOut" }}
-                      className="mt-1.5 pl-6 pr-1 space-y-1 border-l border-white/20 ml-2.5 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent"
+                      className="mt-1.5 pl-6 pr-1 space-y-1 border-l border-border-light ml-2.5 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-border-medium scrollbar-track-transparent"
                     >
                       {conversationsLoading && (
                         <motion.div 
                           initial={{ opacity: 0}}
                           animate={{ opacity: 1}}
-                          className="p-3 text-xs text-gray-400 flex items-center justify-center space-x-2"
+                          className="p-3 text-xs text-text-muted flex items-center justify-center space-x-2"
                         >
                           <FiLoader className="animate-spin h-4 w-4" /> <span>Loading conversations...</span>
                         </motion.div>
@@ -257,10 +258,10 @@ export default function SideMenu() {
                         <motion.div 
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="p-4 text-center text-gray-400 flex flex-col items-center space-y-2"
+                          className="p-4 text-center text-text-muted flex flex-col items-center space-y-2"
                         >
                           <FiInbox size={30} className="opacity-60"/>
-                          <p className="text-sm font-medium text-gray-300">No Conversations Yet</p>
+                          <p className="text-sm font-medium text-text-secondary">No Conversations Yet</p>
                           <p className="text-xs">Start matching with users to begin chatting.</p>
                         </motion.div>
                       )}
@@ -276,33 +277,33 @@ export default function SideMenu() {
                           >
                             <Link href={`/chat/${convo.matchId}`} passHref>
                               <a 
-                                className={`relative flex items-center w-full px-3 py-2 rounded-lg transition-all duration-150 group 
+                                className={`relative flex items-center w-full px-3 py-2 rounded-md transition-all duration-150 group 
                                   ${pathname === `/chat/${convo.matchId}` 
-                                    ? 'bg-purple-500/20 text-researchbee-yellow' 
-                                    : 'text-gray-400 hover:bg-white/10 hover:text-researchbee-yellow' }`}
+                                    ? 'bg-accent-soft text-accent-primary' 
+                                    : 'text-text-muted hover:bg-surface-hover hover:text-accent-primary' }`}
                                 onClick={() => isMobileOpen && setIsMobileOpen(false)}
                                 title={`${convo.otherUserFirstName || ''} ${convo.otherUserLastName || ''}`.trim() || 'Chat User'}
                               >
                                 {pathname === `/chat/${convo.matchId}` && 
-                                   <span className="absolute inset-y-0 left-0 w-0.5 bg-researchbee-yellow rounded-r-full"></span>}
+                                   <span className="absolute inset-y-0 left-0 w-0.5 bg-accent-primary rounded-r-full"></span>}
                                 <Avatar 
                                   src={convo.otherUserAvatarUrl || null} 
                                   fallback={`${convo.otherUserFirstName?.[0] || 'U'}${convo.otherUserLastName?.[0] || 'N'}`}
                                   alt={(`${convo.otherUserFirstName || ''} ${convo.otherUserLastName || ''}`).trim() || 'User'}
-                                  className="w-7 h-7 mr-2.5 text-xs flex-shrink-0 border border-white/10"
+                                  className="w-7 h-7 mr-2.5 text-xs flex-shrink-0 border border-border-light"
                                 />
                                 <div className="flex-grow overflow-hidden">
-                                  <p className={`text-xs font-medium truncate ${pathname === `/chat/${convo.matchId}` ? 'text-researchbee-yellow' : 'text-gray-200'}`}>
+                                  <p className={`text-xs font-medium truncate ${pathname === `/chat/${convo.matchId}` ? 'text-accent-primary' : 'text-text-primary'}`}>
                                     {(`${convo.otherUserFirstName || ''} ${convo.otherUserLastName || ''}`).trim() || 'Chat User'}
                                   </p>
                                   {convo.lastMessageContent && (
-                                    <p className="text-[11px] text-gray-500 group-hover:text-gray-300 truncate">
+                                    <p className="text-[11px] text-text-muted group-hover:text-text-secondary truncate">
                                       {convo.lastMessageSenderId === user?.id ? <span className="font-semibold">You: </span> : ''}{convo.lastMessageContent}
                                     </p>
                                   )}
                                 </div>
                                 {convo.unreadCount > 0 && (
-                                  <span className="ml-2 px-1.5 py-0.5 text-[10px] font-semibold bg-researchbee-yellow text-black rounded-full flex-shrink-0">
+                                  <span className="ml-2 px-1.5 py-0.5 text-[10px] font-semibold bg-accent-soft text-accent-primary rounded-sm flex-shrink-0">
                                     {convo.unreadCount}
                                   </span>
                                 )}
@@ -328,7 +329,7 @@ export default function SideMenu() {
                   <item.icon className={`${iconClass(Boolean(isActive), Boolean(item.highlight))} ${isCollapsed ? '' : 'mr-3'}`} />
                   {!isCollapsed && <span className={labelClass(Boolean(isActive), Boolean(item.highlight))}>{item.name}</span>}
                   {!isCollapsed && item.badgeCount && item.badgeCount > 0 && (
-                     <span className="ml-auto px-2 py-0.5 text-xs font-semibold bg-red-500 text-white rounded-full">
+                     <span className="ml-auto px-2 py-0.5 text-xs font-semibold bg-red-500 text-white rounded-sm">
                        {item.badgeCount}
                      </span>
                   )}
@@ -340,24 +341,24 @@ export default function SideMenu() {
               })}
           </nav>
 
-      <div className="mt-auto border-t border-white/10 p-3 space-y-3">
+      <div className="mt-auto border-t border-border-medium p-3 space-y-3">
         {!isCollapsed && user && (
           <div className="flex items-center group p-1.5 rounded-md min-w-0">
-            <p className="text-sm text-gray-300 truncate">Welcome, {profile?.first_name || 'User'}</p>
+            <p className="text-sm text-text-secondary truncate">Welcome, {profile?.first_name || 'User'}</p>
           </div>
         )}
         {!isCollapsed && !user && authLoading && (
-           <div className="flex items-center p-1.5 min-w-0"><FiLoader className="animate-spin h-8 w-8 mr-2 text-gray-400" /><div className="overflow-hidden"><p className="text-sm font-semibold text-gray-400">Loading...</p></div></div>
+           <div className="flex items-center p-1.5 min-w-0"><FiLoader className="animate-spin h-8 w-8 mr-2 text-text-muted" /><div className="overflow-hidden"><p className="text-sm font-semibold text-text-muted">Loading...</p></div></div>
         )}
         {!isCollapsed && !user && !authLoading && (
-          <Link href="/login" className="flex items-center group p-1.5 rounded-md hover:bg-white/5" onClick={() => isMobileOpen && setIsMobileOpen(false)}>
-               <FiLogOut className="h-7 w-7 mr-2 text-gray-400 group-hover:text-researchbee-yellow" /><div className="overflow-hidden"><p className="text-sm font-semibold text-gray-300 group-hover:text-researchbee-yellow">Login / Signup</p></div>
+          <Link href="/login" className="flex items-center group p-1.5 rounded-md hover:bg-surface-hover" onClick={() => isMobileOpen && setIsMobileOpen(false)}>
+               <FiLogOut className="h-7 w-7 mr-2 text-text-muted group-hover:text-accent-primary" /><div className="overflow-hidden"><p className="text-sm font-semibold text-text-secondary group-hover:text-accent-primary">Login / Signup</p></div>
           </Link>
         )}
         <div className={`flex items-center ${isCollapsed ? 'flex-col space-y-2' : 'space-x-2'}`}>
           <button 
             onClick={() => setIsCollapsed(!isCollapsed)} 
-            className={`w-full md:w-auto flex items-center justify-center p-2 rounded-lg text-gray-300 hover:bg-white/10 hover:text-researchbee-yellow transition-colors ${isCollapsed ? '' : 'flex-1'}`}
+            className={`w-full md:w-auto flex items-center justify-center p-2 rounded-md text-text-secondary hover:bg-surface-hover hover:text-accent-primary transition-colors ${isCollapsed ? '' : 'flex-1'}`}
             title={isCollapsed ? "Expand Menu" : "Collapse Menu"}
           >
             {isCollapsed ? <FiChevronRight className="h-5 w-5" /> : <FiChevronLeft className="h-5 w-5" />}
@@ -366,7 +367,7 @@ export default function SideMenu() {
           {user && (
             <button
               onClick={handleSignOut}
-              className={`w-full md:w-auto flex items-center justify-center p-2 rounded-lg text-gray-300 hover:bg-red-500/20 hover:text-red-300 transition-colors ${isCollapsed ? '' : 'flex-1'}`}
+              className={`w-full md:w-auto flex items-center justify-center p-2 rounded-md text-text-secondary hover:bg-red-50 hover:text-red-600 transition-colors ${isCollapsed ? '' : 'flex-1'}`}
               title="Logout"
             >
               <FiLogOut className="h-5 w-5" />
@@ -378,7 +379,7 @@ export default function SideMenu() {
 
       <button 
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="md:hidden fixed top-4 right-4 z-50 p-2 bg-gray-800/80 backdrop-blur-sm rounded-md text-white"
+        className="md:hidden fixed top-4 right-4 z-50 p-2 bg-surface-primary border border-border-medium backdrop-blur-sm rounded-md text-text-primary shadow-sm"
       >
         {isMobileOpen ? <FiX className="h-6 w-6" /> : <FiMenu className="h-6 w-6" />}
       </button>

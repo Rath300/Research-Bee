@@ -79,17 +79,17 @@ export function ResearchPostCard({ post, onLike, onBoost }: ResearchPostCardProp
     : description;
 
   return (
-    <Card className="mb-4 overflow-hidden hover:shadow-md transition-shadow duration-200">
+    <Card className="mb-4 overflow-hidden border border-border-medium rounded-md">
       <CardContent className="p-4 space-y-4">
         {/* Post header with user info */}
         <div className="flex items-center space-x-3">
           <Link href={`/profile/${userId}`} className="flex-shrink-0">
-            <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden">
+            <div className="h-10 w-10 rounded-full bg-accent-soft flex items-center justify-center overflow-hidden">
               <Avatar 
                 src={profiles?.avatar_url} 
                 alt={fullName} 
                 size="md" 
-                fallback={<FiUser className="text-primary-600" size={20} />} 
+                fallback={<FiUser className="text-accent-primary" size={20} />} 
               />
             </div>
           </Link>
@@ -137,7 +137,7 @@ export function ResearchPostCard({ post, onLike, onBoost }: ResearchPostCardProp
           {description.length > 300 && (
             <Link 
               href={`/project/${id}`}
-              className="text-sm font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+              className="text-sm font-medium text-accent-primary hover:text-accent-primary-hover"
             >
               Read more
             </Link>
@@ -151,7 +151,7 @@ export function ResearchPostCard({ post, onLike, onBoost }: ResearchPostCardProp
               <Link
                 key={tag}
                 href={`/project?tag=${encodeURIComponent(tag)}`}
-                className="px-2 py-1 bg-text-secondary/10 text-text-secondary text-xs rounded-md flex items-center hover:bg-text-secondary/20"
+                className="px-2 py-1 bg-accent-soft text-text-secondary text-xs rounded-sm flex items-center hover:bg-surface-active"
               >
                 <FiTag size={12} className="mr-1" />
                 {tag}
@@ -161,7 +161,7 @@ export function ResearchPostCard({ post, onLike, onBoost }: ResearchPostCardProp
         )}
       </CardContent>
       
-      <CardFooter className="px-4 py-3 border-t border-border-light bg-gray-50">
+      <CardFooter className="px-4 py-3 border-t border-border-light bg-surface-secondary">
         <div className="flex justify-between w-full">
           <Button 
             variant="ghost" 

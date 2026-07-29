@@ -137,23 +137,23 @@ export function ProfileMatcher() {
     }
   };
 
-  if (loading) return <div className="text-center p-10">Loading profiles...</div>;
-  if (error) return <div className="text-center p-10 text-red-500">Error: {error}</div>;
-  if (!currentProfile) return <div className="text-center p-10">No more profiles to show right now. Check back later!</div>;
+  if (loading) return <div className="text-center p-10 text-text-secondary">Loading profiles...</div>;
+  if (error) return <div className="text-center p-10 text-accent-error">Error: {error}</div>;
+  if (!currentProfile) return <div className="text-center p-10 text-text-secondary">No more profiles to show right now. Check back later!</div>;
 
   const profileName = `${currentProfile.first_name || ''} ${currentProfile.last_name || ''}`.trim() || 'Anonymous User';
   const fallbackText = (currentProfile.first_name?.[0] || 'U') + (currentProfile.last_name?.[0] || '');
 
   return (
     <div className="max-w-md mx-auto p-4">
-      <Card className="overflow-hidden shadow-lg">
-        <CardHeader className="p-0">
-          <div className="w-full h-32 bg-gradient-to-r from-purple-500 to-pink-500" />
+      <Card className="overflow-hidden border-border-medium shadow-soft">
+        <CardHeader className="p-0 border-b-0 mb-0 pb-0">
+          <div className="w-full h-24 bg-accent-soft border-b border-border-light" />
         </CardHeader>
         <CardContent className="p-6 relative">
           <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
             <Avatar 
-              className="w-24 h-24 border-4 border-white shadow-md"
+              className="w-24 h-24 border-2 border-surface-primary"
               src={currentProfile.avatar_url}
               alt={profileName}
               fallback={fallbackText}
@@ -161,25 +161,25 @@ export function ProfileMatcher() {
           </div>
           
           <div className="mt-12 text-center">
-            <CardTitle className="text-2xl font-bold">{profileName}</CardTitle>
-            {currentProfile.institution && <p className="text-sm text-gray-500">{currentProfile.institution}</p>}
+            <CardTitle className="text-2xl font-heading">{profileName}</CardTitle>
+            {currentProfile.institution && <p className="text-sm text-text-secondary mt-1">{currentProfile.institution}</p>}
           </div>
 
           <div className="mt-6">
-            <h3 className="font-semibold text-lg mb-2">Collaboration Pitch:</h3>
-            <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+            <h3 className="font-medium text-text-primary text-sm mb-2">Collaboration Pitch</h3>
+            <p className="text-text-secondary text-sm leading-relaxed whitespace-pre-line">
               {currentProfile.collaboration_pitch || 'No collaboration pitch provided yet.'}
             </p>
           </div>
 
           {currentProfile.interests && currentProfile.interests.length > 0 && (
             <div className="mt-6">
-              <h3 className="font-semibold text-lg mb-2">Interests:</h3>
+              <h3 className="font-medium text-text-primary text-sm mb-2">Interests</h3>
               <div className="flex flex-wrap gap-2">
                 {currentProfile.interests.map((interest: string) => (
                   <span
                     key={interest}
-                    className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium"
+                    className="tag-accent"
                   >
                     {interest}
                   </span>
@@ -189,12 +189,12 @@ export function ProfileMatcher() {
           )}
            {currentProfile.skills && currentProfile.skills.length > 0 && (
             <div className="mt-6">
-              <h3 className="font-semibold text-lg mb-2">Skills:</h3>
+              <h3 className="font-medium text-text-primary text-sm mb-2">Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {currentProfile.skills.map((skill: string) => (
                   <span
                     key={skill}
-                    className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium"
+                    className="tag"
                   >
                     {skill}
                   </span>
@@ -204,12 +204,12 @@ export function ProfileMatcher() {
           )}
 
         </CardContent>
-        <CardFooter className="p-6 bg-gray-50 border-t">
+        <CardFooter className="p-6 bg-surface-secondary border-t border-border-medium mt-0 pt-6">
           <div className="flex w-full justify-between gap-4">
             <Button
               onClick={() => handleMatchDecision(currentProfile.id, 'rejected')}
               variant="outline"
-              className="flex-1 py-3 text-lg"
+              className="flex-1"
               disabled={!currentProfile.id || isDeciding}
             >
               Pass
@@ -217,7 +217,7 @@ export function ProfileMatcher() {
             <Button
               onClick={() => handleMatchDecision(currentProfile.id, 'matched')}
               variant="primary"
-              className="flex-1 py-3 text-lg"
+              className="flex-1"
               disabled={!currentProfile.id || isDeciding}
             >
               Interested
@@ -227,4 +227,4 @@ export function ProfileMatcher() {
       </Card>
     </div>
   );
-} 
+}

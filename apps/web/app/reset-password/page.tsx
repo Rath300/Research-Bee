@@ -7,35 +7,31 @@ import { Input } from '@/components/ui/Input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { FiArrowLeft, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 import { supabase } from '@/lib/supabaseClient';
-import { motion } from 'framer-motion';
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
-  // supabase is already imported as a singleton
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email) {
       setError('Please enter your email address');
       return;
     }
-    
+
     try {
       setIsLoading(true);
       setError('');
-      
+
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/update-password`,
       });
 
-      if (resetError) {
-        throw resetError;
-      }
-      
+      if (resetError) throw resetError;
+
       setIsSuccess(true);
     } catch (err: any) {
       console.error('Reset password error:', err);
@@ -44,120 +40,75 @@ export default function ResetPasswordPage() {
       setIsLoading(false);
     }
   };
-  
+
   return (
-    <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
-      <div className="absolute top-6 left-6 sm:top-8 sm:left-8">
-        <Link href="/" className="font-heading text-2xl font-bold text-neutral-200 hover:text-neutral-100 transition-colors">
-          RESEARCH-BEE 
+    <div className="min-h-screen bg-bg-primary flex flex-col items-center justify-center p-4">
+      <div className="absolute top-6 left-6">
+        <Link href="/" className="font-display text-xl font-semibold text-text-primary no-underline hover:text-text-primary">
+          ResearchBee
         </Link>
       </div>
-        
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-sm sm:max-w-md lg:max-w-lg"
-      >
-        <Card className="w-full bg-neutral-950 border-none shadow-none p-4 sm:p-6 lg:p-8">
-          <CardHeader className="text-center mb-6">
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <CardTitle className="font-heading text-2xl sm:text-3xl lg:text-4xl font-semibold text-neutral-100">
-                Reset your password
-              </CardTitle>
-              <CardDescription className="mt-2 text-xs sm:text-sm text-neutral-400 font-sans">
-                Enter your email and we&apos;ll send a reset link.
-              </CardDescription>
-            </motion.div>
+
+      <div className="w-full max-w-sm">
+        <Card className="w-full border-border-medium bg-surface-primary p-6">
+          <CardHeader className="text-center border-0 pb-0 mb-4">
+            <CardTitle className="font-display text-2xl font-semibold text-text-primary">
+              Reset password
+            </CardTitle>
+            <CardDescription className="mt-1.5 text-sm text-text-muted">
+              Enter your email and we&apos;ll send a reset link.
+            </CardDescription>
           </CardHeader>
-            
+
           <CardContent>
             {isSuccess ? (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="p-4 mb-4 bg-green-900/30 border border-green-700/50 rounded-md text-green-300 text-sm flex items-center space-x-3"
-              >
-                <FiCheckCircle className="h-5 w-5 flex-shrink-0" />
+              <div className="p-4 mb-4 bg-accent-soft border border-border-medium rounded-md text-accent-primary text-sm flex items-start gap-3">
+                <FiCheckCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium">Password reset link sent!</p>
-                  <p className="mt-1 text-xs">Check your email for instructions.</p>
+                  <p className="font-medium">Reset link sent</p>
+                  <p className="mt-1 text-xs text-text-secondary">Check your email for instructions.</p>
                 </div>
-              </motion.div>
+              </div>
             ) : (
-              <motion.form
-                onSubmit={handleSubmit}
-                className="space-y-4 sm:space-y-5"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
+              <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
-                  <div className="p-3 mb-4 bg-red-900/30 border border-red-700/50 rounded-md text-red-300 text-sm flex items-center space-x-2">
-                    <FiAlertCircle className="h-5 w-5 flex-shrink-0" />
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-md text-accent-error text-sm flex items-center gap-2">
+                    <FiAlertCircle className="h-4 w-4 flex-shrink-0" />
                     <span>{error}</span>
                   </div>
                 )}
-                
+
                 <div>
-                  <label htmlFor="email" className="sr-only">Email</label>
+                  <label htmlFor="email" className="label">Email</label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="Work email"
+                    placeholder="you@university.edu"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     autoComplete="email"
-                    className="w-full bg-[#1C1C1C] border border-transparent text-neutral-200 placeholder:text-neutral-500 rounded-md focus:outline-none focus:ring-1 focus:ring-neutral-600 focus:border-neutral-600 transition-colors text-base sm:text-sm"
                   />
                 </div>
-                
-                <div className="pt-2">
-                  <Button
-                    type="submit"
-                    isLoading={isLoading}
-                    isFullWidth
-                    className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-neutral-800 hover:bg-neutral-700 text-neutral-100 font-sans font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-600 focus:ring-offset-2 focus:ring-offset-neutral-950 transition-colors text-base sm:text-sm min-h-[44px] sm:min-h-[48px]"
-                    size="lg"
-                  >
-                    Send reset link
-                  </Button>
-                </div>
-              </motion.form>
+
+                <Button type="submit" isLoading={isLoading} isFullWidth size="lg">
+                  Send reset link
+                </Button>
+              </form>
             )}
-            
-            <motion.div
-              className="text-center mt-6"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <Link 
+
+            <div className="text-center mt-6">
+              <Link
                 href="/login"
-                className="inline-flex items-center text-sm font-sans text-neutral-400 hover:text-neutral-200 transition-colors"
+                className="inline-flex items-center text-sm text-text-muted hover:text-accent-primary no-underline"
               >
                 <FiArrowLeft className="mr-1.5 h-4 w-4" />
                 Back to login
               </Link>
-            </motion.div>
+            </div>
           </CardContent>
         </Card>
-      </motion.div>
-
-      <motion.footer
-        className="absolute bottom-6 text-center w-full text-xs text-neutral-500 font-sans"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-      >
-        &copy; {new Date().getFullYear()} Research-Bee. All rights reserved.
-      </motion.footer>
+      </div>
     </div>
   );
-} 
+}

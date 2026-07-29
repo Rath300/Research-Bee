@@ -38,7 +38,7 @@ export function NotificationsList() {
       case 'collaboration_declined':
         return <FiX className="w-5 h-5 text-red-600" />;
       case 'message':
-        return <FiMessageSquare className="w-5 h-5 text-purple-600" />;
+        return <FiMessageSquare className="w-5 h-5 text-accent-primary" />;
       default:
         return <FiBell className="w-5 h-5 text-text-secondary" />;
     }
@@ -53,15 +53,15 @@ export function NotificationsList() {
       case 'collaboration_declined':
         return 'border-l-red-500 bg-red-50';
       case 'message':
-        return 'border-l-purple-500 bg-purple-50';
+        return 'border-l-accent-primary bg-accent-soft';
       default:
-        return 'border-l-gray-500 bg-gray-50';
+        return 'border-l-border-medium bg-surface-secondary';
     }
   };
 
   if (!notifications || notifications.length === 0) {
     return (
-      <Card className="bg-white border border-border-light shadow-sm">
+      <Card className="bg-surface-primary border border-border-medium">
         <CardHeader>
           <CardTitle className="text-text-primary text-lg font-heading flex items-center gap-2">
             <FiBell className="text-accent-primary" />
@@ -79,7 +79,7 @@ export function NotificationsList() {
   }
 
   return (
-    <Card className="bg-white border border-border-light shadow-sm">
+    <Card className="bg-surface-primary border border-border-medium">
       <CardHeader>
         <CardTitle className="text-text-primary text-lg font-heading flex items-center gap-2">
           <FiBell className="text-accent-primary" />
