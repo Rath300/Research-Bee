@@ -44,7 +44,7 @@
     "turbo-windows-64-x64": "npm:turbo@^2.5.3"
   },
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "packageManager": "pnpm@9.4.0",
   "version": "1.0.0",
