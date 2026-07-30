@@ -2676,24 +2676,13 @@ export const projectRouter = router({
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Only the project owner can view join requests.' });
       }
 
-      // 2. Fetch pending join requests with requester profiles
+      // 2. Fetch pending join requests (user_id FK → auth.users, so no profiles embed)
       const { data: joinRequests, error: requestsError } = await ctx.supabase
         .from('project_collaborators')
-        .select(`
-          id,
-          user_id,
-          role,
-          created_at,
-          profiles!project_collaborators_user_id_fkey(
-            id,
-            first_name,
-            last_name,
-            avatar_url
-          )
-        `)
+        .select('id, user_id, role, created_at')
         .eq('project_id', projectId)
         .eq('status', 'pending')
-        .is('invited_by', null) // Only join requests (not invitations)
+        .is('invited_by', null)
         .order('created_at', { ascending: false });
 
       if (requestsError) {
@@ -2701,21 +2690,29 @@ export const projectRouter = router({
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Failed to fetch join requests.' });
       }
 
-      // 3. Transform the data to match the expected output format
-      const transformedRequests = joinRequests?.map(request => ({
+      const requesterIds = [...new Set((joinRequests || []).map((r) => r.user_id))];
+      const profilesById: Record<
+        string,
+        { id: string; first_name: string | null; last_name: string | null; avatar_url: string | null }
+      > = {};
+
+      if (requesterIds.length > 0) {
+        const { data: profiles } = await ctx.supabase
+          .from('profiles')
+          .select('id, first_name, last_name, avatar_url')
+          .in('id', requesterIds);
+        for (const p of profiles || []) {
+          profilesById[p.id] = p;
+        }
+      }
+
+      return (joinRequests || []).map((request) => ({
         id: request.id,
         user_id: request.user_id,
         role: request.role,
         created_at: request.created_at,
-        requester_profile: request.profiles && Array.isArray(request.profiles) && request.profiles.length > 0 ? {
-          id: request.profiles[0].id,
-          first_name: request.profiles[0].first_name,
-          last_name: request.profiles[0].last_name,
-          avatar_url: request.profiles[0].avatar_url,
-        } : null,
-      })) || [];
-
-      return transformedRequests;
+        requester_profile: profilesById[request.user_id] ?? null,
+      }));
     }),
 });
 

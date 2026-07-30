@@ -54,25 +54,27 @@ export const workspaceRouter = router({
 
       if (error || !data) {
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
+          code: error?.code === '42501' || error?.message?.toLowerCase().includes('policy')
+            ? 'FORBIDDEN'
+            : 'INTERNAL_SERVER_ERROR',
           message: error?.message || 'Failed to create workspace.',
         });
       }
 
-      const { error: memberError } = await ctx.supabase.from('workspace_members').insert({
-        workspace_id: data.id,
-        user_id: ctx.user.id,
-        role: 'owner',
-        invitation_status: 'accepted',
-        joined_at: new Date().toISOString(),
-      });
+      // Trigger handle_new_workspace also inserts owner membership; this is a safe fallback.
+      const { error: memberError } = await ctx.supabase.from('workspace_members').upsert(
+        {
+          workspace_id: data.id,
+          user_id: ctx.user.id,
+          role: 'owner',
+          invitation_status: 'accepted',
+          joined_at: new Date().toISOString(),
+        },
+        { onConflict: 'workspace_id,user_id' }
+      );
 
       if (memberError) {
-        await ctx.supabase.from('workspaces').delete().eq('id', data.id);
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: memberError.message || 'Failed to add workspace owner.',
-        });
+        console.warn('Workspace owner membership upsert warning:', memberError.message);
       }
 
       return data;
@@ -247,17 +249,9 @@ export const workspaceRouter = router({
     .query(async ({ ctx, input }) => {
       await requireAcceptedMember(ctx.supabase, input.workspaceId, ctx.user.id);
 
-      const { data, error } = await ctx.supabase
+      const { data: members, error } = await ctx.supabase
         .from('workspace_members')
-        .select(
-          `
-          user_id,
-          role,
-          joined_at,
-          invitation_status,
-          profile:profiles (id, first_name, last_name, avatar_url, full_name)
-        `
-        )
+        .select('user_id, role, joined_at, invitation_status')
         .eq('workspace_id', input.workspaceId)
         .in('invitation_status', ['accepted', 'pending'])
         .order('joined_at', { ascending: true });
@@ -265,7 +259,21 @@ export const workspaceRouter = router({
       if (error) {
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
       }
-      return data || [];
+
+      const userIds = [...new Set((members || []).map((m) => m.user_id))];
+      const profilesById: Record<string, any> = {};
+      if (userIds.length > 0) {
+        const { data: profiles } = await ctx.supabase
+          .from('profiles')
+          .select('id, first_name, last_name, avatar_url, full_name')
+          .in('id', userIds);
+        for (const p of profiles || []) profilesById[p.id] = p;
+      }
+
+      return (members || []).map((m) => ({
+        ...m,
+        profile: profilesById[m.user_id] ?? null,
+      }));
     }),
 
   listPendingInvitationsForUser: protectedProcedure.query(async ({ ctx }) => {
