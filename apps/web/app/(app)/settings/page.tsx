@@ -11,6 +11,7 @@ import { getProfile } from '@/lib/api';
 import { type Profile as ProfileType } from '@research-collab/db';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Avatar } from '@/components/ui/Avatar';
+import { ProfileCompletenessMeter } from '@/components/profile/ProfileCompletenessMeter';
 
 const ProfileForm = dynamic(() => import('@/components/profile/ProfileForm').then(mod => mod.ProfileForm), {
   loading: () => (
@@ -137,11 +138,15 @@ export default function SettingsPage() {
           </h1>
         </div>
         
+        <div className="mb-6">
+          <ProfileCompletenessMeter profile={profile} showMissing />
+        </div>
+
         <Card className="bg-surface-primary border border-border-medium">
           <CardHeader className="border-b border-border-light pb-4">
             <CardTitle className="text-2xl sm:text-3xl font-heading text-text-primary">Profile Information</CardTitle>
             <CardDescription className="text-text-secondary mt-1 font-sans">
-              Keep your personal details and preferences up to date.
+              Keep your personal details and preferences up to date. Stronger profiles get better matches.
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">

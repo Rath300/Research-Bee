@@ -1,362 +1,302 @@
-"use client";
-export const dynamic = 'force-dynamic';
+'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { useAuthStore } from '@/lib/store';
+import { api } from '@/lib/trpc';
 import { Button } from '@/components/ui/Button';
-import { 
-  FiUsers, 
-  FiMessageSquare, 
-  FiTarget, 
-  FiTrendingUp, 
-  FiSearch, 
-  FiChevronRight, 
-  FiPlus, 
-  FiCalendar, 
-  FiBarChart2,
-  FiBookmark,
-  FiUser,
-  FiMapPin,
-  FiList,
-  FiInfo,
-  FiBell,
-  FiLink,
-  FiActivity,
-  FiBriefcase,
-  FiLink2,
-  FiEdit2,
-  FiFilePlus,
-  FiCheckSquare,
-  FiLoader,
-  FiHome
-} from 'react-icons/fi';
-import { useAuthStore, type AuthState } from '@/lib/store';
-import { Database } from '@/lib/database.types';
-import { supabase } from '@/lib/supabaseClient';
-import { ResearchPostCard } from '@/components/research/ResearchPostCard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { ProfileCompletenessMeter } from '@/components/profile/ProfileCompletenessMeter';
 import { Avatar } from '@/components/ui/Avatar';
-import { getProjects } from '@/lib/posts';
+import {
+  FiSearch,
+  FiHeart,
+  FiMessageSquare,
+  FiBriefcase,
+  FiArrowRight,
+  FiLoader,
+  FiCheckCircle,
+  FiX,
+} from 'react-icons/fi';
+import {
+  getProfileCompleteness,
+  hasCompletedProductOnboarding,
+  isOnboardingBannerDismissed,
+  dismissOnboardingBanner as dismissBannerStorage,
+  isProfileComplete,
+} from '@/lib/profile';
 
-type Profile = Database['public']['Tables']['profiles']['Row'];
-type BaseProfileMatch = Database['public']['Tables']['profile_matches']['Row'];
+export default function HomePage() {
+  const { user, profile } = useAuthStore();
+  const completeness = getProfileCompleteness(profile);
+  const [showOnboardingBanner, setShowOnboardingBanner] = useState(false);
 
-interface ProfileMatch extends BaseProfileMatch {
-  matched_profile: Profile;
-}
+  useEffect(() => {
+    if (!user) return;
+    if (!hasCompletedProductOnboarding() && !isOnboardingBannerDismissed()) {
+      setShowOnboardingBanner(true);
+    }
+  }, [user]);
 
-type UserNotification = Database['public']['Tables']['user_notifications']['Row'];
+  const matchesQuery = api.matching.listMatches.useQuery(undefined, { enabled: !!user });
+  const pendingQuery = api.matching.listPendingIncoming.useQuery(undefined, { enabled: !!user });
+  const conversationsQuery = api.matching.listConversations.useQuery(undefined, { enabled: !!user });
+  const projectsQuery = api.project.listMyProjects.useQuery(undefined, { enabled: !!user });
 
-interface DashboardStats {
-  postCount: number;
-  matchCount: number;
-  messageCount: number;
-  viewCount: number;
-  activeProjectsCount: number;
-  pendingRequestsCount: number;
-  unreadMessagesCount: number;
-}
+  const firstName = profile?.first_name?.trim() || 'there';
 
-function titleCase(str: string | null | undefined): string {
-  if (!str) return '';
-  return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-}
+  const nextSteps = useMemo(() => {
+    const steps: {
+      id: string;
+      title: string;
+      description: string;
+      href: string;
+      cta: string;
+      done?: boolean;
+      priority: number;
+    }[] = [];
 
-const ActivityFeed = ({ notifications }: { notifications: UserNotification[] }) => {
-  const router = useRouter();
-  const hasActualActivity = notifications && notifications.length > 0;
+    if (!isProfileComplete(profile) || completeness.percent < 70) {
+      steps.push({
+        id: 'profile',
+        title: completeness.isGateComplete ? 'Strengthen your profile' : 'Finish your profile',
+        description: completeness.isGateComplete
+          ? `You're at ${completeness.percent}%. Add skills and interests to get better matches.`
+          : 'Add your name and a short bio so others can find you.',
+        href: '/settings',
+        cta: 'Edit profile',
+        priority: 1,
+      });
+    }
 
-  const formatTimeAgo = (dateString?: string | null) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.round((now.getTime() - date.getTime()) / 1000);
-    const minutes = Math.round(seconds / 60);
-    const hours = Math.round(minutes / 60);
-    const days = Math.round(hours / 24);
+    const matchCount = matchesQuery.data?.length ?? 0;
+    if (matchCount === 0) {
+      steps.push({
+        id: 'discover',
+        title: 'Find collaborators',
+        description: 'Browse researchers by field and interests, then connect.',
+        href: '/match',
+        cta: 'Find people',
+        priority: 2,
+      });
+    } else {
+      steps.push({
+        id: 'discover',
+        title: 'Keep discovering',
+        description: 'You already have matches — find more people in your field.',
+        href: '/match',
+        cta: 'Find people',
+        done: true,
+        priority: 4,
+      });
+    }
 
-    if (seconds < 60) return `${seconds}s ago`;
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    return `${days}d ago`;
+    const pending = pendingQuery.data?.length ?? 0;
+    if (pending > 0) {
+      steps.push({
+        id: 'incoming',
+        title: `${pending} people interested in you`,
+        description: 'Review incoming interests and match back to start chatting.',
+        href: '/matches',
+        cta: 'Review matches',
+        priority: 1,
+      });
+    }
+
+    const chats = conversationsQuery.data?.length ?? 0;
+    if (matchCount > 0 && chats === 0) {
+      steps.push({
+        id: 'chat',
+        title: 'Say hello to a match',
+        description: 'Open a conversation and introduce your research interests.',
+        href: '/chats',
+        cta: 'Open chats',
+        priority: 2,
+      });
+    }
+
+    const projects = projectsQuery.data?.length ?? 0;
+    if (projects === 0) {
+      steps.push({
+        id: 'project',
+        title: 'Start or join a project',
+        description: 'Create a project workspace or browse trending opportunities.',
+        href: '/projects/new',
+        cta: 'New project',
+        priority: 3,
+      });
+    }
+
+    return steps.sort((a, b) => a.priority - b.priority).slice(0, 4);
+  }, [
+    profile,
+    completeness.percent,
+    completeness.isGateComplete,
+    matchesQuery.data,
+    pendingQuery.data,
+    conversationsQuery.data,
+    projectsQuery.data,
+  ]);
+
+  const isLoading =
+    matchesQuery.isLoading ||
+    pendingQuery.isLoading ||
+    conversationsQuery.isLoading ||
+    projectsQuery.isLoading;
+
+  const recentMatches = (matchesQuery.data ?? []).slice(0, 3);
+
+  const dismissOnboardingBanner = () => {
+    dismissBannerStorage();
+    setShowOnboardingBanner(false);
   };
 
   return (
-    <div className="mb-6 md:mb-8">
-      <div className="flex items-center mb-4">
-        <div className="p-2 bg-accent-soft rounded-md mr-3">
-          <FiActivity className="w-5 h-5 text-accent-primary" />
-        </div>
-        <h3 className="text-xl font-heading text-text-primary">Recent Activity</h3>
-      </div>
-      <div className="font-sans text-text-secondary bg-surface-primary p-5 md:p-6 rounded-md border border-border-medium min-h-[200px]">
-        {hasActualActivity ? (
-          <motion.ul
-            variants={{ 
-              visible: { transition: { staggerChildren: 0.1 } },
-              hidden: {}
-            }}
-            initial="hidden"
-            animate="visible"
-            className="space-y-3"
-          >
-            {notifications.map((activity) => (
-              <motion.li
-                key={activity.id} 
-                className="font-sans text-sm text-text-secondary hover:text-text-primary transition-colors"
-                variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
-              >
-                {activity.link_to ? (
-                  <Link href={activity.link_to} className="hover:underline">
-                    {activity.content}
-                  </Link>
-                ) : (
-                  <span>{activity.content}</span>
-                )}
-                {' - '}
-                <span className="text-xs text-text-secondary">{formatTimeAgo(activity.created_at)}</span>
-              </motion.li>
-            ))}
-          </motion.ul>
-        ) : (
-          <div className="text-center py-6 font-sans">
-            <p className="text-text-secondary mb-3">No recent activity yet.</p>
-            <Button variant="secondary" size="sm" onClick={() => router.push('/trending')} className="font-sans">
-              <FiSearch className="mr-1"/> Explore Platform
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const CollaborationStatsDisplay = ({ stats }: { stats: DashboardStats }) => {
-  const router = useRouter();
-
-  interface StatDetail {
-    label: string;
-    value: number;
-    icon: React.ElementType;
-    href?: string;
-  }
-
-  const statItems: StatDetail[] = [
-    { label: "Active Projects", value: stats.activeProjectsCount, icon: FiBriefcase, href: "/projects" },
-    { label: "Pending Requests", value: stats.pendingRequestsCount, icon: FiUsers, href: "/collaborators/requests" },
-    { label: "Unread Messages", value: stats.unreadMessagesCount, icon: FiMessageSquare, href: "/chats" },
-  ];
-
-  return (
-    <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-      {statItems.map((item) => {
-        const StatCardContent = (
-          <div className="flex flex-col items-start text-left h-full p-1">
-            <div className="flex items-center w-full">
-              <item.icon className="w-6 h-6 text-accent-primary mr-3 flex-shrink-0" />
-              <p className="text-2xl md:text-3xl font-heading text-text-primary truncate">
-                {item.value}
-              </p>
-            </div>
-            <p className="text-xs text-text-secondary font-sans mt-1 ml-[calc(1.5rem+0.75rem)]"> {/* 24px (w-6) + 12px (mr-3) = 36px */}
-              {item.label}
+    <div className="max-w-4xl mx-auto space-y-8">
+      {showOnboardingBanner && (
+        <div className="rounded-md border border-accent-primary/30 bg-accent-soft px-4 py-3 flex items-start gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-text-primary">Take a 60-second tour</p>
+            <p className="text-xs text-text-secondary mt-0.5">
+              Learn how Find → Match → Chat → Projects works on ResearchBee.
             </p>
+            <div className="mt-2.5 flex flex-wrap gap-2">
+              <Link href="/onboarding/welcome" className="no-underline">
+                <Button size="sm">Start tour</Button>
+              </Link>
+              <Button size="sm" variant="outline" onClick={dismissOnboardingBanner}>
+                Maybe later
+              </Button>
+            </div>
           </div>
-        );
-
-        const kpiBlockClasses = "block p-3 md:p-4 bg-surface-primary rounded-md hover:bg-surface-hover border border-border-medium transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 cursor-pointer";
-
-        return item.href ? (
-          <Link href={item.href} key={item.label} className={kpiBlockClasses}>
-            {StatCardContent}
-          </Link>
-        ) : (
-          <div key={item.label} className={kpiBlockClasses}>
-            {StatCardContent}
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-const RecentMatchesDisplay = ({ matches }: { matches: ProfileMatch[] }) => {
-  const router = useRouter();
-
-  return (
-    <div className="mb-6 md:mb-8">
-      <div className="flex items-center mb-4">
-        <div className="p-2 bg-accent-soft rounded-md mr-3">
-          <FiUsers className="w-5 h-5 text-accent-primary" />
+          <button
+            type="button"
+            onClick={dismissOnboardingBanner}
+            className="p-1 text-text-muted hover:text-text-primary"
+            aria-label="Dismiss"
+          >
+            <FiX size={16} />
+          </button>
         </div>
-        <h3 className="text-xl font-heading text-text-primary">Recent Matches</h3>
+      )}
+
+      <div>
+        <h1 className="font-display text-2xl md:text-3xl font-semibold text-text-primary">
+          Welcome back, {firstName}
+        </h1>
+        <p className="text-sm text-text-muted mt-1.5">
+          Find collaborators, start conversations, and build projects together.
+        </p>
       </div>
-      <div className="font-sans text-text-secondary bg-surface-primary p-5 md:p-6 rounded-md border border-border-medium">
-        {matches.length > 0 ? (
-          <ul className="space-y-3">
-            {matches.map(match => (
-              <li key={match.id} className="flex items-center space-x-3 p-2 rounded-md hover:bg-surface-hover transition-colors">
-                <Avatar src={match.matched_profile?.avatar_url} alt={titleCase(match.matched_profile?.full_name) || 'User'} size="sm" fallback={<FiUser size={18}/>} />
-                <div>
-                  <Link href={`/profile/${match.matchee_user_id}`} className="font-sans font-medium text-text-primary hover:underline">
-                    {titleCase(match.matched_profile?.full_name) || 'Matched User'}
+
+      <div className="grid md:grid-cols-3 gap-4">
+        <div className="md:col-span-2 space-y-3">
+          <h2 className="text-sm font-ui font-medium text-text-muted uppercase tracking-wide">
+            Suggested next steps
+          </h2>
+          {isLoading ? (
+            <div className="flex justify-center py-10">
+              <FiLoader className="animate-spin text-accent-primary text-xl" />
+            </div>
+          ) : (
+            nextSteps.map((step) => (
+              <Card key={step.id} className="border-border-medium">
+                <CardContent className="p-4 flex items-start gap-3">
+                  <div className="mt-0.5 text-accent-primary">
+                    {step.done ? <FiCheckCircle size={18} /> : <FiArrowRight size={18} />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-text-primary">{step.title}</p>
+                    <p className="text-sm text-text-muted mt-0.5">{step.description}</p>
+                  </div>
+                  <Link href={step.href} className="no-underline shrink-0">
+                    <Button size="sm" variant={step.done ? 'outline' : 'primary'}>
+                      {step.cta}
+                    </Button>
                   </Link>
-                  <p className="text-xs text-text-secondary font-sans">Matched on: {new Date(match.created_at).toLocaleDateString()}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <ProfileCompletenessMeter profile={profile} />
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Quick actions</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2">
+              <Link href="/match" className="no-underline">
+                <Button variant="outline" isFullWidth size="sm" className="justify-start">
+                  <FiSearch className="mr-2" /> Find people
+                </Button>
+              </Link>
+              <Link href="/matches" className="no-underline">
+                <Button variant="outline" isFullWidth size="sm" className="justify-start">
+                  <FiHeart className="mr-2" /> My matches
+                </Button>
+              </Link>
+              <Link href="/chats" className="no-underline">
+                <Button variant="outline" isFullWidth size="sm" className="justify-start">
+                  <FiMessageSquare className="mr-2" /> Chats
+                </Button>
+              </Link>
+              <Link href="/projects" className="no-underline">
+                <Button variant="outline" isFullWidth size="sm" className="justify-start">
+                  <FiBriefcase className="mr-2" /> Projects
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-ui font-medium text-text-muted uppercase tracking-wide">
+            Recent matches
+          </h2>
+          <Link href="/matches" className="text-xs text-accent-primary font-medium">
+            View all
+          </Link>
+        </div>
+        {recentMatches.length === 0 ? (
+          <Card>
+            <CardContent className="py-8 text-center text-sm text-text-muted">
+              No matches yet.{' '}
+              <Link href="/match" className="text-accent-primary font-medium">
+                Find people
+              </Link>{' '}
+              to get started.
+            </CardContent>
+          </Card>
         ) : (
-          <p className="text-text-secondary py-4 text-center">No recent matches yet.</p>
+          <ul className="space-y-2">
+            {recentMatches.map(({ profile: p, matchId }) => {
+              const name =
+                [p.first_name, p.last_name].filter(Boolean).join(' ') || p.full_name || 'Researcher';
+              return (
+                <li key={p.id}>
+                  <Link
+                    href={matchId ? `/chats?matchId=${matchId}` : '/chats'}
+                    className="flex items-center gap-3 p-3 rounded-md border border-border-medium bg-surface-primary hover:bg-surface-hover no-underline"
+                  >
+                    <Avatar src={p.avatar_url} alt={name} size="sm" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-text-primary truncate">{name}</p>
+                      <p className="text-xs text-text-muted truncate">
+                        {p.title || p.institution || 'Matched'}
+                      </p>
+                    </div>
+                    <span className="text-xs text-accent-primary font-medium">Message</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         )}
-        <Link href="/match" className="block mt-4 text-sm text-accent-primary hover:text-accent-primary/80 font-sans hover:underline">
-          Find New Collaborators
-        </Link>
       </div>
     </div>
-  );
-};
-
-export default function DashboardPage() {
-  const router = useRouter();
-  const { user, profile } = useAuthStore() as AuthState;
-  const [stats, setStats] = useState<DashboardStats>({
-    postCount: 0,
-    matchCount: 0,
-    messageCount: 0,
-    viewCount: 0,
-    activeProjectsCount: 0,
-    pendingRequestsCount: 0,
-    unreadMessagesCount: 0
-  });
-  
-  const [recentMatches, setRecentMatches] = useState<ProfileMatch[]>([]);
-  const [recentNotifications, setRecentNotifications] = useState<UserNotification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // supabase is already imported as a singleton
-  
-  const loadDashboardData = useCallback(async () => {
-    if (!user) {
-      setIsLoading(false);
-      return;
-    }
-    setIsLoading(true);
-    
-    try {
-      const userId = user.id;
-
-      // Define all data fetching promises together
-      const getActiveProjectsCount = async () => {
-        const { data: collaboratorEntries, error: collabError } = await supabase
-          .from('project_collaborators')
-          .select('project_id', { count: 'exact', head: true })
-          .eq('user_id', userId)
-          .eq('status', 'active');
-        return { count: collaboratorEntries?.length ?? 0, error: collabError };
-      };
-
-      const promises = {
-        postCount: supabase.from('projects').select('id', { count: 'exact', head: true }).eq('leader_id', userId),
-        matchCount: supabase.from('profile_matches').select('id', { count: 'exact', head: true }).eq('matcher_user_id', userId).eq('status', 'matched'),
-        messageCount: supabase.from('messages').select('id', { count: 'exact', head: true }).or(`sender_id.eq.${userId},receiver_id.eq.${userId}`),
-        activeProjectsCount: getActiveProjectsCount(),
-        pendingRequestsCount: supabase.from('collaborator_matches').select('id', { count: 'exact', head: true }).eq('target_user_id', userId).eq('status', 'pending'),
-        unreadMessagesCount: supabase.from('messages').select('id', { count: 'exact', head: true }).eq('receiver_id', userId).eq('is_read', false),
-        recentMatches: supabase
-          .from('profile_matches')
-          .select('*, matched_profile:profiles!profile_matches_matchee_user_id_fkey (*)')
-          .eq('matcher_user_id', userId)
-          .eq('status', 'matched')
-          .order('created_at', { ascending: false })
-          .limit(3),
-        recentNotifications: supabase
-          .from('user_notifications')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false })
-          .limit(4)
-      };
-
-      // Await all promises simultaneously
-      const results = await Promise.all(Object.values(promises));
-      const [
-        postCountRes,
-        matchCountRes,
-        messageCountRes,
-        activeProjectsCountRes,
-        pendingRequestsCountRes,
-        unreadMessagesCountRes,
-        matchesRes,
-        notificationsRes
-      ] = results;
-
-      // Process and set stats
-      setStats({
-        postCount: postCountRes.count ?? 0,
-        matchCount: matchCountRes.count ?? 0,
-        messageCount: messageCountRes.count ?? 0,
-        viewCount: 0, // Not implemented yet
-        activeProjectsCount: activeProjectsCountRes.count ?? 0,
-        pendingRequestsCount: pendingRequestsCountRes.count ?? 0,
-        unreadMessagesCount: unreadMessagesCountRes.count ?? 0,
-      });
-
-      if (matchesRes.error) console.error('Error fetching matches:', matchesRes.error);
-      else setRecentMatches((matchesRes.data as ProfileMatch[]) || []);
-      
-      if (notificationsRes.error) console.error('Error fetching notifications:', notificationsRes.error);
-      else setRecentNotifications((notificationsRes.data as UserNotification[]) || []);
-
-    } catch (error) {
-      console.error("Error loading dashboard data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user, supabase]);
-
-  useEffect(() => {
-    loadDashboardData();
-  }, [loadDashboardData]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-bg-primary">
-        <FiLoader className="animate-spin text-accent-primary text-4xl" />
-        <p className="text-text-muted font-sans ml-3">Loading dashboard...</p>
-      </div>
-    );
-  }
-
-  return (
-    <motion.div 
-      className="min-h-screen bg-bg-primary text-text-primary p-4 md:p-6 lg:p-8 font-sans"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <header className="mb-8 md:mb-10">
-        <h1 className="text-3xl md:text-4xl font-heading text-text-primary">Dashboard</h1>
-        {profile?.first_name && (
-          <p className="text-lg text-text-secondary mt-1 font-sans">
-            Welcome back, <span className="font-semibold text-text-primary">{titleCase(profile.first_name)}</span>!
-          </p>
-        )}
-      </header>
-
-      <CollaborationStatsDisplay stats={stats} />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 mt-6">
-        <div className="lg:col-span-2 space-y-6 md:space-y-8">
-          <ActivityFeed notifications={recentNotifications} />
-        </div>
-        
-        <div className="lg:col-span-1 space-y-6 md:space-y-8">
-          <RecentMatchesDisplay matches={recentMatches} />
-        </div>
-      </div>
-    </motion.div>
   );
 }

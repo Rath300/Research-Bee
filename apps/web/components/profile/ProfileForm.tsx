@@ -13,6 +13,7 @@ import { type Profile } from '@research-collab/db'
 import { FiUser, FiUpload, FiAlertCircle, FiCheckCircle, FiX, FiSave, FiPlusCircle, FiTrash2, FiLoader } from 'react-icons/fi'
 import { Avatar } from '@/components/ui/Avatar'
 import { api } from '@/lib/trpc'
+import { useToast } from '@/components/ui/Toast'
 
 interface ProfileFormData {
   full_name: string;
@@ -44,6 +45,7 @@ export function ProfileForm({ initialData, onProfileUpdate }: ProfileFormProps) 
   const router = useRouter()
   // supabase is already imported as a singleton
   const { user, profile: authProfile, setProfile } = useAuthStore()
+  const { success: toastSuccess, error: toastError } = useToast()
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -122,11 +124,8 @@ export function ProfileForm({ initialData, onProfileUpdate }: ProfileFormProps) 
 
   const updateProfileMutation = api.profile.update.useMutation({
     onMutate: async (newProfileData) => {
-      // Snapshot the previous value
       const previousProfile = authProfile;
 
-      // Optimistically update the store
-      // We merge the existing profile with the new data to form the optimistic profile
       if (previousProfile) {
         const optimisticProfile = { ...previousProfile, ...newProfileData };
         setProfile(optimisticProfile as Profile);
@@ -135,7 +134,6 @@ export function ProfileForm({ initialData, onProfileUpdate }: ProfileFormProps) 
       setSuccess('Saving...');
       setError(null);
 
-      // Return a context object with the snapshotted value
       return { previousProfile };
     },
     onError: (err, newProfile, context) => {
@@ -148,16 +146,16 @@ export function ProfileForm({ initialData, onProfileUpdate }: ProfileFormProps) 
           : err.message;
       setError(message);
       setSuccess(null);
+      toastError(message);
     },
     onSuccess: (data) => {
-      // On success, the server returns the definitive data.
-      // We update the store with this confirmed data.
       setProfile(data);
       setSuccess('Profile saved successfully!');
+      toastSuccess('Profile saved');
       if (onProfileUpdate) {
         onProfileUpdate();
       }
-      router.refresh(); // Or invalidate a specific query if preferred
+      router.refresh();
     },
   });
 

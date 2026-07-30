@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/components/providers/auth-provider';
 import { TRPCProvider } from '@/components/providers/TRPCProvider';
+import { ToastProvider } from '@/components/ui/Toast';
 import { Source_Sans_3, Source_Serif_4, JetBrains_Mono } from 'next/font/google';
 import Script from 'next/script';
 
@@ -56,7 +57,9 @@ export default function RootLayout({
       <body className="bg-bg-primary text-text-primary min-h-screen flex flex-col font-body antialiased">
         <AuthProvider>
           <TRPCProvider>
-            <div className="flex-grow">{children}</div>
+            <ToastProvider>
+              <div className="flex-grow">{children}</div>
+            </ToastProvider>
           </TRPCProvider>
         </AuthProvider>
       </body>

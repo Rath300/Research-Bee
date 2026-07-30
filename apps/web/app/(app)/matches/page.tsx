@@ -9,6 +9,8 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { FiLoader, FiAlertCircle, FiMessageSquare, FiInbox, FiHeart } from 'react-icons/fi';
 import { api } from '@/lib/trpc';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { useToast } from '@/components/ui/Toast';
 
 type Tab = 'matched' | 'pending';
 
@@ -17,15 +19,18 @@ export default function MatchesPage() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('matched');
   const utils = api.useUtils();
+  const { success, error: toastError } = useToast();
 
   const matchesQuery = api.matching.listMatches.useQuery(undefined, { enabled: !!user });
   const pendingQuery = api.matching.listPendingIncoming.useQuery(undefined, { enabled: !!user });
   const swipeMutation = api.matching.swipe.useMutation({
-    onSuccess: async () => {
+    onSuccess: async (result) => {
+      if (result.isMutual) success('Matched! You can message them from Chats.');
       await utils.matching.listMatches.invalidate();
       await utils.matching.listPendingIncoming.invalidate();
       await utils.matching.listConversations.invalidate();
     },
+    onError: (err) => toastError(err.message || 'Could not update that request.'),
   });
 
   const openChat = async (matchId: string | null, partnerId: string) => {
@@ -100,10 +105,13 @@ export default function MatchesPage() {
           </div>
         ) : tab === 'matched' ? (
           !matchesQuery.data?.length ? (
-            <div className="text-center py-16 border border-border-medium rounded-md">
-              <p className="text-text-primary font-medium">No matches yet</p>
-              <p className="text-sm text-text-muted mt-1">Swipe right on Discover to connect.</p>
-            </div>
+            <EmptyState
+              icon={<FiHeart size={28} />}
+              title="No matches yet"
+              description="Find people and connect — when interest is mutual, they show up here and you can chat."
+              actionLabel="Find people"
+              actionHref="/match"
+            />
           ) : (
             <ul className="space-y-3">
               {matchesQuery.data.map(({ profile, matchId, matchedAt }) => {
@@ -137,10 +145,13 @@ export default function MatchesPage() {
             </ul>
           )
         ) : !pendingQuery.data?.length ? (
-          <div className="text-center py-16 border border-border-medium rounded-md">
-            <p className="text-text-primary font-medium">No incoming interests</p>
-            <p className="text-sm text-text-muted mt-1">When someone swipes right on you, they&apos;ll appear here.</p>
-          </div>
+          <EmptyState
+            icon={<FiInbox size={28} />}
+            title="No incoming interests"
+            description="When someone connects with you, they'll appear here so you can match back."
+            actionLabel="Find people"
+            actionHref="/match"
+          />
         ) : (
           <ul className="space-y-3">
             {pendingQuery.data.map(({ profile, createdAt }) => {

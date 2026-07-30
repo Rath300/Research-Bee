@@ -94,9 +94,19 @@ async function notifyUser(
 
 export const matchingRouter = router({
   listCandidates: protectedProcedure
+    .input(
+      z
+        .object({
+          query: z.string().max(120).optional(),
+          fieldOfStudy: z.string().max(120).optional(),
+          skill: z.string().max(80).optional(),
+        })
+        .optional()
+    )
     .output(z.array(profileSummarySchema))
-    .query(async ({ ctx }) => {
+    .query(async ({ ctx, input }) => {
       const userId = ctx.user.id;
+      const filters = input ?? {};
 
       const { data: interacted, error: interactedError } = await ctx.supabase
         .from('profile_matches')
@@ -121,10 +131,14 @@ export const matchingRouter = router({
         .neq('id', userId)
         .not('first_name', 'is', null)
         .not('bio', 'is', null)
-        .limit(50) as any;
+        .limit(80) as any;
 
       if (excludeIds.length > 1) {
         query = query.not('id', 'in', `(${excludeIds.join(',')})`);
+      }
+
+      if (filters.fieldOfStudy?.trim()) {
+        query = query.ilike('field_of_study', `%${filters.fieldOfStudy.trim()}%`);
       }
 
       const { data, error } = await query;
@@ -136,7 +150,36 @@ export const matchingRouter = router({
         });
       }
 
-      return data ?? [];
+      let rows = data ?? [];
+      const q = filters.query?.trim().toLowerCase();
+      if (q) {
+        rows = rows.filter((p: any) => {
+          const hay = [
+            p.first_name,
+            p.last_name,
+            p.full_name,
+            p.title,
+            p.bio,
+            p.institution,
+            p.field_of_study,
+            ...(p.interests ?? []),
+            ...(p.skills ?? []),
+          ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+          return hay.includes(q);
+        });
+      }
+
+      const skill = filters.skill?.trim().toLowerCase();
+      if (skill) {
+        rows = rows.filter((p: any) =>
+          (p.skills ?? []).some((s: string) => s.toLowerCase().includes(skill))
+        );
+      }
+
+      return rows.slice(0, 50);
     }),
 
   swipe: protectedProcedure

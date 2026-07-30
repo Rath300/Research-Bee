@@ -5,7 +5,8 @@ import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { useTheme } from 'next-themes'
+import { useAuthStore } from '@/lib/store'
+import { hasCompletedProductOnboarding, isProfileComplete } from '@/lib/profile'
 
 interface AuthFormProps {
   view: 'sign-in' | 'sign-up'
@@ -13,8 +14,6 @@ interface AuthFormProps {
 
 export function AuthForm({ view }: AuthFormProps) {
   const router = useRouter()
-  // supabase is already imported as a singleton
-  const { theme } = useTheme()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -32,7 +31,6 @@ export function AuthForm({ view }: AuthFormProps) {
           password
         })
         if (signUpError) throw signUpError
-        // Redirect to profile setup instead of dashboard
         router.push('/profile-setup')
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -40,8 +38,21 @@ export function AuthForm({ view }: AuthFormProps) {
           password
         })
         if (signInError) throw signInError
-        router.refresh()
-        router.push('/dashboard')
+
+        let tries = 0
+        while (!useAuthStore.getState().hasAttemptedProfileFetch && tries < 30) {
+          await new Promise((res) => setTimeout(res, 100))
+          tries++
+        }
+
+        const { profile } = useAuthStore.getState()
+        if (!isProfileComplete(profile)) {
+          router.replace('/profile-setup')
+        } else if (!hasCompletedProductOnboarding()) {
+          router.replace('/onboarding/welcome')
+        } else {
+          router.replace('/dashboard')
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')

@@ -6,6 +6,8 @@ import { useAuthStore } from '@/lib/store';
 import { api } from '@/lib/trpc';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { useToast } from '@/components/ui/Toast';
 import { FiLoader, FiAlertCircle, FiMessageSquare, FiArrowLeft } from 'react-icons/fi';
 
 function ChatsPageInner() {
@@ -13,9 +15,10 @@ function ChatsPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const utils = api.useUtils();
+  const { error: toastError } = useToast();
 
-  const matchIdParam = searchParams.get('matchId');
-  const userIdParam = searchParams.get('userId');
+  const matchIdParam = searchParams?.get('matchId') ?? null;
+  const userIdParam = searchParams?.get('userId') ?? null;
 
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(matchIdParam);
   const [draft, setDraft] = useState('');
@@ -26,7 +29,9 @@ function ChatsPageInner() {
     refetchInterval: 15000,
   });
 
-  const ensureThread = api.matching.ensureDmThread.useMutation();
+  const ensureThread = api.matching.ensureDmThread.useMutation({
+    onError: (err) => toastError(err.message || 'Could not open that chat.'),
+  });
 
   useEffect(() => {
     if (!authLoading && !user) router.replace('/login');
@@ -43,8 +48,8 @@ function ChatsPageInner() {
           router.replace(`/chats?matchId=${matchId}`);
           setShowSidebarOnMobile(false);
         }
-      } catch (e) {
-        console.error(e);
+      } catch {
+        // toast via mutation onError
       }
     })();
     return () => {
@@ -74,6 +79,7 @@ function ChatsPageInner() {
       await utils.matching.listMessages.invalidate({ matchId: selectedMatchId! });
       await utils.matching.listConversations.invalidate();
     },
+    onError: (err) => toastError(err.message || 'Message failed to send.'),
   });
 
   const selectedConversation = useMemo(
@@ -101,6 +107,22 @@ function ChatsPageInner() {
     );
   }
 
+  const hasConversations = !!conversationsQuery.data?.length;
+
+  if (!conversationsQuery.isLoading && !conversationsQuery.error && !hasConversations && !selectedMatchId) {
+    return (
+      <div className="max-w-lg mx-auto py-8">
+        <EmptyState
+          icon={<FiMessageSquare size={28} />}
+          title="No conversations yet"
+          description="Match with someone first — when interest is mutual, you can message them here."
+          actionLabel="Find people"
+          actionHref="/match"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="h-[calc(100vh-8rem)] border border-border-medium rounded-md bg-surface-primary overflow-hidden flex">
       <aside
@@ -123,7 +145,7 @@ function ChatsPageInner() {
           ) : !conversationsQuery.data?.length ? (
             <div className="p-6 text-center text-sm text-text-muted">
               <FiMessageSquare className="mx-auto mb-2 text-xl" />
-              No conversations yet. Match with someone to start chatting.
+              No conversations yet.
             </div>
           ) : (
             <ul>

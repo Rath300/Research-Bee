@@ -3,11 +3,12 @@
 import React from 'react';
 import { api } from '@/lib/trpc';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { FiLoader, FiPlusCircle, FiHome } from 'react-icons/fi';
+import { FiLoader, FiPlusCircle, FiBriefcase } from 'react-icons/fi';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/lib/store';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export default function ProjectsPage() {
   const { isLoading: authLoading, session } = useAuthStore();
@@ -20,7 +21,7 @@ export default function ProjectsPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-display font-semibold text-text-primary">Projects</h1>
-          <p className="text-sm text-text-muted mt-1">Your research projects and collaborations.</p>
+          <p className="text-sm text-text-muted mt-1">Workspaces for collaboration, tasks, and files.</p>
         </div>
         <Link href="/projects/new" passHref>
           <Button>
@@ -39,17 +40,13 @@ export default function ProjectsPage() {
       {error && <p className="text-accent-error text-sm">Error: {error.message || 'Failed to load projects.'}</p>}
 
       {!isLoading && !error && projects && projects.length === 0 && (
-        <Card className="bg-surface-primary border-border-medium text-center">
-          <CardHeader>
-            <FiHome className="mx-auto text-4xl text-text-muted" />
-          </CardHeader>
-          <CardContent>
-            <CardTitle className="text-xl text-text-primary">No projects yet</CardTitle>
-            <CardDescription className="text-text-secondary mt-2">
-              Create your first research project to get started.
-            </CardDescription>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={<FiBriefcase size={28} />}
+          title="No projects yet"
+          description="Create a project to invite collaborators, track tasks, and keep notes in one place."
+          actionLabel="Create project"
+          actionHref="/projects/new"
+        />
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -145,7 +145,8 @@ export async function middleware(request: NextRequest) {
     }
 
     if (hasCompleteProfile && isProfileSetupRoute) {
-      const redirect = NextResponse.redirect(new URL('/dashboard', request.url));
+      // Client welcome page sends users who already finished the tour to Home.
+      const redirect = NextResponse.redirect(new URL('/onboarding/welcome', request.url));
       copyCookies(response, redirect);
       return redirect;
     }

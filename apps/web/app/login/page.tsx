@@ -8,7 +8,11 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useAuthStore } from '@/lib/store';
-import { isProfileComplete, isSafeRedirectPath } from '@/lib/profile';
+import {
+  hasCompletedProductOnboarding,
+  isProfileComplete,
+  isSafeRedirectPath,
+} from '@/lib/profile';
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -52,6 +56,8 @@ function LoginForm() {
       const redirectTo = searchParams?.get('redirect_to') ?? null;
       if (!isProfileComplete(profile)) {
         router.replace('/profile-setup');
+      } else if (!hasCompletedProductOnboarding()) {
+        router.replace('/onboarding/welcome');
       } else if (isSafeRedirectPath(redirectTo)) {
         router.replace(redirectTo);
       } else {

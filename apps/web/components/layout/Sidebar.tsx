@@ -6,7 +6,7 @@ import { useUIStore, useAuthStore } from '@/lib/store';
 import { supabase } from '@/lib/supabaseClient';
 import { Sidebar as ProSidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 import {
-  FiGrid,
+  FiHome,
   FiMessageSquare,
   FiPlus,
   FiChevronLeft,
@@ -18,19 +18,22 @@ import {
   FiHeart,
   FiBriefcase,
   FiTrendingUp,
+  FiBookOpen,
 } from 'react-icons/fi';
 import Image from 'next/image';
+import { useToast } from '@/components/ui/Toast';
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { sidebarOpen, setSidebarOpen } = useUIStore(state => ({
+  const { sidebarOpen, setSidebarOpen } = useUIStore((state) => ({
     sidebarOpen: state.sidebarOpen,
     setSidebarOpen: state.setSidebarOpen,
   }));
-  const { profile, clearAuth } = useAuthStore(state => ({
+  const { profile, clearAuth } = useAuthStore((state) => ({
     profile: state.profile,
     clearAuth: state.clearAuth,
   }));
+  const { error: toastError } = useToast();
 
   const currentUserId = profile?.id;
   const currentUserName =
@@ -40,17 +43,16 @@ export function Sidebar() {
   const currentUserAvatarUrl = profile?.avatar_url || '/images/default-avatar.png';
 
   const mainNavItems = [
-    { label: 'Dashboard', href: '/dashboard', icon: <FiGrid /> },
-    { label: 'Projects', href: '/projects', icon: <FiBriefcase /> },
-    { label: 'Chats', href: '/chats', icon: <FiMessageSquare /> },
-    { label: 'Discover', href: '/match', icon: <FiSearch /> },
+    { label: 'Home', href: '/dashboard', icon: <FiHome /> },
+    { label: 'Find people', href: '/match', icon: <FiSearch /> },
     { label: 'Matches', href: '/matches', icon: <FiHeart /> },
-    { label: 'Trending', href: '/trending', icon: <FiTrendingUp /> },
-    { label: 'External Research', href: '/external-research', icon: <FiSearch /> },
+    { label: 'Chats', href: '/chats', icon: <FiMessageSquare /> },
+    { label: 'Projects', href: '/projects', icon: <FiBriefcase /> },
   ];
 
-  const settingsSubItems = [
-    { label: 'Settings', href: '/settings', icon: <FiUser /> },
+  const exploreItems = [
+    { label: 'Trending projects', href: '/trending', icon: <FiTrendingUp /> },
+    { label: 'External papers', href: '/external-research', icon: <FiBookOpen /> },
   ];
 
   const isActive = (href: string) =>
@@ -62,19 +64,17 @@ export function Sidebar() {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('Error signing out:', error);
-        alert('Error signing out. Please try again.');
+        toastError('Could not sign out. Please try again.');
         return;
       }
       clearAuth();
-    } catch (e) {
-      console.error('Unexpected error during sign out:', e);
-      alert('An unexpected error occurred during sign out.');
+    } catch {
+      toastError('Could not sign out. Please try again.');
     }
   };
 
   return (
-    <div className="flex h-screen fixed top-0 left-0 z-30">
+    <div className="flex h-screen fixed top-0 left-0 z-30" data-testid="app-sidebar">
       <ProSidebar
         collapsed={!sidebarOpen}
         width="240px"
@@ -221,17 +221,12 @@ export function Sidebar() {
             ))}
 
             <SubMenu
-              label={sidebarOpen ? 'Settings' : ''}
-              icon={<FiSettings />}
-              active={
-                settingsSubItems.some((sub) => isActive(sub.href)) || isActive('/settings')
-              }
-              defaultOpen={
-                settingsSubItems.some((sub) => isActive(sub.href)) || isActive('/settings')
-              }
+              label={sidebarOpen ? 'Explore' : ''}
+              icon={<FiBookOpen />}
+              active={exploreItems.some((sub) => isActive(sub.href))}
             >
               {sidebarOpen &&
-                settingsSubItems.map((subItem) => (
+                exploreItems.map((subItem) => (
                   <MenuItem
                     key={subItem.label}
                     icon={subItem.icon}
@@ -242,6 +237,14 @@ export function Sidebar() {
                   </MenuItem>
                 ))}
             </SubMenu>
+
+            <MenuItem
+              icon={<FiSettings />}
+              active={isActive('/settings')}
+              component={<Link href="/settings" />}
+            >
+              {sidebarOpen ? 'Settings' : ''}
+            </MenuItem>
 
             <MenuItem icon={<FiLogOut />} onClick={handleSignOut}>
               {sidebarOpen ? 'Log out' : ''}
