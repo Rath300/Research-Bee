@@ -93,9 +93,9 @@ export const chatRouter = router({
         projectChatMessageSchema.extend({
           sender: z.object({
             id: z.string().uuid(),
-            first_name: z.string().nullable().optional(), // Optional for profiles that may not have it
-            last_name: z.string().nullable().optional(), // Optional
-            avatar_url: z.string().url().nullable().optional(), // Optional
+            first_name: z.string().nullable().optional(),
+            last_name: z.string().nullable().optional(),
+            avatar_url: z.string().nullable().optional(), // allow non-URL / relative paths
           }).nullable(), 
         })
       );

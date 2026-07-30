@@ -269,6 +269,7 @@ export default function DashboardPage() {
           .from('profile_matches')
           .select('*, matched_profile:profiles!profile_matches_matchee_user_id_fkey (*)')
           .eq('matcher_user_id', userId)
+          .eq('status', 'matched')
           .order('created_at', { ascending: false })
           .limit(3),
         recentNotifications: supabase

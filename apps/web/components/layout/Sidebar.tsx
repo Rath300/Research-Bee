@@ -41,16 +41,16 @@ export function Sidebar() {
 
   const mainNavItems = [
     { label: 'Dashboard', href: '/dashboard', icon: <FiGrid /> },
-    { label: 'My Projects', href: '/dashboard/projects', icon: <FiBriefcase /> },
+    { label: 'Projects', href: '/projects', icon: <FiBriefcase /> },
     { label: 'Chats', href: '/chats', icon: <FiMessageSquare /> },
-    { label: 'Discover Matches', href: '/match', icon: <FiSearch /> },
-    { label: 'My Matches', href: '/matches', icon: <FiHeart /> },
+    { label: 'Discover', href: '/match', icon: <FiSearch /> },
+    { label: 'Matches', href: '/matches', icon: <FiHeart /> },
     { label: 'Trending', href: '/trending', icon: <FiTrendingUp /> },
     { label: 'External Research', href: '/external-research', icon: <FiSearch /> },
   ];
 
   const settingsSubItems = [
-    { label: 'Account', href: '/settings/account', icon: <FiUser /> },
+    { label: 'Settings', href: '/settings', icon: <FiUser /> },
   ];
 
   const isActive = (href: string) =>

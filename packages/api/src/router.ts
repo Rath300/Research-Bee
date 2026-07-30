@@ -8,6 +8,7 @@ import { profileRouter } from './routers/profile';
 import { collaborationRouter } from './routers/collaboration';
 import { externalRouter } from './routers/external';
 import { notificationsRouter } from './routers/notifications';
+import { matchingRouter } from './routers/matching';
 
 export const appRouter = router({
   slack: slackRouter,
@@ -19,7 +20,7 @@ export const appRouter = router({
   collaboration: collaborationRouter,
   external: externalRouter,
   notifications: notificationsRouter,
-  // Add other routers here
+  matching: matchingRouter,
 });
 
 export type AppRouter = typeof appRouter; 

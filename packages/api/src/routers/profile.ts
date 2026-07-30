@@ -92,14 +92,28 @@ export const profileRouter = router({
       let error;
 
       if (!existingProfile) {
-        // Profile doesn't exist, create it
+        const firstName = (input.first_name ?? '').trim();
+        const lastName = (input.last_name ?? '').trim();
+        if (!firstName || !lastName) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'First name and last name are required to create a profile.',
+          });
+        }
+        if (!(input.bio ?? '').trim()) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Bio is required to create a profile.',
+          });
+        }
+
         const createData = {
           id: userId,
-          user_id: userId, // Add user_id to satisfy NOT NULL constraint
-          first_name: input.first_name || 'Anonymous',
-          last_name: input.last_name || 'User', 
+          user_id: userId,
           email: ctx.user.email || 'no-email',
-          ...cleanedData
+          ...cleanedData,
+          first_name: firstName,
+          last_name: lastName,
         };
 
         const result = await ctx.supabase

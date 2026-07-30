@@ -1,198 +1,192 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { supabase } from '@/lib/supabaseClient';
-import { type Database } from '@/lib/database.types';
 import { useAuthStore } from '@/lib/store';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
-import { FiUser, FiLoader, FiAlertCircle, FiMessageSquare, FiEye, FiArrowLeft, FiInbox } from 'react-icons/fi';
+import { FiLoader, FiAlertCircle, FiMessageSquare, FiInbox, FiHeart } from 'react-icons/fi';
+import { api } from '@/lib/trpc';
 
-type Profile = Database['public']['Tables']['profiles']['Row'];
-
-interface MatchedProfile extends Profile {
-  match_created_at: string; 
-}
+type Tab = 'matched' | 'pending';
 
 export default function MatchesPage() {
-  // supabase is already imported as a singleton
   const { user } = useAuthStore();
   const router = useRouter();
+  const [tab, setTab] = useState<Tab>('matched');
+  const utils = api.useUtils();
 
-  const [matchedProfiles, setMatchedProfiles] = useState<MatchedProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const matchesQuery = api.matching.listMatches.useQuery(undefined, { enabled: !!user });
+  const pendingQuery = api.matching.listPendingIncoming.useQuery(undefined, { enabled: !!user });
+  const swipeMutation = api.matching.swipe.useMutation({
+    onSuccess: async () => {
+      await utils.matching.listMatches.invalidate();
+      await utils.matching.listPendingIncoming.invalidate();
+      await utils.matching.listConversations.invalidate();
+    },
+  });
 
-  const fetchMatchedProfiles = useCallback(async () => {
-    if (!user) {
-      setLoading(false);
-      setError("User not authenticated.");
+  const openChat = async (matchId: string | null, partnerId: string) => {
+    if (matchId) {
+      router.push(`/chats?matchId=${matchId}`);
       return;
     }
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Get all users the current user has matched (as matcher or matchee)
-      const { data: matchesData, error: matchesError } = await supabase
-        .from('profile_matches')
-        .select('matcher_user_id, matchee_user_id, created_at, matcher_profile:matcher_user_id!inner(*), matchee_profile:matchee_user_id!inner(*)')
-        .or(`matcher_user_id.eq.${user.id},matchee_user_id.eq.${user.id}`)
-        .eq('status', 'matched');
-
-      if (matchesError) throw matchesError;
-
-      // Flatten to unique profiles (other than self)
-      const profiles: MatchedProfile[] = [];
-      (matchesData || []).forEach(match => {
-        const otherProfile = match.matcher_user_id === user.id ? match.matchee_profile : match.matcher_profile;
-        if (otherProfile && otherProfile.id !== user.id) {
-          profiles.push({ ...otherProfile, match_created_at: match.created_at });
-        }
-      });
-      setMatchedProfiles(profiles);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load matches');
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase, user]);
-
-  useEffect(() => {
-    fetchMatchedProfiles();
-  }, [fetchMatchedProfiles]);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.07, delayChildren: 0.1 }
-    }
+    const result = await utils.client.matching.ensureDmThread.mutate({ partnerId });
+    router.push(`/chats?matchId=${result.matchId}`);
   };
 
-  const cardItemVariants = {
-    hidden: { opacity: 0, y: 20, scale: 0.95 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4 } }
-  };
-
-  if (loading) {
+  if (!user) {
     return (
-      <PageContainer title="My Matches" className="bg-bg-primary min-h-screen flex flex-col items-center justify-center text-text-primary font-sans">
-        <FiLoader className="animate-spin text-accent-primary text-6xl" />
-        <p className="mt-4 text-text-secondary">Loading your matches...</p>
+      <PageContainer title="Matches">
+        <p className="text-text-muted">Please sign in.</p>
       </PageContainer>
     );
   }
 
-  if (error) {
-    return (
-      <PageContainer title="Error" className="bg-bg-primary min-h-screen flex flex-col items-center justify-center text-text-primary font-sans p-6">
-        <FiAlertCircle className="text-red-500 text-6xl mb-4" />
-        <h2 className="text-2xl font-heading mb-2">Oops! Something went wrong.</h2>
-        <p className="text-text-secondary text-center mb-6">{error}</p>
-        <Button onClick={fetchMatchedProfiles} variant="secondary">Try Again</Button>
-      </PageContainer>
-    );
-  }
+  const isLoading = tab === 'matched' ? matchesQuery.isLoading : pendingQuery.isLoading;
+  const error = tab === 'matched' ? matchesQuery.error : pendingQuery.error;
 
   return (
-    <PageContainer title="My Matches" className="bg-bg-primary min-h-screen text-text-primary font-sans">
-      <div className="p-4 sm:p-6 md:p-8">
-        <motion.div 
-          className="flex items-center mb-6 md:mb-8"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => router.back()} 
-            className="mr-3 text-text-secondary hover:bg-surface-hover !p-2 rounded-md"
-            aria-label="Back"
-          >
-              <FiArrowLeft size={20} />
-          </Button>
-          <h1 className="text-3xl md:text-4xl font-heading text-text-primary">
-            My Matches
-          </h1>
-        </motion.div>
+    <PageContainer title="Matches">
+      <div className="max-w-3xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="font-display text-2xl font-semibold text-text-primary">Matches</h1>
+            <p className="text-sm text-text-muted mt-1">People you&apos;ve connected with.</p>
+          </div>
+          <Link href="/match">
+            <Button size="sm">Discover more</Button>
+          </Link>
+        </div>
 
-        {matchedProfiles.length === 0 && (
-          <motion.div 
-            className="text-center py-20 bg-surface-primary rounded-md border border-border-medium max-w-3xl mx-auto"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
+        <div className="flex gap-2 mb-5 border-b border-border-medium pb-2">
+          <button
+            type="button"
+            onClick={() => setTab('matched')}
+            className={`px-3 py-1.5 text-sm rounded-md ${
+              tab === 'matched' ? 'bg-accent-muted text-accent-primary font-medium' : 'text-text-muted'
+            }`}
           >
-            <FiInbox className="mx-auto text-6xl text-text-secondary mb-6" />
-            <h3 className="text-xl font-heading text-text-primary mb-2">No Matches Yet</h3>
-            <p className="text-text-secondary font-sans text-sm mb-4">Keep swiping to find your research partners!</p>
-            <Link href="/match">
-                <Button variant="primary" className="font-sans">
-                    Find Matches
-                </Button>
-            </Link>
-          </motion.div>
-        )}
+            <span className="inline-flex items-center gap-1.5">
+              <FiHeart /> Matched
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('pending')}
+            className={`px-3 py-1.5 text-sm rounded-md ${
+              tab === 'pending' ? 'bg-accent-muted text-accent-primary font-medium' : 'text-text-muted'
+            }`}
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <FiInbox /> Incoming
+              {!!pendingQuery.data?.length && (
+                <span className="text-xs">({pendingQuery.data.length})</span>
+              )}
+            </span>
+          </button>
+        </div>
 
-        {matchedProfiles.length > 0 && (
-          <motion.div 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {matchedProfiles.map((profile) => (
-              <motion.div
-                key={profile.id}
-                variants={cardItemVariants}
-                className="bg-surface-primary rounded-md border border-border-medium overflow-hidden flex flex-col"
-              >
-                <div className="p-5 flex-grow">
-                    <Avatar 
-                        src={profile.avatar_url} 
-                        alt={profile.first_name || 'User'} 
-                        size="xl" 
-                        className="mx-auto mb-4 border-2 border-border-light" 
-                        fallback={<FiUser size={40}/>}
-                    />
-                  <h3 className="text-xl font-heading text-text-primary text-center truncate">
-                    {profile.first_name || ''} {profile.last_name || ''}
-                  </h3>
-                  <p className="text-sm text-text-secondary text-center truncate mb-1">{profile.title || 'Researcher'}</p>
-                  <p className="text-xs text-text-secondary text-center mb-3">Matched: {new Date(profile.match_created_at).toLocaleDateString()}</p>
-                  
-                  {profile.interests && profile.interests.length > 0 && (
-                    <div className="mb-3 flex flex-wrap justify-center gap-1.5">
-                      {profile.interests.slice(0, 3).map(interest => (
-                        <span key={interest} className="px-2 py-0.5 bg-accent-soft text-text-secondary text-[10px] rounded-sm font-sans">
-                          {interest}
-                        </span>
-                      ))}
+        {isLoading ? (
+          <div className="flex justify-center py-16">
+            <FiLoader className="animate-spin text-accent-primary text-2xl" />
+          </div>
+        ) : error ? (
+          <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-accent-error flex gap-2">
+            <FiAlertCircle className="mt-0.5" />
+            {error.message}
+          </div>
+        ) : tab === 'matched' ? (
+          !matchesQuery.data?.length ? (
+            <div className="text-center py-16 border border-border-medium rounded-md">
+              <p className="text-text-primary font-medium">No matches yet</p>
+              <p className="text-sm text-text-muted mt-1">Swipe right on Discover to connect.</p>
+            </div>
+          ) : (
+            <ul className="space-y-3">
+              {matchesQuery.data.map(({ profile, matchId, matchedAt }) => {
+                const name =
+                  [profile.first_name, profile.last_name].filter(Boolean).join(' ') ||
+                  profile.full_name ||
+                  'Researcher';
+                return (
+                  <li
+                    key={profile.id}
+                    className="flex items-center gap-3 p-4 rounded-md border border-border-medium bg-surface-primary"
+                  >
+                    <Avatar src={profile.avatar_url} alt={name} size="md" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-text-primary truncate">{name}</p>
+                      <p className="text-xs text-text-muted truncate">
+                        {profile.title || profile.institution || 'Matched'} ·{' '}
+                        {new Date(matchedAt).toLocaleDateString()}
+                      </p>
                     </div>
-                  )}
-                  <p className="text-xs text-text-secondary line-clamp-2 text-center mb-4 min-h-[30px]">
-                    {profile.bio || 'No bio available.'}
-                  </p>
-                </div>
-                <div className="border-t border-border-light p-3 flex gap-2">
-                    <Link href={profile.id ? `/profile/${profile.id}` : '#'} className="flex-1">
-                        <Button variant="outline" size="sm" className="w-full font-sans"><FiEye className="mr-1.5"/> View</Button>
-                    </Link>
-                    <Link href={profile.id ? `/chats?userId=${profile.id}` : '#'} className="flex-1">
-                         <Button variant="outline" size="sm" className="w-full font-sans"><FiMessageSquare className="mr-1.5"/> Message</Button>
-                    </Link>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => void openChat(matchId, profile.id)}
+                    >
+                      <FiMessageSquare className="mr-1" /> Chat
+                    </Button>
+                  </li>
+                );
+              })}
+            </ul>
+          )
+        ) : !pendingQuery.data?.length ? (
+          <div className="text-center py-16 border border-border-medium rounded-md">
+            <p className="text-text-primary font-medium">No incoming interests</p>
+            <p className="text-sm text-text-muted mt-1">When someone swipes right on you, they&apos;ll appear here.</p>
+          </div>
+        ) : (
+          <ul className="space-y-3">
+            {pendingQuery.data.map(({ profile, createdAt }) => {
+              const name =
+                [profile.first_name, profile.last_name].filter(Boolean).join(' ') ||
+                profile.full_name ||
+                'Researcher';
+              return (
+                <li
+                  key={profile.id}
+                  className="flex items-center gap-3 p-4 rounded-md border border-border-medium bg-surface-primary"
+                >
+                  <Avatar src={profile.avatar_url} alt={name} size="md" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-text-primary truncate">{name}</p>
+                    <p className="text-xs text-text-muted">
+                      Interested · {new Date(createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={swipeMutation.isLoading}
+                      onClick={() =>
+                        swipeMutation.mutate({ targetUserId: profile.id, direction: 'left' })
+                      }
+                    >
+                      Pass
+                    </Button>
+                    <Button
+                      size="sm"
+                      disabled={swipeMutation.isLoading}
+                      onClick={() =>
+                        swipeMutation.mutate({ targetUserId: profile.id, direction: 'right' })
+                      }
+                    >
+                      Match
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         )}
       </div>
     </PageContainer>
   );
-} 
+}

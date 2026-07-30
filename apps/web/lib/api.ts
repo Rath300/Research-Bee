@@ -75,13 +75,27 @@ export const getProfile = async (id: string): Promise<DbProfile | null> => {
       .eq('id', id)
       .single();
     if (error) {
-      if (error.code === 'PGRST116') return null; // Not found
+      // Not found, or transient PostgREST schema-cache miss
+      if (error.code === 'PGRST116') return null;
+      if (
+        error.code === 'PGRST205' ||
+        error.message?.toLowerCase().includes('schema cache') ||
+        error.message?.toLowerCase().includes("could not find the table")
+      ) {
+        console.warn('[getProfile] Schema cache miss; treating as missing profile:', error.message);
+        return null;
+      }
       throw new SupabaseError(`Error fetching profile: ${error.message}`, (error as PostgrestError).code ? parseInt((error as PostgrestError).code) : 500, (error as PostgrestError).code);
     }
     return importedProfileSchema.parse(data) as DbProfile | null;
   } catch (error: any) {
     console.error('Error in getProfile:', error);
-    if (error instanceof SupabaseError) throw error;
+    if (error instanceof SupabaseError) {
+      if (error.message?.toLowerCase().includes('schema cache') || error.message?.toLowerCase().includes("could not find the table")) {
+        return null;
+      }
+      throw error;
+    }
     if (error instanceof z.ZodError) {
       throw new SupabaseError(`Profile data validation failed: ${error.errors.map((e: { message: string }) => e.message).join(', ')}`, 400);
     }

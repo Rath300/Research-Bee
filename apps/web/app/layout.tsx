@@ -56,7 +56,7 @@ export default function RootLayout({
       <body className="bg-bg-primary text-text-primary min-h-screen flex flex-col font-body antialiased">
         <AuthProvider>
           <TRPCProvider>
-            <main className="flex-grow">{children}</main>
+            <div className="flex-grow">{children}</div>
           </TRPCProvider>
         </AuthProvider>
       </body>

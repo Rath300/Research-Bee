@@ -1,9 +1,8 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FiBell, FiUser, FiSettings, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
+import { FiUser, FiSettings, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
 import { Avatar } from '@/components/ui/Avatar';
 import {
   DropdownMenu,
@@ -17,6 +16,7 @@ import { useAuthStore } from '@/lib/store';
 import { supabase } from '@/lib/supabaseClient';
 import { type Profile as DbProfile } from '@research-collab/db';
 import { titleCase } from '@/lib/utils';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 interface DashboardHeaderProps {
   profile: DbProfile | null;
@@ -70,12 +70,7 @@ export function DashboardHeader({
       </div>
 
       <div className="flex items-center gap-1">
-        <Link
-          href="/notifications"
-          className="p-2 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-hover no-underline"
-        >
-          <FiBell className="w-4 h-4" />
-        </Link>
+        <NotificationBell />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -98,7 +93,7 @@ export function DashboardHeader({
             </DropdownMenuItem>
             <DropdownMenuItem
               className="cursor-pointer"
-              onClick={() => router.push('/settings/account')}
+              onClick={() => router.push('/settings')}
             >
               <FiSettings className="mr-2 h-4 w-4" />
               <span>Settings</span>

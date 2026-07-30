@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "13.0.4"
+  }
   public: {
     Tables: {
       collaborator_matches: {
@@ -294,7 +299,7 @@ export type Database = {
             foreignKeyName: "post_comments_post_id_fkey"
             columns: ["post_id"]
             isOneToOne: false
-            referencedRelation: "projects"
+            referencedRelation: "research_posts"
             referencedColumns: ["id"]
           },
           {
@@ -330,7 +335,7 @@ export type Database = {
             foreignKeyName: "post_likes_post_id_fkey"
             columns: ["post_id"]
             isOneToOne: false
-            referencedRelation: "projects"
+            referencedRelation: "research_posts"
             referencedColumns: ["id"]
           },
           {
@@ -553,7 +558,7 @@ export type Database = {
             foreignKeyName: "project_chat_messages_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
-            referencedRelation: "projects"
+            referencedRelation: "research_posts"
             referencedColumns: ["id"]
           },
         ]
@@ -566,6 +571,7 @@ export type Database = {
           project_id: string
           role: string
           status: Database["public"]["Enums"]["project_collaborator_status"]
+          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -575,6 +581,7 @@ export type Database = {
           project_id: string
           role: string
           status?: Database["public"]["Enums"]["project_collaborator_status"]
+          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -584,6 +591,7 @@ export type Database = {
           project_id?: string
           role?: string
           status?: Database["public"]["Enums"]["project_collaborator_status"]
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -672,7 +680,7 @@ export type Database = {
           file_size: number
           file_type: string
           id: string
-          research_post_id: string
+          project_id: string
           updated_at: string
           uploader_id: string
         }
@@ -684,7 +692,7 @@ export type Database = {
           file_size: number
           file_type: string
           id?: string
-          research_post_id: string
+          project_id: string
           updated_at?: string
           uploader_id: string
         }
@@ -696,14 +704,14 @@ export type Database = {
           file_size?: number
           file_type?: string
           id?: string
-          research_post_id?: string
+          project_id?: string
           updated_at?: string
           uploader_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "project_files_research_post_id_fkey"
-            columns: ["research_post_id"]
+            foreignKeyName: "project_files_project_id_fkey"
+            columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
@@ -756,46 +764,102 @@ export type Database = {
           },
         ]
       }
+      project_notes: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          is_public: boolean
+          last_edited_by: string
+          project_id: string
+          section: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_public?: boolean
+          last_edited_by: string
+          project_id: string
+          section?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_public?: boolean
+          last_edited_by?: string
+          project_id?: string
+          section?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_notes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_tasks: {
         Row: {
-          assignee_user_id: string | null
+          assigned_to: string | null
+          completed_at: string | null
           created_at: string
+          created_by: string
           description: string | null
           due_date: string | null
           id: string
           order: number | null
           priority: Database["public"]["Enums"]["project_task_priority"] | null
           project_id: string
-          reporter_user_id: string
           status: Database["public"]["Enums"]["project_task_status"]
+          task_order: number | null
           title: string
           updated_at: string
         }
         Insert: {
-          assignee_user_id?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
           created_at?: string
+          created_by: string
           description?: string | null
           due_date?: string | null
           id?: string
           order?: number | null
           priority?: Database["public"]["Enums"]["project_task_priority"] | null
           project_id: string
-          reporter_user_id: string
           status?: Database["public"]["Enums"]["project_task_status"]
+          task_order?: number | null
           title: string
           updated_at?: string
         }
         Update: {
-          assignee_user_id?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
           created_at?: string
+          created_by?: string
           description?: string | null
           due_date?: string | null
           id?: string
           order?: number | null
           priority?: Database["public"]["Enums"]["project_task_priority"] | null
           project_id?: string
-          reporter_user_id?: string
           status?: Database["public"]["Enums"]["project_task_status"]
+          task_order?: number | null
           title?: string
           updated_at?: string
         }
@@ -908,13 +972,95 @@ export type Database = {
           title?: string
           updated_at?: string | null
         }
+        Relationships: []
+      }
+      research_post_matches: {
+        Row: {
+          created_at: string
+          id: string
+          research_post_id: string
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          research_post_id: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          research_post_id?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "projects_leader_id_fkey",
-            columns: ["leader_id"],
-            referencedRelation: "profiles",
+            foreignKeyName: "research_post_matches_research_post_id_fkey"
+            columns: ["research_post_id"]
+            isOneToOne: false
+            referencedRelation: "research_posts"
             referencedColumns: ["id"]
-          }
+          },
+          {
+            foreignKeyName: "research_post_matches_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      research_posts: {
+        Row: {
+          content: string
+          created_at: string
+          engagement_count: number | null
+          id: string
+          is_boosted: boolean | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+          visibility: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          engagement_count?: number | null
+          id?: string
+          is_boosted?: boolean | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+          visibility?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          engagement_count?: number | null
+          id?: string
+          is_boosted?: boolean | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "research_posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       research_projects: {
@@ -1320,15 +1466,16 @@ export type Database = {
         Args: { user_id_param: string }
         Returns: string[]
       }
-      get_user_projects: {
-        Args: { user_id_param: string }
-        Returns: string[]
+      get_user_projects: { Args: { user_id_param: string }; Returns: string[] }
+      is_collaborator: {
+        Args: { project_id_to_check: string; user_id_to_check: string }
+        Returns: boolean
       }
       is_workspace_member_with_roles: {
         Args: {
-          p_workspace_id: string
-          p_user_id: string
           p_required_roles: string[]
+          p_user_id: string
+          p_workspace_id: string
         }
         Returns: boolean
       }
@@ -1360,21 +1507,25 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
@@ -1392,14 +1543,16 @@ export type Tables<
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
@@ -1415,14 +1568,16 @@ export type TablesInsert<
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
@@ -1438,14 +1593,16 @@ export type TablesUpdate<
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
@@ -1453,14 +1610,16 @@ export type Enums<
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never

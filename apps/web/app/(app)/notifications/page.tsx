@@ -7,20 +7,13 @@ import { api } from '@/lib/trpc';
 import { FiCheck } from 'react-icons/fi';
 
 export default function NotificationsPage() {
+  const utils = api.useUtils();
   const markAllAsRead = api.notifications.markAllAsRead.useMutation({
-    onSuccess: () => {
-      // Refetch notifications to update the UI
-      window.location.reload();
+    onSuccess: async () => {
+      await utils.notifications.list.invalidate();
+      await utils.notifications.getUnreadCount.invalidate();
     },
   });
-
-  const handleMarkAllAsRead = async () => {
-    try {
-      await markAllAsRead.mutateAsync();
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-    }
-  };
 
   return (
     <PageContainer title="Notifications" className="bg-bg-primary min-h-screen">
@@ -29,13 +22,13 @@ export default function NotificationsPage() {
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-heading text-text-primary">Notifications</h1>
             <Button
-              onClick={handleMarkAllAsRead}
-              disabled={markAllAsRead.isPending}
+              onClick={() => markAllAsRead.mutate()}
+              disabled={markAllAsRead.isLoading}
               variant="outline"
               size="sm"
               className="text-text-secondary hover:text-text-primary"
             >
-              {markAllAsRead.isPending ? (
+              {markAllAsRead.isLoading ? (
                 <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
               ) : (
                 <FiCheck className="w-4 h-4" />
@@ -43,10 +36,10 @@ export default function NotificationsPage() {
               Mark All as Read
             </Button>
           </div>
-          
+
           <NotificationsList />
         </div>
       </div>
     </PageContainer>
   );
-} 
+}

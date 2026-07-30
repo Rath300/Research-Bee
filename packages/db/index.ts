@@ -1,5 +1,5 @@
 // Supabase client setup with typed data access
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { Database } from './types';
 import { z } from 'zod';
 
@@ -16,8 +16,23 @@ const getSupabaseKey = () => {
   return key;
 };
 
-// Create a single supabase client for interacting with your database
-export const supabase = createClient<Database>(getSupabaseUrl(), getSupabaseKey());
+// Lazy singleton — do NOT create a browser GoTrueClient at module load.
+// Web apps should use apps/web/lib/supabaseClient.ts instead.
+let _supabase: SupabaseClient<Database> | null = null;
+
+export function getSupabase(): SupabaseClient<Database> {
+  if (!_supabase) {
+    _supabase = createClient<Database>(getSupabaseUrl(), getSupabaseKey());
+  }
+  return _supabase;
+}
+
+/** Lazy proxy so importing schemas/types from this package does not spawn a second auth client. */
+export const supabase: SupabaseClient<Database> = new Proxy({} as SupabaseClient<Database>, {
+  get(_target, prop, receiver) {
+    return Reflect.get(getSupabase(), prop, receiver);
+  },
+});
 
 // Schema definitions using Zod for validation
 // These will match the types in the PostgreSQL tables

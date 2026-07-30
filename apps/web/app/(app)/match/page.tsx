@@ -1,448 +1,216 @@
 'use client';
 
-import React from 'react';
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useMemo, useState } from 'react';
 import TinderCard from 'react-tinder-card';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '@/lib/supabaseClient';
-import { type Database } from '@/lib/database.types';
 import { useAuthStore } from '@/lib/store';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
-import { FiUser, FiLoader, FiAlertCircle, FiHeart, FiX, FiRewind, FiArrowLeft, FiRefreshCw } from 'react-icons/fi';
+import { FiLoader, FiAlertCircle, FiHeart, FiX, FiRefreshCw } from 'react-icons/fi';
 import Link from 'next/link';
+import { api } from '@/lib/trpc';
 import { trackMatch } from '@/lib/analytics';
 
-type Profile = Database['public']['Tables']['profiles']['Row'];
-type ProfileMatchStatus = Database['public']['Tables']['profile_matches']['Row']['status'];
-
-interface PotentialMatch extends Omit<Profile, 'username'> {
-  // Any additional properties needed for the card
-}
-
 export default function MatchPage() {
-  // supabase is already imported as a singleton
   const { user } = useAuthStore();
-  const router = useRouter();
-
-  const [potentialMatches, setPotentialMatches] = useState<PotentialMatch[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const utils = api.useUtils();
   const [lastDirection, setLastDirection] = useState<string | null>(null);
-  const [isSwiping, setIsSwiping] = useState(false);
-  const [swipedUsers, setSwipedUsers] = useState<Set<string>>(new Set());
+  const [mutualFlash, setMutualFlash] = useState(false);
+  const [localGone, setLocalGone] = useState<Set<string>>(new Set());
 
-  const fetchPotentialMatches = useCallback(async () => {
-    if (!user) {
-      setLoading(false);
-      setError("User not authenticated.");
-      return;
-    }
-    setLoading(true);
-    setError(null);
+  const {
+    data: candidates = [],
+    isLoading,
+    error,
+    refetch,
+    isFetching,
+  } = api.matching.listCandidates.useQuery(undefined, { enabled: !!user });
 
-    try {
-      // 1. Get IDs of users the current user has already interacted with (matched or rejected)
-      const { data: interactedUsersData, error: interactedUsersError } = await supabase
-        .from('profile_matches')
-        .select('matchee_user_id')
-        .eq('matcher_user_id', user.id)
-        .in('status', ['matched', 'rejected']);
-
-      if (interactedUsersError) throw interactedUsersError;
-      const interactedUserIds = interactedUsersData.map(item => item.matchee_user_id);
-      
-      // 2. Fetch all profiles excluding the current user and interacted users
-      let queryBuilder = supabase
-        .from('profiles')
-        .select('*')
-        .neq('id', user.id); // Exclude self
-
-      if (interactedUserIds.length > 0) {
-        queryBuilder = queryBuilder.not('id', 'in', `(${interactedUserIds.join(',')})`);
+  const swipeMutation = api.matching.swipe.useMutation({
+    onSuccess: async (result) => {
+      if (result.isMutual) {
+        setMutualFlash(true);
+        trackMatch('mutual');
+        setTimeout(() => setMutualFlash(false), 1800);
       }
+      await utils.matching.listCandidates.invalidate();
+      await utils.matching.listMatches.invalidate();
+      await utils.matching.listConversations.invalidate();
+    },
+  });
 
-      const { data: profilesData, error: profilesError } = await queryBuilder;
-
-      if (profilesError) {
-        console.error("Supabase profiles fetch error:", profilesError);
-        throw profilesError;
-      }
-      
-      setPotentialMatches(profilesData || []);
-      setCurrentIndex((profilesData?.length || 0) - 1);
-
-    } catch (err) {
-      console.error("Error fetching potential matches:", err);
-      const defaultMessage = 'Failed to load potential matches.';
-      if (err && typeof err === 'object' && 'message' in err) {
-        setError(String((err as Error).message) || defaultMessage);
-      } else {
-        setError(defaultMessage);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase, user]);
-
-  useEffect(() => {
-    fetchPotentialMatches();
-  }, [fetchPotentialMatches]);
-  
-  const childRefs = useMemo(
-    () =>
-      Array(potentialMatches.length)
-        .fill(0)
-        .map((i) => React.createRef<any>()),
-    [potentialMatches.length]
+  const visible = useMemo(
+    () => candidates.filter((c) => !localGone.has(c.id)),
+    [candidates, localGone]
   );
 
-  const swiped = async (direction: 'left' | 'right', swipedUserId: string, index: number) => {
-    // Prevent duplicate swipes
-    if (swipedUsers.has(swipedUserId)) {
-      console.log(`Already swiped on user ${swipedUserId}, ignoring duplicate`);
-      return;
-    }
+  const current = visible[visible.length - 1];
 
-    setSwipedUsers(prev => new Set(prev).add(swipedUserId));
+  const recordSwipe = async (direction: 'left' | 'right', targetId: string) => {
+    setLocalGone((prev) => new Set(prev).add(targetId));
     setLastDirection(direction);
-    console.log(`Swiped ${direction} on user ${swipedUserId} at index ${index}`);
-
-    if (!user) {
-      console.error("User not logged in, cannot record swipe.");
-      return;
-    }
-
-    // Always create a 'matched' record on right swipe, allowing instant chat
-    if (direction === 'right') {
-      try {
-        const { error: insertError } = await supabase
-          .from('profile_matches')
-          .insert({
-            matcher_user_id: user.id,
-            matchee_user_id: swipedUserId,
-            status: 'matched',
-          });
-        if (insertError) {
-          console.error('Error inserting match:', insertError);
-        } else {
-          console.log(`Match (matched) between ${user.id} and ${swipedUserId} recorded.`);
-          // Track successful match
-          trackMatch('swipe');
-        }
-      } catch (e) {
-        console.error("Supabase error:", e);
-      }
+    try {
+      await swipeMutation.mutateAsync({ targetUserId: targetId, direction });
+    } catch (err) {
+      console.error(err);
+      setLocalGone((prev) => {
+        const next = new Set(prev);
+        next.delete(targetId);
+        return next;
+      });
     }
   };
 
-  const outOfFrame = (name: string | null, idx: number) => {
-    console.log(`${name || 'User'} left the screen at index ${idx}!`);
-    // Update current index when card leaves the screen
-    setCurrentIndex(idx - 1);
-  };
-
-  const goBack = async () => {
-    // This is a simplified goBack, true undo would require more state management
-    // and potentially reverting the database action or having a 'pending_undo' status.
-    // For now, it just visually brings the card back if one is available.
-    if (currentIndex < potentialMatches.length - 1) {
-       console.log('Trying to go back');
-       // This part is tricky with react-tinder-card's imperative API
-       // It's usually easier to manage the deck from the parent and re-render
-       // For now, we'll just log it. A full undo is a more advanced feature.
-    } else {
-      console.log('No more cards to go back to or already at the start.');
-    }
-  };
-  
-  const swipe = async (dir: 'left' | 'right' | 'up' | 'down') => {
-    if (currentIndex >= 0 && childRefs[currentIndex] && childRefs[currentIndex].current && !isSwiping) {
-      try {
-        setIsSwiping(true);
-        console.log('Attempting to swipe', dir, 'on card at index', currentIndex);
-        
-        // Always trigger the swipe event manually since the library's swipe() method returns undefined
-        if (dir === 'left' || dir === 'right') {
-          const currentUser = potentialMatches[currentIndex];
-          if (currentUser) {
-            // Call the swipe method on the TinderCard ref for visual animation
-            const result = await childRefs[currentIndex].current.swipe(dir);
-            console.log('Swipe result:', result);
-            
-            // Manually trigger our swipe logic regardless of the result
-            swiped(dir, currentUser.id, currentIndex);
-          }
-        }
-        
-        // Add a small delay to allow the animation to complete
-        setTimeout(() => setIsSwiping(false), 300);
-      } catch (error) {
-        console.error('Error swiping card:', error);
-        setIsSwiping(false);
-      }
-    } else {
-      console.log('Cannot swipe: currentIndex =', currentIndex, 'isSwiping =', isSwiping, 'childRefs[currentIndex] =', childRefs[currentIndex]);
+  const onSwipe = (direction: string, targetId: string) => {
+    if (direction === 'left' || direction === 'right') {
+      void recordSwipe(direction, targetId);
     }
   };
 
-  const cardVariants = {
-    initial: { 
-      scale: 0.95, 
-      opacity: 0.8,
-      rotateY: 0,
-      y: 20
-    },
-    animate: { 
-      scale: 1, 
-      opacity: 1,
-      rotateY: 0,
-      y: 0,
-      transition: { 
-        duration: 0.4,
-        ease: "easeOut"
-      }
-    },
-    exit: {
-      scale: 0.8,
-      opacity: 0,
-      rotateY: 15,
-      y: -50,
-      transition: { 
-        duration: 0.3,
-        ease: "easeIn"
-      }
-    }
-  };
-
-  const buttonVariants = {
-    initial: { scale: 1 },
-    tap: { scale: 0.98 },
-    disabled: { opacity: 0.5 }
-  };
-
-  if (loading) {
+  if (!user) {
     return (
-      <PageContainer title="Find Matches" className="bg-bg-primary min-h-screen flex flex-col items-center justify-center text-text-primary font-sans">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="text-center"
-        >
-          <FiLoader className="animate-spin text-accent-primary text-6xl mx-auto mb-4" />
-          <p className="mt-4 text-text-secondary">Loading potential matches...</p>
-        </motion.div>
-      </PageContainer>
-    );
-  }
-
-  if (error) {
-    return (
-      <PageContainer title="Error" className="bg-bg-primary min-h-screen flex flex-col items-center justify-center text-text-primary font-sans p-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center"
-        >
-          <FiAlertCircle className="text-accent-error text-6xl mb-4 mx-auto" />
-          <h2 className="text-2xl font-heading mb-2 text-text-primary">Oops! Something went wrong.</h2>
-          <p className="text-text-secondary text-center mb-6">{error}</p>
-          <Button onClick={fetchPotentialMatches} variant="secondary">Try Again</Button>
-        </motion.div>
+      <PageContainer title="Discover">
+        <p className="text-text-muted">Please sign in to discover collaborators.</p>
       </PageContainer>
     );
   }
 
   return (
-    <PageContainer title="Discover Matches" className="bg-bg-primary min-h-screen flex flex-col items-center justify-center text-text-primary font-sans overflow-hidden">
-      <div className="absolute top-4 left-4 z-20">
-          <Button variant="ghost" size="sm" onClick={() => router.back()} className="text-text-secondary hover:bg-surface-hover p-2">
-              <FiArrowLeft size={24} />
+    <PageContainer title="Discover">
+      <div className="max-w-lg mx-auto">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="font-display text-2xl font-semibold text-text-primary">Discover</h1>
+            <p className="text-sm text-text-muted mt-1">Swipe right to connect, left to pass.</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setLocalGone(new Set());
+              void refetch();
+            }}
+            disabled={isFetching}
+          >
+            <FiRefreshCw className={isFetching ? 'animate-spin' : ''} />
           </Button>
-      </div>
-      <div className="absolute top-4 right-4 z-20">
-          <Link href="/matches">
-              <Button variant="secondary" className="font-sans text-sm">
-                  View My Matches
-              </Button>
-          </Link>
-      </div>
-      
-      <div className='relative w-[90vw] max-w-[380px] h-[70vh] max-h-[600px] flex items-center justify-center'>
-        {potentialMatches.length > 0 && currentIndex >= 0 ? (
-          // Only render the current card and the next few cards for smooth transitions
-          potentialMatches.slice(currentIndex, Math.min(currentIndex + 3, potentialMatches.length)).map((character, index) => {
-            const actualIndex = currentIndex + index;
-            const isCurrentCard = index === 0;
-            
-            return (
-              <TinderCard
-                ref={childRefs[actualIndex]}
-                className={`absolute swipe-card ${isCurrentCard ? 'z-10' : 'z-0'}`}
-                key={character.id}
-                onSwipe={(dir) => {
-                  if (dir === 'left' || dir === 'right') {
-                    swiped(dir, character.id, actualIndex);
-                  }
-                }}
-                onCardLeftScreen={() => outOfFrame(character.first_name, actualIndex)}
-                preventSwipe={['up', 'down']} // Allow only left/right swipes
-              >
-                <motion.div
-                  className='relative w-full h-full rounded-md bg-surface-primary border border-border-medium overflow-hidden flex flex-col'
-                  variants={cardVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  transition={{ duration: 0.3 }}
-                >
-                  {/* Profile header */}
-                  <div className="p-6 pb-4 border-b border-border-light bg-accent-soft/50">
-                    <div className="flex items-center gap-4">
-                      <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-border-light bg-surface-secondary flex-shrink-0">
-                        {character.avatar_url ? (
-                          <img
-                            src={character.avatar_url}
-                            alt={`${character.first_name || 'User'}'s avatar`}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <FiUser className="w-8 h-8 text-text-muted" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className='text-xl font-heading text-text-primary truncate'>
-                          {character.first_name || 'Anonymous'} {character.last_name || ''}
-                        </h3>
-                        {character.institution && (
-                          <p className='text-sm text-text-secondary truncate'>{character.institution}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Profile body */}
-                  <div className="flex-1 p-6 overflow-y-auto">
-                    <p className='text-sm text-text-secondary leading-relaxed line-clamp-4'>
-                      {character.bio || 'No bio yet.'}
-                    </p>
-                    {character.interests && character.interests.length > 0 && (
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {character.interests.slice(0, 5).map(interest => (
-                          <span key={interest} className="tag-accent">
-                            {interest}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              </TinderCard>
-            );
-          })
-          ) : (
-            <motion.div 
-              key="no-more-profiles"
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: -20 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="text-center p-8 bg-surface-primary rounded-md border border-border-medium max-w-sm mx-auto"
-            >
-              <div className="mb-6">
-                <FiUser size={48} className="mx-auto text-text-muted" />
-              </div>
-              <h2 className="text-2xl font-heading text-text-primary mb-3">No More Profiles</h2>
-              <p className="text-text-secondary mb-6 text-sm leading-relaxed">
-                You've seen everyone for now! Check back later for new profiles, or try refreshing to see if there are any new matches.
-              </p>
-              <div className="space-y-3">
-                <Button 
-                  onClick={fetchPotentialMatches}
-                  variant="primary"
-                  className="w-full"
-                >
-                  <FiRefreshCw className="mr-2 h-4 w-4" />
-                  Refresh
-                </Button>
-                <Button 
-                  onClick={() => router.push('/matches')}
-                  variant="outline"
-                  className="w-full"
-                >
-                  View My Matches
-                </Button>
-              </div>
-            </motion.div>
-          )}
         </div>
 
-      {potentialMatches.length > 0 && currentIndex >= 0 && (
-        <motion.div 
-          className='flex items-center justify-center gap-6 mt-8 z-20'
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <motion.div
-            variants={buttonVariants}
-            initial="initial"
-            whileTap={isSwiping ? "disabled" : "tap"}
-          >
+        {isLoading ? (
+          <div className="flex justify-center py-20">
+            <FiLoader className="animate-spin text-accent-primary text-2xl" />
+          </div>
+        ) : error ? (
+          <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-accent-error flex gap-2">
+            <FiAlertCircle className="mt-0.5 shrink-0" />
+            <div>
+              <p>{error.message}</p>
+              <Button className="mt-3" size="sm" onClick={() => refetch()}>
+                Try again
+              </Button>
+            </div>
+          </div>
+        ) : visible.length === 0 ? (
+          <div className="text-center py-16 border border-border-medium rounded-md bg-surface-primary">
+            <p className="text-text-primary font-medium">No more profiles right now</p>
+            <p className="text-sm text-text-muted mt-1">Check your matches or try again later.</p>
+            <Link href="/matches" className="inline-block mt-4 text-accent-primary text-sm font-medium">
+              View matches
+            </Link>
+          </div>
+        ) : (
+          <div className="relative h-[520px]">
+            <AnimatePresence>
+              {mutualFlash && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute top-2 left-0 right-0 z-30 mx-auto w-fit rounded-md bg-accent-primary text-white px-3 py-1.5 text-sm"
+                >
+                  It&apos;s a match! Start chatting from Matches.
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {visible.map((profile, index) => (
+              <TinderCard
+                key={profile.id}
+                className="absolute inset-0"
+                onSwipe={(dir) => onSwipe(dir, profile.id)}
+                preventSwipe={['up', 'down']}
+              >
+                <div
+                  className={`h-full rounded-lg border border-border-medium bg-surface-primary p-6 shadow-sm flex flex-col ${
+                    index === visible.length - 1 ? 'z-10' : 'z-0'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <Avatar
+                      src={profile.avatar_url}
+                      alt={profile.first_name || 'Profile'}
+                      size="lg"
+                    />
+                    <div>
+                      <h2 className="font-heading text-xl font-semibold text-text-primary">
+                        {[profile.first_name, profile.last_name].filter(Boolean).join(' ') ||
+                          profile.full_name ||
+                          'Researcher'}
+                      </h2>
+                      <p className="text-sm text-text-muted">
+                        {profile.title || profile.field_of_study || 'Researcher'}
+                        {profile.institution ? ` · ${profile.institution}` : ''}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-text-secondary leading-relaxed flex-1 overflow-y-auto">
+                    {profile.bio || 'No bio yet.'}
+                  </p>
+                  {!!profile.interests?.length && (
+                    <div className="mt-4 flex flex-wrap gap-1.5">
+                      {profile.interests.slice(0, 6).map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-xs px-2 py-0.5 rounded-md bg-accent-muted text-accent-primary"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TinderCard>
+            ))}
+          </div>
+        )}
+
+        {current && (
+          <div className="flex justify-center gap-4 mt-6">
             <Button
-              onClick={() => {
-                console.log('Reject button clicked, currentIndex:', currentIndex);
-                swipe('left');
-              }}
               variant="outline"
               size="lg"
-              disabled={isSwiping}
-              className="rounded-md !p-4 text-text-secondary hover:text-text-primary disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label="Reject"
+              onClick={() => void recordSwipe('left', current.id)}
+              disabled={swipeMutation.isLoading}
+              aria-label="Pass"
             >
-              <FiX size={24} />
+              <FiX className="text-lg" />
             </Button>
-          </motion.div>
-          
-          <motion.div
-            variants={buttonVariants}
-            initial="initial"
-            whileTap={isSwiping ? "disabled" : "tap"}
-          >
             <Button
-              onClick={() => {
-                console.log('Like button clicked, currentIndex:', currentIndex);
-                swipe('right');
-              }}
-              variant="primary"
               size="lg"
-              disabled={isSwiping}
-              className="rounded-md !p-4 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => void recordSwipe('right', current.id)}
+              disabled={swipeMutation.isLoading}
               aria-label="Like"
             >
-              <FiHeart size={24} />
+              <FiHeart className="text-lg" />
             </Button>
-          </motion.div>
-        </motion.div>
-      )}
-      <style jsx global>{`
-        .swipe-card {
-          width: 90vw;
-          max-width: 380px;
-          height: 70vh;
-          max-height: 600px;
-        }
-      `}</style>
+          </div>
+        )}
+
+        {lastDirection && (
+          <p className="text-center text-xs text-text-muted mt-3">Last swipe: {lastDirection}</p>
+        )}
+      </div>
     </PageContainer>
   );
-} 
+}

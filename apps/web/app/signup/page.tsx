@@ -51,10 +51,20 @@ export default function Signup() {
 
       if (error) throw error;
 
-      if (data?.user) {
-        trackSignUp('email');
-        router.push("/profile-setup");
+      trackSignUp('email');
+
+      // Email confirmation required → no session yet
+      if (!data.session) {
+        router.push(`/auth/check-email?email=${encodeURIComponent(email)}`);
+        return;
       }
+
+      let tries = 0;
+      while (!useAuthStore.getState().user && tries < 30) {
+        await new Promise((res) => setTimeout(res, 100));
+        tries++;
+      }
+      router.push('/profile-setup');
     } catch (err: any) {
       setError(err.message || "An error occurred during signup");
     } finally {

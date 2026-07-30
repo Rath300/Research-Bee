@@ -7,8 +7,9 @@ import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { FiLoader, FiUserCheck } from 'react-icons/fi';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { isProfileComplete } from '@/lib/profile';
 
-const ProfileForm = dynamic(() => import('@/components/profile/ProfileForm').then(mod => mod.ProfileForm), {
+const ProfileForm = dynamic(() => import('@/components/profile/ProfileForm').then((mod) => mod.ProfileForm), {
   loading: () => (
     <div className="flex justify-center items-center p-8">
       <FiLoader className="animate-spin text-accent-primary text-2xl" />
@@ -19,44 +20,28 @@ const ProfileForm = dynamic(() => import('@/components/profile/ProfileForm').the
 
 export default function ProfileSetupPage() {
   const router = useRouter();
-  const { user, isLoading: authLoading, profile } = useAuthStore();
+  const { user, isLoading: authLoading, profile, hasAttemptedProfileFetch } = useAuthStore();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
-    if (!authLoading) {
-      if (!user) {
-        router.replace('/login');
-      } else if (
-        profile &&
-        profile.first_name &&
-        profile.last_name &&
-        profile.first_name !== 'Anonymous' &&
-        profile.last_name !== 'User' &&
-        profile.bio
-      ) {
-        router.replace('/dashboard');
-      }
+    if (authLoading) return;
+    if (!user) {
+      router.replace('/login');
+      return;
     }
-  }, [user, authLoading, profile, router]);
+    if (hasAttemptedProfileFetch && isProfileComplete(profile) && !isRedirecting) {
+      router.replace('/dashboard');
+    }
+  }, [user, authLoading, profile, router, hasAttemptedProfileFetch, isRedirecting]);
 
   const handleProfileSetupComplete = () => {
     setIsRedirecting(true);
     setTimeout(() => {
       router.replace('/dashboard');
-    }, 1500);
+    }, 800);
   };
 
-  if (
-    authLoading ||
-    (!user && !authLoading) ||
-    (profile &&
-      profile.first_name &&
-      profile.last_name &&
-      profile.first_name !== 'Anonymous' &&
-      profile.last_name !== 'User' &&
-      profile.bio &&
-      !isRedirecting)
-  ) {
+  if (authLoading || (!user && !authLoading) || (hasAttemptedProfileFetch && isProfileComplete(profile) && !isRedirecting)) {
     return (
       <PageContainer title="Profile Setup" className="bg-bg-primary min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center">
@@ -89,7 +74,7 @@ export default function ProfileSetupPage() {
               Set up your profile
             </CardTitle>
             <CardDescription className="text-text-muted mt-1.5 text-sm">
-              Complete your profile to start connecting and collaborating.
+              Add your name and a short bio to start connecting.
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6">

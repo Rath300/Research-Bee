@@ -1,37 +1,34 @@
 'use client';
 
-import { Sidebar as AppSidebar } from '@/components/layout/Sidebar'; // Renamed import alias for clarity
-import { DashboardHeader as AppHeader } from '@/components/layout/DashboardHeader'; // Renamed import alias
 import React, { useEffect } from 'react';
+import { Sidebar as AppSidebar } from '@/components/layout/Sidebar';
+import { DashboardHeader as AppHeader } from '@/components/layout/DashboardHeader';
 import { useUIStore, useAuthStore } from '@/lib/store';
-import { useRouter, usePathname } from 'next/navigation'; // Added usePathname
-import { FiLoader } from 'react-icons/fi'; // Added FiLoader
-import { AppTour } from '@/components/layout/AppTour'; // Import AppTour
-import { TRPCProvider } from '@/components/providers/TRPCProvider';
+import { useRouter, usePathname } from 'next/navigation';
+import { FiLoader } from 'react-icons/fi';
+import { AppTour } from '@/components/layout/AppTour';
+import { isProfileComplete } from '@/lib/profile';
 
-export default function AppLayout({ children }: { children: React.ReactNode }) { // Renamed component
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { sidebarOpen, setSidebarOpen } = useUIStore();
-  const { user, profile, isLoading: authIsLoading, hasAttemptedProfileFetch } = useAuthStore(); // Added hasAttemptedProfileFetch
+  const { user, profile, isLoading: authIsLoading, hasAttemptedProfileFetch } = useAuthStore();
   const router = useRouter();
-  const pathname = usePathname(); // Initialize pathname
+  const pathname = usePathname();
 
   useEffect(() => {
-    if (!authIsLoading) {
-      if (!user) {
-        console.log('[AppLayout] Auth check: No user. Redirecting to /login.');
-        router.replace('/login');
-      } else if (user && hasAttemptedProfileFetch && (!profile || !profile.first_name) && pathname !== '/profile-setup') {
-        console.log('[AppLayout] User exists, profile incomplete. Redirecting to /profile-setup.');
-        router.replace('/profile-setup');
-      }
+    if (authIsLoading) return;
+    if (!user) {
+      router.replace('/login');
+      return;
     }
-  }, [user, profile, authIsLoading, router, pathname, hasAttemptedProfileFetch]); // Added dependencies
+    if (hasAttemptedProfileFetch && !isProfileComplete(profile) && pathname !== '/profile-setup') {
+      router.replace('/profile-setup');
+    }
+  }, [user, profile, authIsLoading, router, pathname, hasAttemptedProfileFetch]);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const isSidebarCollapsed = !sidebarOpen;
 
-  // Show loading only during initial auth check or profile setup redirect
-  // Don't show loading during regular navigation or when already redirecting
   if (authIsLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-bg-primary">
@@ -40,38 +37,29 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Early return for unauthenticated users - don't show loading, redirect is handled in useEffect
-  if (!user) {
+  if (!user) return null;
+
+  if (hasAttemptedProfileFetch && !isProfileComplete(profile) && pathname !== '/profile-setup') {
     return null;
   }
 
-  // Early return for incomplete profiles - don't show loading, redirect is handled in useEffect
-  if (hasAttemptedProfileFetch && (!profile || !profile.first_name) && pathname !== '/profile-setup') {
-    return null;
-  } 
-
-  // If all checks pass, render the layout
   return (
-    <TRPCProvider>
-      <div className="flex h-screen bg-bg-primary">
-        <AppSidebar />
-        <div 
-          className="flex flex-1 flex-col overflow-hidden transition-all duration-300 ease-in-out"
-          style={{ marginLeft: sidebarOpen ? '270px' : '80px' }}
-        >
-          <AppHeader 
-            profile={profile} 
-            toggleSidebar={toggleSidebar} 
-            isSidebarCollapsed={isSidebarCollapsed} 
-          />
-          <main className="flex-1 overflow-y-auto bg-bg-primary">
-            <div className="p-5 md:p-6">
-              {children}
-            </div>
-          </main>
+    <div className="flex h-screen bg-bg-primary">
+      <AppSidebar />
+      <div
+        className="flex flex-1 flex-col overflow-hidden transition-all duration-300 ease-in-out"
+        style={{ marginLeft: sidebarOpen ? '270px' : '80px' }}
+      >
+        <AppHeader
+          profile={profile}
+          toggleSidebar={toggleSidebar}
+          isSidebarCollapsed={isSidebarCollapsed}
+        />
+        <div className="flex-1 overflow-y-auto bg-bg-primary">
+          <div className="p-5 md:p-6">{children}</div>
         </div>
-        <AppTour /> {/* Render AppTour component here */}
       </div>
-    </TRPCProvider>
+      <AppTour />
+    </div>
   );
 }

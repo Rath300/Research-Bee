@@ -1,17 +1,8 @@
 "use client";
 
 import React from 'react';
-import { Layout } from './Layout';
-import { Providers } from '../providers/Providers';
 
-interface ClientLayoutProps {
-  children: React.ReactNode;
+/** Legacy wrapper — app shell now lives in `app/(app)/layout.tsx`. */
+export function ClientLayout({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
 }
-
-export function ClientLayout({ children }: ClientLayoutProps) {
-  return (
-    <Providers>
-      <Layout>{children}</Layout>
-    </Providers>
-  );
-} 

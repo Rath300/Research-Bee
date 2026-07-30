@@ -139,11 +139,14 @@ export function ProfileForm({ initialData, onProfileUpdate }: ProfileFormProps) 
       return { previousProfile };
     },
     onError: (err, newProfile, context) => {
-      // Rollback to the previous value if mutation fails
       if (context?.previousProfile) {
         setProfile(context.previousProfile);
       }
-      setError(err.message);
+      const message =
+        err.data?.code === 'UNAUTHORIZED'
+          ? 'Session expired. Please sign in again and retry.'
+          : err.message;
+      setError(message);
       setSuccess(null);
     },
     onSuccess: (data) => {
@@ -166,7 +169,16 @@ export function ProfileForm({ initialData, onProfileUpdate }: ProfileFormProps) 
       return;
     }
 
-    // Validate required fields
+    // Validate required fields for completeness gate
+    if (!formData.full_name.trim()) {
+      setError('Full name is required.');
+      return;
+    }
+    const nameParts = formData.full_name.trim().split(/\s+/);
+    if (nameParts.length < 2 || !nameParts[0] || !nameParts.slice(1).join(' ')) {
+      setError('Please enter both first and last name.');
+      return;
+    }
     if (!formData.bio || formData.bio.trim().length === 0) {
       setError('Bio is required.');
       return;
@@ -178,10 +190,6 @@ export function ProfileForm({ initialData, onProfileUpdate }: ProfileFormProps) 
         const uploadResult = await uploadAvatar(user.id, avatarFile);
         newAvatarUrl = uploadResult?.url ?? newAvatarUrl;
       }
-      
-
-
-      const nameParts = formData.full_name.trim().split(/\s+/);
 
       const profileDataToSave = {
         full_name: formData.full_name.trim(),

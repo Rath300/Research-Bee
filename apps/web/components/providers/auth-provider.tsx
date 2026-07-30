@@ -1,20 +1,29 @@
 'use client';
 
-import { useEffect } from 'react';
-// import { usePathname, useRouter } from 'next/navigation'; // useRouter and usePathname no longer needed here
-import { supabase } from '@/lib/supabaseClient'; // Import the singleton instance
+import { useEffect, useRef } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 import { useAuthStore } from '@/lib/store';
 import { getProfile } from '@/lib/api';
-// import type { User } from '@supabase/supabase-js'; // User type not directly used
 
-// Auth paths and isAuthPathClient are no longer needed here, will be handled by middleware
-// const AUTH_PATHS = ['/login', '/signup', '/reset-password'];
-// const isAuthPathClient = (currentPathname: string | null): boolean => {
-//   if (!currentPathname) return false;
-//   return AUTH_PATHS.includes(currentPathname) || currentPathname.startsWith('/auth');
-// };
-
-// Minor change timestamp: 2023-10-27T10:00:00Z
+async function fetchProfileWithRetry(userId: string, attempts = 3) {
+  let lastError: unknown = null;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await getProfile(userId);
+    } catch (error) {
+      lastError = error;
+      const message = error instanceof Error ? error.message.toLowerCase() : '';
+      const isTransient =
+        message.includes('schema cache') ||
+        message.includes('could not find the table') ||
+        message.includes('fetch');
+      if (!isTransient || i === attempts - 1) break;
+      await new Promise((r) => setTimeout(r, 250 * (i + 1)));
+    }
+  }
+  if (lastError) console.error('[AuthProvider] Profile fetch failed after retries:', lastError);
+  return null;
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const {
@@ -23,152 +32,95 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile,
     setLoading,
     setHasAttemptedProfileFetch,
-    // Get current state for checks if needed, though direct store reads are often better inside functions
-    // user: storeUserSnapshot,
-    // profile: storeProfileSnapshot,
+    clearAuth,
   } = useAuthStore();
-  // const router = useRouter(); // No longer needed
-  // const pathname = usePathname(); // No longer needed
+
+  const lastUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    let lastSessionId: string | null = null;
-    let lastUserId: string | null = null;
-    let authListenerSubscription: ReturnType<typeof supabase.auth.onAuthStateChange>['data']['subscription'] | null = null;
-    let fallbackTimeout: NodeJS.Timeout | null = null;
-    
-    const fetchSessionWithRetry = async (retries = 1) => {
-      let session = await supabase.auth.getSession();
-      if (!session.data.session && retries > 0) {
-        await new Promise(res => setTimeout(res, 100));
-        session = await supabase.auth.getSession();
-      }
-      return session.data.session;
-    };
-    const mainAuthSetup = async () => {
+    let authListenerSubscription: { unsubscribe: () => void } | null = null;
+
+    const applySession = async (session: Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']) => {
       if (!isMounted) return;
 
-      // Fallback: after 2 seconds, force loading to false if still loading
-      fallbackTimeout = setTimeout(() => {
-        if (isMounted && useAuthStore.getState().isLoading) {
-          setLoading(false);
-          setHasAttemptedProfileFetch(true);
-          console.warn('[AuthProvider] Fallback: Forced loading=false after timeout.');
-        }
-      }, 2000);
+      const remoteUser = session?.user ?? null;
+      const nextUserId = remoteUser?.id ?? null;
 
-      if (!useAuthStore.persist.hasHydrated()) {
-        console.log('[AuthProvider] Store not yet rehydrated. Waiting for rehydration...');
-        await useAuthStore.persist.rehydrate();
-        if (!isMounted) return; // Check again after await
-        console.log('[AuthProvider] Store successfully rehydrated.');
+      // Invalidate stale persisted profile when user changes
+      if (lastUserIdRef.current && nextUserId && lastUserIdRef.current !== nextUserId) {
+        setProfile(null);
+        setHasAttemptedProfileFetch(false);
+      }
+      if (!nextUserId && lastUserIdRef.current) {
+        clearAuth();
+        lastUserIdRef.current = null;
+        return;
+      }
+
+      lastUserIdRef.current = nextUserId;
+      setUser(remoteUser);
+      setSession(session);
+
+      if (remoteUser) {
+        const profileData = await fetchProfileWithRetry(remoteUser.id);
+        if (!isMounted) return;
+        setProfile(profileData);
       } else {
-        console.log('[AuthProvider] Store was already rehydrated.');
+        setProfile(null);
       }
 
-      // Always force profile fetch after rehydration
-      console.log('[AuthProvider] initializeAuth: START');
-      try {
-        const session = await fetchSessionWithRetry(1);
-        if (!isMounted) return;
-        console.log(`[AuthProvider] initializeAuth: Explicit getSession complete. Session: ${session ? session.user.id : 'null'}`);
-
-        if (session) {
-          const remoteUser = session?.user ?? null;
-          setUser(remoteUser);
-          setSession(session);
-
-          if (remoteUser) {
-            try {
-              // Use getProfile but it should handle the null case properly
-              const profileData = await getProfile(remoteUser.id);
-              if (!isMounted) return;
-              setProfile(profileData);
-            } catch (error) {
-              if (!isMounted) return;
-              console.error('[AuthProvider] initializeAuth: Error fetching profile:', error);
-              setProfile(null);
-            }
-          } else {
-            setProfile(null);
-          }
-        } else {
-          setProfile(null);
-        }
-      } catch (e) {
-        if (!isMounted) return;
-        console.error('[AuthProvider] initializeAuth: Critical error:', e);
-        useAuthStore.getState().clearAuth();
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-          setHasAttemptedProfileFetch(true);
-          console.log('[AuthProvider] initializeAuth: END. isLoading:', useAuthStore.getState().isLoading, 'hasAttemptedProfileFetch:', useAuthStore.getState().hasAttemptedProfileFetch);
-        }
-      }
-
-      if (!isMounted) return;
-
-      // Setup onAuthStateChange listener
-      console.log('[AuthProvider] Setting up onAuthStateChange listener...');
-      authListenerSubscription = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          if (!isMounted) return;
-          const sessionId = session?.access_token || null;
-          const userId = session?.user?.id || null;
-          if (event === 'SIGNED_IN' && sessionId === lastSessionId && userId === lastUserId) {
-            console.log('[AuthProvider] Duplicate SIGNED_IN event ignored for session:', sessionId, 'user:', userId);
-            return;
-          }
-          if (sessionId === lastSessionId && userId === lastUserId) {
-            console.log('[AuthProvider] Duplicate auth event ignored for session:', sessionId, 'user:', userId);
-            return;
-          }
-          lastSessionId = sessionId;
-          lastUserId = userId;
-          console.log('[AuthProvider] onAuthStateChange: Event:', event, 'Session:', session ? session.user.id : 'null');
-          setLoading(true);
-          const listenerUser = session?.user ?? null;
-          setUser(listenerUser);
-          setSession(session);
-
-          // Only fetch profile if user actually changed
-          if (listenerUser) {
-            try {
-              const profileData = await getProfile(listenerUser.id);
-              if (!isMounted) return;
-              setProfile(profileData);
-            } catch (error) {
-              if (!isMounted) return;
-              console.error('[AuthProvider] onAuthStateChange: Error fetching profile:', error);
-              setProfile(null);
-            }
-          } else {
-            setProfile(null);
-          }
-          setLoading(false);
-          setHasAttemptedProfileFetch(true);
-          console.log('[AuthProvider] onAuthStateChange: END. isLoading:', useAuthStore.getState().isLoading, 'hasAttemptedProfileFetch:', useAuthStore.getState().hasAttemptedProfileFetch);
-        }
-      ).data.subscription;
+      setLoading(false);
+      setHasAttemptedProfileFetch(true);
     };
 
-    mainAuthSetup().catch(error => {
-      console.error("[AuthProvider] Critical error in mainAuthSetup:", error);
-      if(isMounted) {
-        useAuthStore.getState().clearAuth();
+    const mainAuthSetup = async () => {
+      if (!useAuthStore.persist.hasHydrated()) {
+        await useAuthStore.persist.rehydrate();
+      }
+      if (!isMounted) return;
+
+      setLoading(true);
+      const { data } = await supabase.auth.getSession();
+      await applySession(data.session);
+
+      authListenerSubscription = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (!isMounted) return;
+        console.log('[AuthProvider] onAuthStateChange:', event, session?.user?.id ?? null);
+
+        if (event === 'SIGNED_OUT') {
+          lastUserIdRef.current = null;
+          clearAuth();
+          return;
+        }
+
+        // TOKEN_REFRESHED shouldn't force a full profile refetch unless user missing
+        if (event === 'TOKEN_REFRESHED' && session?.user?.id === lastUserIdRef.current) {
+          setSession(session);
+          setUser(session.user);
+          setLoading(false);
+          return;
+        }
+
+        setLoading(true);
+        await applySession(session);
+      }).data.subscription;
+    };
+
+    mainAuthSetup().catch((error) => {
+      console.error('[AuthProvider] Critical error in mainAuthSetup:', error);
+      if (isMounted) {
+        clearAuth();
         setLoading(false);
         setHasAttemptedProfileFetch(true);
       }
     });
-    
+
     return () => {
       isMounted = false;
-      if (fallbackTimeout) clearTimeout(fallbackTimeout);
-      console.log('[AuthProvider] Effect CLEANUP. Unsubscribing from onAuthStateChange.');
       authListenerSubscription?.unsubscribe();
     };
-  }, [setUser, setSession, setProfile, setLoading, setHasAttemptedProfileFetch]);
+  }, [setUser, setSession, setProfile, setLoading, setHasAttemptedProfileFetch, clearAuth]);
 
   return <>{children}</>;
-} 
+}

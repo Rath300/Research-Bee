@@ -1,43 +1,65 @@
-import { type CreateNextContextOptions } from '@trpc/server/adapters/next';
+import { type FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
+import type { User, SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-export async function createContext(opts: CreateNextContextOptions) {
-  // Patch cookies to always return string
+function readBearerToken(req: Request): string | undefined {
+  const authHeader = req.headers.get('authorization') ?? req.headers.get('Authorization');
+  if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+    return authHeader.slice('Bearer '.length).trim() || undefined;
+  }
+  return undefined;
+}
+
+export async function createContext(opts: FetchCreateContextFnOptions | { req: Request }) {
   const cookieStore = cookies();
+  const accessToken = readBearerToken(opts.req);
+
   const cookieMethods = {
     get: (name: string) => cookieStore.get?.(name)?.value ?? undefined,
     set: () => {},
     remove: () => {},
   };
 
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, { cookies: cookieMethods });
+  const supabase: SupabaseClient = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: cookieMethods,
+    ...(accessToken
+      ? {
+          global: {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        }
+      : {}),
+  });
 
-  // Patch: If Authorization header is present, set the access token
-  let accessToken: string | undefined;
-  if (opts.req && typeof opts.req.headers?.get === 'function') {
-    const authHeader = opts.req.headers.get('authorization');
-    console.log('API context Authorization header:', authHeader);
-    if (authHeader?.startsWith('Bearer ')) {
-      accessToken = authHeader.replace('Bearer ', '');
-    }
-  } else if (opts.req && typeof opts.req.headers === 'object') {
-    const authHeader = (opts.req.headers as any)['authorization'];
-    console.log('API context Authorization header:', authHeader);
-    if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
-      accessToken = authHeader.replace('Bearer ', '');
-    }
-  }
+  let user: User | null = null;
+
+  // Prefer validating the JWT from the client Authorization header (App Router tRPC).
   if (accessToken) {
-    await supabase.auth.setSession({ access_token: accessToken, refresh_token: '' });
+    const { data, error } = await supabase.auth.getUser(accessToken);
+    if (error) {
+      console.warn('API context getUser(jwt) failed:', error.message);
+    } else {
+      user = data.user;
+    }
   }
-  // Use getUser for secure, verified user
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  console.log('API context Supabase user:', user, userError);
+
+  // Fall back to cookie session (SSR / middleware-synced cookies).
+  if (!user) {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) {
+      console.warn('API context getUser(cookies) failed:', error.message);
+    } else {
+      user = data.user;
+    }
+  }
+
   return { supabase, user };
 }
 
-export type Context = Awaited<ReturnType<typeof createContext>>; 
+export type Context = Awaited<ReturnType<typeof createContext>>;

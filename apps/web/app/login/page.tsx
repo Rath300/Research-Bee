@@ -1,20 +1,22 @@
 "use client";
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from "@/lib/supabaseClient";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useAuthStore } from '@/lib/store';
+import { isProfileComplete, isSafeRedirectPath } from '@/lib/profile';
 
-export default function Login() {
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,11 +37,26 @@ export default function Login() {
       }
 
       let tries = 0;
-      while (!useAuthStore.getState().user && tries < 20) {
-        await new Promise(res => setTimeout(res, 100));
+      while (!useAuthStore.getState().user && tries < 30) {
+        await new Promise((res) => setTimeout(res, 100));
         tries++;
       }
-      router.replace('/dashboard');
+
+      tries = 0;
+      while (!useAuthStore.getState().hasAttemptedProfileFetch && tries < 30) {
+        await new Promise((res) => setTimeout(res, 100));
+        tries++;
+      }
+
+      const { profile } = useAuthStore.getState();
+      const redirectTo = searchParams?.get('redirect_to') ?? null;
+      if (!isProfileComplete(profile)) {
+        router.replace('/profile-setup');
+      } else if (isSafeRedirectPath(redirectTo)) {
+        router.replace(redirectTo);
+      } else {
+        router.replace('/dashboard');
+      }
     } catch (err: any) {
       console.error("Generic Login Error:", err);
       setError(err.message || "An unexpected error occurred. Please try again.");
@@ -133,5 +150,19 @@ export default function Login() {
         &copy; {new Date().getFullYear()} ResearchBee
       </footer>
     </div>
+  );
+}
+
+export default function Login() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-bg-primary">
+          <span className="text-text-muted font-ui text-sm">Loading…</span>
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

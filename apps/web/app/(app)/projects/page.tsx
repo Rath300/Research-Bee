@@ -1,71 +1,88 @@
 'use client';
 
-import { getProjects } from '@/lib/posts';
+import React from 'react';
+import { api } from '@/lib/trpc';
+import { PageContainer } from '@/components/layout/PageContainer';
+import { FiLoader, FiPlusCircle, FiHome } from 'react-icons/fi';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import Link from 'next/link';
-import { FiLoader, FiChevronRight, FiBriefcase } from 'react-icons/fi';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/lib/store';
 
 export default function ProjectsPage() {
   const { isLoading: authLoading, session } = useAuthStore();
-  // Assuming a tRPC procedure `listMyProjects` exists to get all projects for the current user.
-  // We may need to create this procedure if it doesn't exist.
-  const { data: projects, isLoading, error } = getProjects();
-
-  if (isLoading) {
-    return <div className="p-8 bg-bg-primary"><FiLoader className="animate-spin text-accent-primary text-2xl" /></div>;
-  }
-
-  if (error) {
-    return <div className="p-8 text-red-500 bg-bg-primary">Error loading projects: {error.message}</div>;
-  }
+  const { data: projects, isLoading, error } = api.project.listMyProjects.useQuery(undefined, {
+    enabled: !authLoading && !!session,
+  });
 
   return (
-    <div className="p-4 md:p-8 text-text-primary bg-bg-primary">
-      <Card className="bg-surface-primary border-border-medium">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold flex items-center text-text-primary">
-            <FiBriefcase className="mr-3 text-accent-primary" /> My Projects
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {projects && projects.length > 0 ? (
-            <div className="space-y-4">
-              {projects.map(project => (
-                <Link 
-                  key={project.id}
-                  href={`/projects/${project.id}`}
-                  className="block p-4 bg-surface-secondary rounded-md border border-border-light hover:bg-surface-hover transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                        <h3 className="font-semibold text-lg text-text-primary">{project.title}</h3>
-                        <p className="text-sm text-text-secondary">
-                            Role: {project.role}
-                        </p>
-                        {project.tags && project.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {project.tags.map((tag: string) => (
-                              <span
-                                key={tag}
-                                className="bg-accent-soft text-text-secondary px-2 py-1 rounded-sm text-xs"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                    </div>
-                    <FiChevronRight className="h-5 w-5 text-text-muted" />
+    <PageContainer title="Projects">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-display font-semibold text-text-primary">Projects</h1>
+          <p className="text-sm text-text-muted mt-1">Your research projects and collaborations.</p>
+        </div>
+        <Link href="/projects/new" passHref>
+          <Button>
+            <FiPlusCircle className="mr-2" />
+            New Project
+          </Button>
+        </Link>
+      </div>
+
+      {isLoading && (
+        <div className="flex justify-center items-center p-8">
+          <FiLoader className="animate-spin text-accent-primary text-3xl" />
+        </div>
+      )}
+
+      {error && <p className="text-accent-error text-sm">Error: {error.message || 'Failed to load projects.'}</p>}
+
+      {!isLoading && !error && projects && projects.length === 0 && (
+        <Card className="bg-surface-primary border-border-medium text-center">
+          <CardHeader>
+            <FiHome className="mx-auto text-4xl text-text-muted" />
+          </CardHeader>
+          <CardContent>
+            <CardTitle className="text-xl text-text-primary">No projects yet</CardTitle>
+            <CardDescription className="text-text-secondary mt-2">
+              Create your first research project to get started.
+            </CardDescription>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {projects?.map((project) => (
+          <Link key={project.id} href={`/projects/${project.id}`} passHref>
+            <Card className="bg-surface-primary border-border-medium hover:bg-surface-hover transition-colors cursor-pointer h-full flex flex-col">
+              <CardHeader>
+                <CardTitle className="text-xl text-text-primary">{project.title}</CardTitle>
+                <div className="text-xs text-text-secondary font-medium px-2 py-1 rounded-sm bg-surface-secondary w-min mt-2">
+                  {project.role?.toUpperCase() || ''}
+                </div>
+                {project.tags && project.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {project.tags.map((tag: string) => (
+                      <span
+                        key={tag}
+                        className="bg-accent-muted text-accent-primary px-2 py-1 rounded-sm text-xs"
+                      >
+                        {tag}
+                      </span>
+                    ))}
                   </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <p className="text-text-muted">You are not a part of any projects yet.</p>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                )}
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <CardDescription className="text-text-secondary line-clamp-3">
+                  {project.description || 'No description available.'}
+                </CardDescription>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
+    </PageContainer>
   );
 }
