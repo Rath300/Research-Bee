@@ -29,8 +29,8 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
         retry: 2,
         retryOnMount: true,
         refetchOnWindowFocus: false,
-        refetchOnMount: true,
-        refetchOnReconnect: 'always',
+        refetchOnMount: false,
+        refetchOnReconnect: true,
       },
       mutations: {
         retry: 1,

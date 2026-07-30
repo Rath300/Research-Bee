@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuthStore } from '@/lib/store';
 import { getProfile } from '@/lib/api';
@@ -36,40 +37,81 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   } = useAuthStore();
 
   const lastUserIdRef = useRef<string | null>(null);
+  const bootstrappedRef = useRef(false);
+  const profileFetchInFlightRef = useRef<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
     let authListenerSubscription: { unsubscribe: () => void } | null = null;
 
-    const applySession = async (session: Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']) => {
+    const syncSessionQuietly = (session: Session | null) => {
+      const remoteUser = session?.user ?? null;
+      lastUserIdRef.current = remoteUser?.id ?? null;
+      setUser(remoteUser);
+      setSession(session);
+    };
+
+    const loadProfileIfNeeded = async (userId: string, force = false) => {
+      const existing = useAuthStore.getState().profile;
+      if (!force && existing?.id === userId) {
+        setHasAttemptedProfileFetch(true);
+        return existing;
+      }
+      if (profileFetchInFlightRef.current === userId) return existing;
+      profileFetchInFlightRef.current = userId;
+      try {
+        const profileData = await fetchProfileWithRetry(userId);
+        if (!isMounted) return profileData;
+        // Keep previous complete profile if a transient fetch returned null
+        if (!profileData && existing?.id === userId) {
+          setHasAttemptedProfileFetch(true);
+          return existing;
+        }
+        setProfile(profileData);
+        return profileData;
+      } finally {
+        if (profileFetchInFlightRef.current === userId) {
+          profileFetchInFlightRef.current = null;
+        }
+      }
+    };
+
+    const applySession = async (
+      session: Session | null,
+      opts: { showLoading?: boolean; forceProfile?: boolean } = {}
+    ) => {
       if (!isMounted) return;
 
+      const { showLoading = false, forceProfile = false } = opts;
       const remoteUser = session?.user ?? null;
       const nextUserId = remoteUser?.id ?? null;
+      const prevUserId = lastUserIdRef.current;
 
-      // Invalidate stale persisted profile when user changes
-      if (lastUserIdRef.current && nextUserId && lastUserIdRef.current !== nextUserId) {
+      if (showLoading) setLoading(true);
+
+      if (prevUserId && nextUserId && prevUserId !== nextUserId) {
         setProfile(null);
         setHasAttemptedProfileFetch(false);
       }
-      if (!nextUserId && lastUserIdRef.current) {
-        clearAuth();
+
+      if (!nextUserId) {
+        if (prevUserId || useAuthStore.getState().user) {
+          clearAuth();
+        } else {
+          setUser(null);
+          setSession(null);
+          setLoading(false);
+          setHasAttemptedProfileFetch(true);
+        }
         lastUserIdRef.current = null;
         return;
       }
 
-      lastUserIdRef.current = nextUserId;
-      setUser(remoteUser);
-      setSession(session);
+      syncSessionQuietly(session);
 
-      if (remoteUser) {
-        const profileData = await fetchProfileWithRetry(remoteUser.id);
-        if (!isMounted) return;
-        setProfile(profileData);
-      } else {
-        setProfile(null);
-      }
+      await loadProfileIfNeeded(nextUserId, forceProfile || prevUserId !== nextUserId);
 
+      if (!isMounted) return;
       setLoading(false);
       setHasAttemptedProfileFetch(true);
     };
@@ -80,13 +122,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       if (!isMounted) return;
 
-      setLoading(true);
+      // Seed lastUserId from rehydrated store to avoid false "user changed" on first event
+      lastUserIdRef.current = useAuthStore.getState().user?.id ?? null;
+
       const { data } = await supabase.auth.getSession();
-      await applySession(data.session);
+      await applySession(data.session, {
+        showLoading: !useAuthStore.getState().user,
+        forceProfile: !useAuthStore.getState().profile,
+      });
+      bootstrappedRef.current = true;
 
       authListenerSubscription = supabase.auth.onAuthStateChange(async (event, session) => {
         if (!isMounted) return;
-        console.log('[AuthProvider] onAuthStateChange:', event, session?.user?.id ?? null);
+
+        const nextUserId = session?.user?.id ?? null;
+        const sameUser = !!nextUserId && nextUserId === lastUserIdRef.current;
+
+        // Tab focus / token refresh must NOT remount the app shell.
+        if (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+          if (session) {
+            syncSessionQuietly(session);
+            if (sameUser && !useAuthStore.getState().profile) {
+              await loadProfileIfNeeded(nextUserId);
+            }
+          }
+          setLoading(false);
+          return;
+        }
 
         if (event === 'SIGNED_OUT') {
           lastUserIdRef.current = null;
@@ -94,16 +156,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        // TOKEN_REFRESHED shouldn't force a full profile refetch unless user missing
-        if (event === 'TOKEN_REFRESHED' && session?.user?.id === lastUserIdRef.current) {
-          setSession(session);
-          setUser(session.user);
+        if (event === 'SIGNED_IN' && sameUser) {
+          syncSessionQuietly(session);
+          // Soft profile refresh in background — never flip global loading
+          void loadProfileIfNeeded(nextUserId);
           setLoading(false);
           return;
         }
 
-        setLoading(true);
-        await applySession(session);
+        // Real sign-in / user switch
+        await applySession(session, {
+          showLoading: !sameUser && !bootstrappedRef.current,
+          forceProfile: !sameUser,
+        });
       }).data.subscription;
     };
 

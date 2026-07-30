@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Sidebar as AppSidebar } from '@/components/layout/Sidebar';
 import { DashboardHeader as AppHeader } from '@/components/layout/DashboardHeader';
 import { useUIStore, useAuthStore } from '@/lib/store';
@@ -14,10 +14,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, profile, isLoading: authIsLoading, hasAttemptedProfileFetch } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
+  const hasRenderedAppRef = useRef(false);
+
+  // Once we've shown the app shell, keep it mounted across quiet auth refreshes.
+  if (user && hasAttemptedProfileFetch && isProfileComplete(profile)) {
+    hasRenderedAppRef.current = true;
+  }
 
   useEffect(() => {
-    if (authIsLoading) return;
+    if (authIsLoading && !hasRenderedAppRef.current) return;
     if (!user) {
+      hasRenderedAppRef.current = false;
       router.replace('/login');
       return;
     }
@@ -29,7 +36,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const isSidebarCollapsed = !sidebarOpen;
 
-  if (authIsLoading) {
+  // Initial boot only — never blank the shell on tab-focus token refresh
+  if (authIsLoading && !hasRenderedAppRef.current && !user) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-bg-primary">
         <FiLoader className="animate-spin text-accent-primary text-2xl" />
