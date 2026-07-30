@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/trpc';
@@ -266,18 +266,26 @@ function MembersTab({
   const { success, error: toastError } = useToast();
   const utils = api.useUtils();
   const [query, setQuery] = useState('');
-  const [search, setSearch] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
 
-  const searchQuery = api.workspace.searchProfilesForInvite.useQuery(
-    { query: search },
-    { enabled: search.length >= 2 }
+  useEffect(() => {
+    const t = window.setTimeout(() => setDebouncedQuery(query.trim()), 250);
+    return () => window.clearTimeout(t);
+  }, [query]);
+
+  const memberIds = useMemo(
+    () => new Set((members || []).map((m) => m.user_id as string)),
+    [members]
+  );
+
+  const peopleQuery = api.workspace.searchProfilesForInvite.useQuery(
+    { query: debouncedQuery, limit: 100 },
+    { enabled: canManage }
   );
 
   const inviteMutation = api.workspace.inviteUserToWorkspace.useMutation({
     onSuccess: async () => {
       success('Invite sent');
-      setQuery('');
-      setSearch('');
       await utils.workspace.listWorkspaceMembers.invalidate({ workspaceId });
     },
     onError: (e) => toastError(e.message),
@@ -291,55 +299,67 @@ function MembersTab({
     onError: (e) => toastError(e.message),
   });
 
+  const people = useMemo(
+    () => (peopleQuery.data || []).filter((p) => !memberIds.has(p.id)),
+    [peopleQuery.data, memberIds]
+  );
+
   return (
     <div className="space-y-4">
       {canManage && (
         <Card>
           <CardContent className="p-4 space-y-3">
-            <p className="text-sm font-medium text-text-primary">Invite collaborator</p>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setSearch(query.trim());
-              }}
-              className="flex gap-2"
-            >
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by name…"
-              />
-              <Button type="submit" variant="outline" size="sm">
-                Search
-              </Button>
-            </form>
-            {searchQuery.data?.map((p) => (
-              <div
-                key={p.id}
-                className="flex items-center gap-3 py-2 border-b border-border-subtle last:border-0"
-              >
-                <Avatar src={p.avatar_url} alt={displayName(p)} size="sm" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{displayName(p)}</p>
-                  <p className="text-xs text-text-muted truncate">
-                    {p.title || p.institution || 'Researcher'}
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  onClick={() =>
-                    inviteMutation.mutate({
-                      workspaceId,
-                      invitedUserId: p.id,
-                      role: 'editor',
-                    })
-                  }
-                  isLoading={inviteMutation.isLoading}
-                >
-                  Invite
-                </Button>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-text-primary">Invite collaborator</p>
+              <p className="text-xs text-text-muted">
+                {peopleQuery.isLoading ? 'Loading…' : `${people.length} available`}
+              </p>
+            </div>
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Filter by name (optional)…"
+            />
+            {peopleQuery.isLoading ? (
+              <div className="flex justify-center py-6">
+                <FiLoader className="animate-spin text-accent-primary" />
               </div>
-            ))}
+            ) : peopleQuery.error ? (
+              <p className="text-sm text-accent-error">{peopleQuery.error.message}</p>
+            ) : !people.length ? (
+              <p className="text-sm text-text-muted py-4 text-center">
+                {debouncedQuery
+                  ? 'No matching people found.'
+                  : 'Everyone available is already in this workspace.'}
+              </p>
+            ) : (
+              <ul className="max-h-80 overflow-y-auto divide-y divide-border-subtle border border-border-medium rounded-md">
+                {people.map((p) => (
+                  <li key={p.id} className="flex items-center gap-3 px-3 py-2.5 bg-surface-primary">
+                    <Avatar src={p.avatar_url} alt={displayName(p)} size="sm" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{displayName(p)}</p>
+                      <p className="text-xs text-text-muted truncate">
+                        {p.title || p.institution || 'Researcher'}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        inviteMutation.mutate({
+                          workspaceId,
+                          invitedUserId: p.id,
+                          role: 'editor',
+                        })
+                      }
+                      isLoading={inviteMutation.isLoading}
+                    >
+                      Invite
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </CardContent>
         </Card>
       )}

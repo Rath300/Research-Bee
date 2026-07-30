@@ -857,17 +857,30 @@ export const workspaceRouter = router({
     }),
 
   searchProfilesForInvite: protectedProcedure
-    .input(z.object({ query: z.string().min(1).max(80), limit: z.number().min(1).max(20).default(8) }))
+    .input(
+      z.object({
+        query: z.string().max(80).optional().default(''),
+        limit: z.number().min(1).max(100).default(50),
+      })
+    )
     .query(async ({ ctx, input }) => {
       const q = input.query.trim();
-      const { data, error } = await ctx.supabase
+
+      let query = ctx.supabase
         .from('profiles')
         .select('id, first_name, last_name, full_name, avatar_url, institution, title')
         .neq('id', ctx.user.id)
-        .or(
-          `first_name.ilike.%${q}%,last_name.ilike.%${q}%,full_name.ilike.%${q}%`
-        )
+        .not('first_name', 'is', null)
+        .order('first_name', { ascending: true })
         .limit(input.limit);
+
+      if (q.length > 0) {
+        query = query.or(
+          `first_name.ilike.%${q}%,last_name.ilike.%${q}%,full_name.ilike.%${q}%`
+        );
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
