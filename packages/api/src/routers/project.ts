@@ -1026,6 +1026,50 @@ export const projectRouter = router({
       });
     }),
 
+  getFileSignedUrl: protectedProcedure
+    .input(z.object({ projectId: z.string().uuid(), fileId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+      const { data: collaborator, error: collaboratorError } = await ctx.supabase
+        .from('project_collaborators')
+        .select('role')
+        .eq('project_id', input.projectId)
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (collaboratorError || !collaborator) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You do not have access to this project.',
+        });
+      }
+
+      const { data: file, error: fileError } = await ctx.supabase
+        .from('project_files')
+        .select('file_path, file_name')
+        .eq('id', input.fileId)
+        .eq('project_id', input.projectId)
+        .single();
+
+      if (fileError || !file) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'File not found.' });
+      }
+
+      const { data, error } = await ctx.supabase.storage
+        .from('project_files')
+        .createSignedUrl(file.file_path, 60 * 10);
+
+      if (error || !data?.signedUrl) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: error?.message || 'Could not create download link.',
+        });
+      }
+
+      return { url: data.signedUrl, fileName: file.file_name as string };
+    }),
+
   deleteFile: protectedProcedure
     .input(z.object({
       projectId: z.string().uuid(),

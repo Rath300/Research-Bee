@@ -360,6 +360,7 @@ export const externalRouter = router({
     }),
 
   // Legacy CORE search (kept for backward compatibility)
+  // CORE search intentionally omitted — use arXiv / Semantic Scholar / CrossRef instead.
   searchCore: publicProcedure
     .input(z.object({
       query: z.string().min(1, 'Search query is required'),
@@ -378,38 +379,8 @@ export const externalRouter = router({
         publisher: z.string().optional().nullable(),
       })),
     }))
-    .query(async ({ input }) => {
-      // For now, return mock data until CORE API is integrated
-      console.log(`[CORE Search] Query: ${input.query}, Limit: ${input.limit}`);
-
-      const mockResults = [
-        {
-          id: `core-${Date.now()}-1`,
-          title: `Research Paper on ${input.query}`,
-          authors: ['Dr. Jane Smith', 'Prof. John Doe'],
-          abstract: `This paper presents an innovative approach to ${input.query}, demonstrating significant improvements in performance and efficiency.`,
-          yearPublished: 2024,
-          doi: `10.1000/mock.${input.query.replace(/\s+/g, '').toLowerCase()}`,
-          downloadUrl: `https://core.ac.uk/download/pdf/${input.query.replace(/\s+/g, '-').toLowerCase()}.pdf`,
-          sourceFulltextUrls: [`https://core.ac.uk/display/${input.query.replace(/\s+/g, '-').toLowerCase()}`],
-          publisher: 'Academic Journal of Research',
-        },
-        {
-          id: `core-${Date.now()}-2`,
-          title: `Comprehensive Study of ${input.query} Applications`,
-          authors: ['Dr. Alice Johnson', 'Dr. Bob Wilson'],
-          abstract: `A comprehensive review of ${input.query} applications across various domains. This study analyzes current trends and challenges.`,
-          yearPublished: 2023,
-          doi: `10.1000/mock.${input.query.replace(/\s+/g, '').toLowerCase()}.2`,
-          downloadUrl: `https://core.ac.uk/download/pdf/${input.query.replace(/\s+/g, '-').toLowerCase()}-2.pdf`,
-          sourceFulltextUrls: [`https://core.ac.uk/display/${input.query.replace(/\s+/g, '-').toLowerCase()}-2`],
-          publisher: 'International Science Review',
-        },
-      ];
-
-      return {
-        results: mockResults.slice(0, input.limit),
-      };
+    .query(async () => {
+      return { results: [] };
     }),
 });
 

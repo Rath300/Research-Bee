@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { FiLoader, FiAlertCircle, FiUser, FiFileText, FiDownload, FiTag, FiCalendar, FiEye, FiArrowLeft } from 'react-icons/fi';
 import { formatDistanceToNow } from 'date-fns';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function ResearchPostPage() {
   const router = useRouter();
@@ -25,19 +26,25 @@ export default function ResearchPostPage() {
 
   const error = queryError?.message || null;
 
-  const handleFileDownload = (filePath: string, fileName: string) => {
-    const supabaseStorageUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    if (supabaseStorageUrl && post?.project_files) {
-        const fileDetail = post.project_files.find(f => f.file_path === filePath);
-        if (fileDetail) {
-            const publicUrl = `${supabaseStorageUrl}/storage/v1/object/public/project_files/${filePath}`;
-            const link = document.createElement('a');
-            link.href = publicUrl;
-            link.setAttribute('download', fileName || 'download');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+  const handleFileDownload = async (filePath: string, fileName: string) => {
+    try {
+      const { data, error: signedError } = await supabase.storage
+        .from('project_files')
+        .createSignedUrl(filePath, 60 * 10);
+      if (signedError || !data?.signedUrl) {
+        console.error(signedError);
+        return;
+      }
+      const link = document.createElement('a');
+      link.href = data.signedUrl;
+      link.setAttribute('download', fileName || 'download');
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) {
+      console.error(e);
     }
   };
 

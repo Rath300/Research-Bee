@@ -26,11 +26,19 @@ export function AuthForm({ view }: AuthFormProps) {
 
     try {
       if (view === 'sign-up') {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const origin = typeof window !== 'undefined' ? window.location.origin : ''
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email,
-          password
+          password,
+          options: {
+            emailRedirectTo: origin ? `${origin}/auth/callback` : undefined,
+          },
         })
         if (signUpError) throw signUpError
+        if (!data.session) {
+          router.push(`/auth/check-email?email=${encodeURIComponent(email)}`)
+          return
+        }
         router.push('/profile-setup')
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({

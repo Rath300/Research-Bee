@@ -19,6 +19,7 @@ import {
   FiBriefcase,
   FiTrendingUp,
   FiBookOpen,
+  FiLayout,
 } from 'react-icons/fi';
 import Image from 'next/image';
 import { useToast } from '@/components/ui/Toast';
@@ -48,6 +49,7 @@ export function Sidebar() {
     { label: 'Matches', href: '/matches', icon: <FiHeart /> },
     { label: 'Chats', href: '/chats', icon: <FiMessageSquare /> },
     { label: 'Projects', href: '/projects', icon: <FiBriefcase /> },
+    { label: 'Workspaces', href: '/workspaces', icon: <FiLayout /> },
   ];
 
   const exploreItems = [

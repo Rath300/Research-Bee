@@ -17,6 +17,7 @@ export function FileManager({ projectId, userRole }: FileManagerProps) {
   
   const { data: files, isLoading, error } = api.project.listFiles.useQuery({ projectId });
   const deleteFileMutation = api.project.deleteFile.useMutation();
+  const signedUrlMutation = api.project.getFileSignedUrl.useMutation();
   const utils = api.useUtils();
 
   const handleDeleteFile = async (fileId: string) => {
@@ -131,12 +132,22 @@ export function FileManager({ projectId, userRole }: FileManagerProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      // Create download link
-                      const link = document.createElement('a');
-                      link.href = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/project_files/${file.file_path}`;
-                      link.download = file.file_name;
-                      link.click();
+                    disabled={signedUrlMutation.isLoading}
+                    onClick={async () => {
+                      try {
+                        const { url, fileName } = await signedUrlMutation.mutateAsync({
+                          projectId,
+                          fileId: file.id,
+                        });
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = fileName;
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        link.click();
+                      } catch (e) {
+                        console.error('Failed to download file:', e);
+                      }
                     }}
                   >
                     <FiDownload className="w-4 h-4" />

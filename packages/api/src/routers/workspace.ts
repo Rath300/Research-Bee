@@ -1,471 +1,336 @@
 import { z } from 'zod';
+import { TRPCError } from '@trpc/server';
 import { router, protectedProcedure } from '../trpc';
-import { supabase, workspaceRoleSchema } from '@research-collab/db';
+import {
+  workspaceDocumentTypeSchema,
+  workspaceRoleSchema,
+  workspaceTaskStatusSchema,
+} from '@research-collab/db';
+
+async function requireAcceptedMember(
+  supabase: any,
+  workspaceId: string,
+  userId: string,
+  roles?: string[]
+) {
+  const { data, error } = await supabase
+    .from('workspace_members')
+    .select('role, invitation_status')
+    .eq('workspace_id', workspaceId)
+    .eq('user_id', userId)
+    .eq('invitation_status', 'accepted')
+    .maybeSingle();
+
+  if (error) {
+    throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+  }
+  if (!data) {
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'Workspace not found or access denied.' });
+  }
+  if (roles && !roles.includes(data.role)) {
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'Insufficient workspace permissions.' });
+  }
+  return data as { role: string; invitation_status: string };
+}
 
 export const workspaceRouter = router({
   createWorkspace: protectedProcedure
     .input(
       z.object({
-        name: z.string().min(1, 'Workspace name is required'),
-        description: z.string().optional().nullable(),
+        name: z.string().min(1).max(120),
+        description: z.string().max(2000).optional().nullable(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { user } = ctx;
-      const { name, description } = input;
-
-      if (!user || !user.id) {
-        throw new Error('User ID not found in session');
-      }
-
-      const { data, error } = await supabase
+      const { data, error } = await ctx.supabase
         .from('workspaces')
-        .insert([
-          {
-            name,
-            description,
-            owner_id: user.id,
-          },
-        ])
+        .insert({
+          name: input.name.trim(),
+          description: input.description?.trim() || null,
+          owner_id: ctx.user.id,
+        })
         .select()
         .single();
 
-      if (error) {
-        console.error('Error creating workspace:', error);
-        throw new Error('Failed to create workspace: ' + error.message);
+      if (error || !data) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: error?.message || 'Failed to create workspace.',
+        });
       }
 
-      if (!data) {
-        throw new Error('Failed to create workspace, no data returned.');
-      }
-      
-      // After creating the workspace, automatically add the owner as a member
-      const { error: memberError } = await supabase
-        .from('workspace_members')
-        .insert([
-          {
-            workspace_id: data.id,
-            user_id: user.id,
-            role: 'owner', // The creator is the owner
-          },
-        ]);
+      const { error: memberError } = await ctx.supabase.from('workspace_members').insert({
+        workspace_id: data.id,
+        user_id: ctx.user.id,
+        role: 'owner',
+        invitation_status: 'accepted',
+        joined_at: new Date().toISOString(),
+      });
 
       if (memberError) {
-        console.error('Error adding owner to workspace_members:', memberError);
-        // Potentially roll back workspace creation or log this for an admin to fix
-        throw new Error('Workspace created, but failed to add owner as member: ' + memberError.message);
+        await ctx.supabase.from('workspaces').delete().eq('id', data.id);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: memberError.message || 'Failed to add workspace owner.',
+        });
       }
 
-      return data as any; // Cast to any for now, can be refined with output schema
+      return data;
     }),
 
   getWorkspaceById: protectedProcedure
     .input(z.object({ workspaceId: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
-      const { user } = ctx;
-      const { workspaceId } = input;
+      await requireAcceptedMember(ctx.supabase, input.workspaceId, ctx.user.id);
 
-      if (!user || !user.id) {
-        throw new Error('User ID not found in session');
-      }
-
-      // First, check if the user is a member of the workspace
-      const { data: memberData, error: memberError } = await supabase
-        .from('workspace_members')
-        .select('workspace_id')
-        .eq('workspace_id', workspaceId)
-        .eq('user_id', user.id)
-        .maybeSingle(); // Use maybeSingle as we only care if a record exists or not
-
-      if (memberError) {
-        console.error('Error checking workspace membership:', memberError);
-        throw new Error('Failed to verify workspace membership: ' + memberError.message);
-      }
-
-      if (!memberData) {
-        // User is not a member of this workspace, or workspace doesn't exist
-        // Throwing an error might be better than returning null to indicate an authorization issue or missing resource
-        throw new Error('Workspace not found or access denied.'); 
-      }
-
-      // If user is a member, fetch the workspace details
-      const { data: workspaceData, error: workspaceError } = await supabase
+      const { data, error } = await ctx.supabase
         .from('workspaces')
-        .select('*') // Select all columns for now, can be refined
-        .eq('id', workspaceId)
+        .select('*')
+        .eq('id', input.workspaceId)
         .single();
 
-      if (workspaceError) {
-        console.error('Error fetching workspace by ID:', workspaceError);
-        throw new Error('Failed to fetch workspace: ' + workspaceError.message);
+      if (error || !data) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Workspace not found.' });
       }
-
-      if (!workspaceData) {
-        // This case should ideally not be reached if member check passed and workspace exists
-        // but good for robustness
-        throw new Error('Workspace not found after membership check.');
-      }
-
-      return workspaceData as any; // Cast to any for now
+      return data;
     }),
 
-  listUserWorkspaces: protectedProcedure
-    .query(async ({ ctx }) => {
-      const { user } = ctx;
+  listUserWorkspaces: protectedProcedure.query(async ({ ctx }) => {
+    const { data, error } = await ctx.supabase
+      .from('workspace_members')
+      .select(
+        `
+        role,
+        invitation_status,
+        joined_at,
+        workspaces (id, name, description, owner_id, created_at, updated_at)
+      `
+      )
+      .eq('user_id', ctx.user.id)
+      .eq('invitation_status', 'accepted')
+      .order('joined_at', { ascending: false });
 
-      if (!user || !user.id) {
-        throw new Error('User ID not found in session');
-      }
+    if (error) {
+      throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+    }
 
-      // Fetch all workspace_members entries for the user, then join with workspaces table
-      const { data, error } = await supabase
-        .from('workspace_members')
-        .select(`
-          role,
-          joined_at,
-          workspaces (*)
-        `)
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error('Error listing user workspaces:', error);
-        throw new Error('Failed to list workspaces: ' + error.message);
-      }
-
-      // The data will be an array of workspace_member objects, each containing the workspace details
-      // We map it to return just the workspace details if needed, or the structure as is.
-      // For now, returning the structure with member info and workspace details nested.
-      return data || []; 
-    }),
+    return (data || [])
+      .filter((row: any) => row.workspaces)
+      .map((row: any) => ({
+        role: row.role as string,
+        joinedAt: row.joined_at as string,
+        workspace: row.workspaces,
+      }));
+  }),
 
   updateWorkspace: protectedProcedure
     .input(
       z.object({
         workspaceId: z.string().uuid(),
-        name: z.string().min(1, 'Workspace name cannot be empty').optional(),
-        description: z.string().optional().nullable(),
+        name: z.string().min(1).max(120).optional(),
+        description: z.string().max(2000).optional().nullable(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { user } = ctx;
-      const { workspaceId, ...updateData } = input;
-
-      if (!user || !user.id) {
-        throw new Error('User ID not found in session');
+      await requireAcceptedMember(ctx.supabase, input.workspaceId, ctx.user.id, ['owner']);
+      const { workspaceId, ...patch } = input;
+      if (Object.keys(patch).length === 0) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'No update data provided.' });
       }
 
-      // Check if the user is the owner of the workspace
-      const { data: memberData, error: memberError } = await supabase
-        .from('workspace_members')
-        .select('role')
-        .eq('workspace_id', workspaceId)
-        .eq('user_id', user.id)
-        .single();
-
-      if (memberError || !memberData) {
-        console.error('Error checking workspace ownership for update:', memberError);
-        throw new Error('Failed to verify workspace ownership or workspace not found.');
-      }
-
-      if (memberData.role !== 'owner') {
-        throw new Error('Only the workspace owner can update the workspace.');
-      }
-
-      // Prevent attempting to update with no actual data
-      if (Object.keys(updateData).length === 0) {
-        throw new Error('No update data provided.');
-      }
-
-      const { data: updatedWorkspace, error: updateError } = await supabase
+      const { data, error } = await ctx.supabase
         .from('workspaces')
-        .update(updateData)
+        .update({
+          ...(patch.name !== undefined ? { name: patch.name.trim() } : {}),
+          ...(patch.description !== undefined ? { description: patch.description } : {}),
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', workspaceId)
         .select()
         .single();
 
-      if (updateError) {
-        console.error('Error updating workspace:', updateError);
-        throw new Error('Failed to update workspace: ' + updateError.message);
+      if (error || !data) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: error?.message || 'Failed to update workspace.',
+        });
       }
-      
-      if (!updatedWorkspace) {
-        throw new Error('Failed to update workspace, no data returned.');
-      }
-
-      return updatedWorkspace as any;
+      return data;
     }),
 
   deleteWorkspace: protectedProcedure
     .input(z.object({ workspaceId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      const { user } = ctx;
-      const { workspaceId } = input;
-
-      if (!user || !user.id) {
-        throw new Error('User ID not found in session');
+      await requireAcceptedMember(ctx.supabase, input.workspaceId, ctx.user.id, ['owner']);
+      const { error } = await ctx.supabase.from('workspaces').delete().eq('id', input.workspaceId);
+      if (error) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
       }
-
-      // Check if the user is the owner of the workspace
-      const { data: memberData, error: memberError } = await supabase
-        .from('workspace_members')
-        .select('role')
-        .eq('workspace_id', workspaceId)
-        .eq('user_id', user.id)
-        .single();
-
-      if (memberError || !memberData) {
-        console.error('Error checking workspace ownership for delete:', memberError);
-        throw new Error('Failed to verify workspace ownership or workspace not found.');
-      }
-
-      if (memberData.role !== 'owner') {
-        throw new Error('Only the workspace owner can delete the workspace.');
-      }
-
-      // Proceed with deletion
-      const { error: deleteError } = await supabase
-        .from('workspaces')
-        .delete()
-        .eq('id', workspaceId);
-
-      if (deleteError) {
-        console.error('Error deleting workspace:', deleteError);
-        throw new Error('Failed to delete workspace: ' + deleteError.message);
-      }
-
-      return { success: true, message: 'Workspace deleted successfully.' };
+      return { success: true };
     }),
 
-  // Workspace Member Management
   inviteUserToWorkspace: protectedProcedure
     .input(
       z.object({
         workspaceId: z.string().uuid(),
         invitedUserId: z.string().uuid(),
-        role: workspaceRoleSchema, // from @research-collab/db
+        role: workspaceRoleSchema.default('editor'),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { user: inviter } = ctx;
-      const { workspaceId, invitedUserId, role } = input;
-
-      if (!inviter || !inviter.id) {
-        throw new Error('Inviter not authenticated');
+      if (input.invitedUserId === ctx.user.id) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot invite yourself.' });
+      }
+      if (input.role === 'owner') {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot invite as owner.' });
       }
 
-      // 1. Check inviter's role in the workspace (must be owner or admin)
-      const { data: inviterMemberData, error: inviterMemberError } = await supabase
+      await requireAcceptedMember(ctx.supabase, input.workspaceId, ctx.user.id, ['owner', 'admin']);
+
+      const { data: existing } = await ctx.supabase
         .from('workspace_members')
-        .select('role')
-        .eq('workspace_id', workspaceId)
-        .eq('user_id', inviter.id)
-        .eq('invitation_status', 'accepted') // Inviter must be an accepted member
-        .single();
-
-      if (inviterMemberError || !inviterMemberData) {
-        throw new Error('Inviter not found in workspace or error checking permissions.');
-      }
-      if (!['owner', 'admin'].includes(inviterMemberData.role)) {
-        throw new Error('Only workspace owners or admins can invite users.');
-      }
-
-      // 2. Check if the invited user is already an active member or has a pending invite
-      const { data: existingMember, error: existingMemberError } = await supabase
-        .from('workspace_members')
-        .select('id, invitation_status')
-        .eq('workspace_id', workspaceId)
-        .eq('user_id', invitedUserId)
+        .select('invitation_status')
+        .eq('workspace_id', input.workspaceId)
+        .eq('user_id', input.invitedUserId)
         .maybeSingle();
 
-      if (existingMemberError) {
-        throw new Error('Error checking existing membership for invited user.');
+      if (existing?.invitation_status === 'accepted') {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'User is already a member.' });
       }
-      if (existingMember) {
-        if (existingMember.invitation_status === 'accepted') {
-          throw new Error('User is already an active member of this workspace.');
-        }
-        if (existingMember.invitation_status === 'pending') {
-          throw new Error('User already has a pending invitation to this workspace.');
-        }
-        // If declined, we can allow a new invite by proceeding
+      if (existing?.invitation_status === 'pending') {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'User already has a pending invite.' });
       }
-      
-      // 3. Add record to workspace_members with status 'pending'
-      const { data: newMember, error: newMemberError } = await supabase
-        .from('workspace_members')
-        .insert({
-          workspace_id: workspaceId,
-          user_id: invitedUserId,
-          role: role,
-          invitation_status: 'pending',
-        })
-        .select()
+
+      const payload = {
+        workspace_id: input.workspaceId,
+        user_id: input.invitedUserId,
+        role: input.role,
+        invitation_status: 'pending',
+      };
+
+      const { data: member, error } = existing
+        ? await ctx.supabase
+            .from('workspace_members')
+            .update(payload)
+            .eq('workspace_id', input.workspaceId)
+            .eq('user_id', input.invitedUserId)
+            .select()
+            .single()
+        : await ctx.supabase.from('workspace_members').insert(payload).select().single();
+
+      if (error || !member) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: error?.message || 'Failed to invite user.',
+        });
+      }
+
+      const { data: workspace } = await ctx.supabase
+        .from('workspaces')
+        .select('name')
+        .eq('id', input.workspaceId)
         .single();
 
-      if (newMemberError || !newMember) {
-        console.error('Error inviting user to workspace:', newMemberError);
-        throw new Error('Failed to invite user to workspace.');
-      }
+      await ctx.supabase.from('user_notifications').insert({
+        user_id: input.invitedUserId,
+        type: 'general_alert',
+        content: `You were invited to join workspace "${workspace?.name || 'Untitled'}".`,
+        link_to: `/workspaces/${input.workspaceId}`,
+        sender_id: ctx.user.id,
+      });
 
-      // 4. Create a user notification (assuming a table 'user_notifications' and appropriate schema)
-      // This part depends on your existing notification setup. 
-      // We'll attempt a direct insert for now.
-      const { data: workspace } = await supabase.from('workspaces').select('name').eq('id', workspaceId).single();
-      const workspaceName = workspace?.name || 'a workspace';
-      
-      const { error: notificationError } = await supabase
-        .from('user_notifications') // Make sure this table exists and schema matches
-        .insert({
-          user_id: invitedUserId,
-          type: 'workspace_invitation', // Ensure this type is in your userNotificationSchema enum
-          content: `You have been invited by ${inviter.email || 'a user'} to join workspace: ${workspaceName}.`,
-          link_to: `/workspaces/${workspaceId}/accept-invite`, // Example link
-          sender_id: inviter.id,
-        });
-
-      if (notificationError) {
-        console.warn('Failed to create notification for workspace invitation:', notificationError);
-        // Don't fail the whole operation for a notification error, but log it.
-      }
-
-      return { success: true, message: 'Invitation sent successfully.', member: newMember };
+      return { success: true, member };
     }),
 
   listWorkspaceMembers: protectedProcedure
     .input(z.object({ workspaceId: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
-      const { user: requester } = ctx;
-      const { workspaceId } = input;
+      await requireAcceptedMember(ctx.supabase, input.workspaceId, ctx.user.id);
 
-      // 1. Verify requester is an accepted member of the workspace
-      const { count: requesterMemberCount, error: requesterMemberError } = await supabase
+      const { data, error } = await ctx.supabase
         .from('workspace_members')
-        .select('*', { count: 'exact', head: true })
-        .eq('workspace_id', workspaceId)
-        .eq('user_id', requester.id)
-        .eq('invitation_status', 'accepted');
-
-      if (requesterMemberError || requesterMemberCount === 0) {
-        throw new Error('Access denied or workspace not found.');
-      }
-
-      // 2. Fetch active members, joining with profiles for details
-      const { data: members, error: membersError } = await supabase
-        .from('workspace_members')
-        .select(`
+        .select(
+          `
           user_id,
           role,
           joined_at,
           invitation_status,
-          profile:profiles (id, first_name, last_name, avatar_url, email)
-        `)
-        .eq('workspace_id', workspaceId)
-        .eq('invitation_status', 'accepted');
-      
-      if (membersError) {
-        console.error('Error listing workspace members:', membersError);
-        throw new Error('Failed to list workspace members.');
-      }
+          profile:profiles (id, first_name, last_name, avatar_url, full_name)
+        `
+        )
+        .eq('workspace_id', input.workspaceId)
+        .in('invitation_status', ['accepted', 'pending'])
+        .order('joined_at', { ascending: true });
 
-      return members || [];
-    }),
-
-  listPendingInvitationsForUser: protectedProcedure
-    .query(async ({ ctx }) => {
-      const { user } = ctx;
-      if (!user || !user.id) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase
-        .from('workspace_members')
-        .select(`
-          workspace_id,
-          role,
-          joined_at, 
-          workspace:workspaces (id, name, description)
-        `)
-        .eq('user_id', user.id)
-        .eq('invitation_status', 'pending');
-      
       if (error) {
-        console.error('Error fetching pending invitations:', error);
-        throw new Error('Failed to fetch pending invitations.');
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
       }
       return data || [];
     }),
 
+  listPendingInvitationsForUser: protectedProcedure.query(async ({ ctx }) => {
+    const { data, error } = await ctx.supabase
+      .from('workspace_members')
+      .select(
+        `
+        workspace_id,
+        role,
+        joined_at,
+        workspace:workspaces (id, name, description)
+      `
+      )
+      .eq('user_id', ctx.user.id)
+      .eq('invitation_status', 'pending');
+
+    if (error) {
+      throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+    }
+    return data || [];
+  }),
+
   acceptWorkspaceInvitation: protectedProcedure
     .input(z.object({ workspaceId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      const { user } = ctx;
-      const { workspaceId } = input;
-
-      if (!user || !user.id) throw new Error('User not authenticated');
-
-      // Check if a pending invitation exists for this user and workspace
-      const { data: existingInvite, error: checkError } = await supabase
-        .from('workspace_members')
-        .select('id, invitation_status')
-        .eq('workspace_id', workspaceId)
-        .eq('user_id', user.id)
-        .eq('invitation_status', 'pending')
-        .single();
-
-      if (checkError || !existingInvite) {
-        throw new Error('No pending invitation found or error checking invitation.');
-      }
-
-      // Update invitation status to 'accepted' and set joined_at
-      const { data: updatedMember, error: updateError } = await supabase
+      const { data, error } = await ctx.supabase
         .from('workspace_members')
         .update({
           invitation_status: 'accepted',
-          joined_at: new Date().toISOString(), 
+          joined_at: new Date().toISOString(),
         })
-        .eq('id', existingInvite.id)
+        .eq('workspace_id', input.workspaceId)
+        .eq('user_id', ctx.user.id)
+        .eq('invitation_status', 'pending')
         .select()
-        .single();
+        .maybeSingle();
 
-      if (updateError || !updatedMember) {
-        console.error('Error accepting invitation:', updateError);
-        throw new Error('Failed to accept invitation.');
+      if (error) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
       }
-      
-      return { success: true, message: 'Invitation accepted.', member: updatedMember };
+      if (!data) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'No pending invitation found.' });
+      }
+      return { success: true, member: data };
     }),
 
   declineWorkspaceInvitation: protectedProcedure
     .input(z.object({ workspaceId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      const { user } = ctx;
-      const { workspaceId } = input;
-
-      if (!user || !user.id) throw new Error('User not authenticated');
-
-      // Check if a pending invitation exists for this user and workspace
-      const { data: existingInvite, error: checkError } = await supabase
-        .from('workspace_members')
-        .select('id, invitation_status')
-        .eq('workspace_id', workspaceId)
-        .eq('user_id', user.id)
-        .eq('invitation_status', 'pending')
-        .single();
-
-      if (checkError || !existingInvite) {
-        throw new Error('No pending invitation found or error checking invitation.');
-      }
-
-      // Update invitation status to 'declined'
-      const { error: updateError } = await supabase
+      const { data, error } = await ctx.supabase
         .from('workspace_members')
         .update({ invitation_status: 'declined' })
-        .eq('id', existingInvite.id);
+        .eq('workspace_id', input.workspaceId)
+        .eq('user_id', ctx.user.id)
+        .eq('invitation_status', 'pending')
+        .select()
+        .maybeSingle();
 
-      if (updateError) {
-        console.error('Error declining invitation:', updateError);
-        throw new Error('Failed to decline invitation.');
+      if (error) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
       }
-
-      return { success: true, message: 'Invitation declined.' };
+      if (!data) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'No pending invitation found.' });
+      }
+      return { success: true };
     }),
 
   updateWorkspaceMemberRole: protectedProcedure
@@ -473,71 +338,31 @@ export const workspaceRouter = router({
       z.object({
         workspaceId: z.string().uuid(),
         memberUserId: z.string().uuid(),
-        newRole: workspaceRoleSchema, // Make sure workspaceRoleSchema is imported from @research-collab/db
+        newRole: workspaceRoleSchema,
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { user: requester } = ctx;
-      const { workspaceId, memberUserId, newRole } = input;
+      if (input.newRole === 'owner') {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Use ownership transfer instead.' });
+      }
+      await requireAcceptedMember(ctx.supabase, input.workspaceId, ctx.user.id, ['owner', 'admin']);
 
-      if (!requester || !requester.id) throw new Error('Requester not authenticated');
-
-      // 1. Get requester's role and target member's current role
-      const { data: memberRoles, error: rolesError } = await supabase
+      const { data, error } = await ctx.supabase
         .from('workspace_members')
-        .select('user_id, role')
-        .eq('workspace_id', workspaceId)
-        .in('user_id', [requester.id, memberUserId])
-        .eq('invitation_status', 'accepted');
-
-      if (rolesError || !memberRoles || memberRoles.length === 0) {
-        throw new Error('Error fetching member roles or members not found.');
-      }
-
-      const requesterMembership = memberRoles.find((m: { user_id: string; role: string }) => m.user_id === requester.id);
-      const targetMembership = memberRoles.find((m: { user_id: string; role: string }) => m.user_id === memberUserId);
-
-      if (!requesterMembership) throw new Error('Requester is not an active member of this workspace.');
-      if (!targetMembership) throw new Error('Target user is not an active member of this workspace.');
-
-      const requesterRole = requesterMembership.role; // No cast, use as string
-      const targetRole = targetMembership.role;   // No cast, use as string
-
-      // 2. Authorization checks
-      if (!['owner', 'admin'].includes(requesterRole)) {
-        throw new Error('Only workspace owners or admins can change member roles.');
-      }
-      if (targetRole === 'owner' && requesterRole !== 'owner') {
-        throw new Error('Admins cannot change the role of an owner.');
-      }
-      if (targetRole === 'owner' && newRole !== 'owner' && requester.id === memberUserId) {
-        throw new Error('Owners cannot demote themselves from the owner role directly. Transfer ownership first.');
-      }
-      if (requesterRole === 'admin' && targetRole === 'admin' && newRole === 'owner') {
-        throw new Error('Admins cannot promote other admins to owner.');
-      }
-      if (requesterRole === 'admin' && targetRole === 'owner') {
-        throw new Error('Admins cannot change an owner\'s role.');
-      }
-      if (newRole === targetRole) {
-        throw new Error(`User is already assigned the role: ${newRole}`);
-      }
-
-      // 3. Update the role
-      const { data: updatedMember, error: updateError } = await supabase
-        .from('workspace_members')
-        .update({ role: newRole })
-        .eq('workspace_id', workspaceId)
-        .eq('user_id', memberUserId)
+        .update({ role: input.newRole })
+        .eq('workspace_id', input.workspaceId)
+        .eq('user_id', input.memberUserId)
+        .neq('role', 'owner')
         .select()
-        .single();
+        .maybeSingle();
 
-      if (updateError || !updatedMember) {
-        console.error('Error updating member role:', updateError);
-        throw new Error('Failed to update member role.');
+      if (error) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
       }
-
-      return { success: true, message: 'Member role updated.', member: updatedMember };
+      if (!data) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Member not found or is owner.' });
+      }
+      return { success: true, member: data };
     }),
 
   removeUserFromWorkspace: protectedProcedure
@@ -548,208 +373,112 @@ export const workspaceRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { user: requester } = ctx;
-      const { workspaceId, memberUserIdToRemove } = input;
+      const me = await requireAcceptedMember(ctx.supabase, input.workspaceId, ctx.user.id);
+      const isSelf = input.memberUserIdToRemove === ctx.user.id;
 
-      if (!requester || !requester.id) throw new Error('Requester not authenticated');
+      if (!isSelf && !['owner', 'admin'].includes(me.role)) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Insufficient permissions.' });
+      }
 
-      // Get requester's role and target member's role
-      const { data: memberRoles, error: rolesError } = await supabase
+      const { data: target } = await ctx.supabase
         .from('workspace_members')
-        .select('user_id, role')
-        .eq('workspace_id', workspaceId)
-        .in('user_id', [requester.id, memberUserIdToRemove])
-        .eq('invitation_status', 'accepted');
-        
-      if (rolesError || !memberRoles || memberRoles.length === 0) {
-        // This could mean one or both users are not in the workspace, or a DB error occurred.
-        // More specific error handling might be needed based on `memberRoles.length` if it's not a DB error.
-        throw new Error('Error fetching member roles or one/both users not found as active members.');
+        .select('role')
+        .eq('workspace_id', input.workspaceId)
+        .eq('user_id', input.memberUserIdToRemove)
+        .maybeSingle();
+
+      if (!target) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Member not found.' });
+      }
+      if (target.role === 'owner') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot remove the owner. Transfer ownership or delete the workspace.',
+        });
       }
 
-      const requesterMembership = memberRoles.find((m: { user_id: string; role: string }) => m.user_id === requester.id);
-      const targetMembership = memberRoles.find((m: { user_id: string; role: string }) => m.user_id === memberUserIdToRemove);
-
-      // If requester is not the one being removed, they must be an active member.
-      if (requester.id !== memberUserIdToRemove && !requesterMembership) { 
-          throw new Error('Requester is not an active member of this workspace or not found.');
-      }
-      if (!targetMembership) { // This should ideally be caught by the rolesError check if memberRoles is empty.
-          throw new Error('Target user to remove is not an active member of this workspace or not found.');
-      }
-
-      const requesterRole = requesterMembership?.role; // Can be undefined if requester is removing self and not in memberRoles (e.g. if self-removal logic changes)
-      const targetRole = targetMembership.role;
-
-      // Authorization
-      let canRemove = false;
-      if (requester.id === memberUserIdToRemove) {
-        // User is removing themselves (leaving)
-        if (targetRole === 'owner') {
-          const { count, error: ownerCountError } = await supabase
-            .from('workspace_members')
-            .select('id', { count: 'exact', head: true })
-            .eq('workspace_id', workspaceId)
-            .eq('role', 'owner')
-            .eq('invitation_status', 'accepted');
-          if (ownerCountError) {
-            console.error("Error checking owner count:", ownerCountError);
-            throw new Error('Error verifying workspace ownership structure.');
-          }
-          if (count !== null && count <= 1) { // Check count is not null before comparison
-            throw new Error('Cannot leave as the sole owner. Transfer ownership or delete the workspace.');
-          }
-        }
-        canRemove = true;
-      } else if (requesterMembership && requesterRole && ['owner', 'admin'].includes(requesterRole)) {
-        // Admin or Owner removing someone else
-        if (targetRole === 'owner') {
-          throw new Error('Owners cannot be removed. Transfer ownership first or delete the workspace.');
-        }
-        if (requesterRole === 'admin' && targetRole === 'admin') {
-            throw new Error('Admins cannot remove other admins. Only owners can perform this action.');
-        }
-        canRemove = true;
-      } else {
-        throw new Error('You do not have permission to remove this user from the workspace.');
-      }
-
-      if (!canRemove) {
-        // This path should ideally not be hit if logic above is correct.
-        throw new Error('Removal permission check failed unexpectedly. This indicates a logic error.');
-      }
-
-      const { error: deleteError } = await supabase
+      const { error } = await ctx.supabase
         .from('workspace_members')
         .delete()
-        .eq('workspace_id', workspaceId)
-        .eq('user_id', memberUserIdToRemove); // Ensure we only delete the target user
+        .eq('workspace_id', input.workspaceId)
+        .eq('user_id', input.memberUserIdToRemove);
 
-      if (deleteError) {
-        console.error('Error removing user from workspace:', deleteError);
-        throw new Error('Failed to remove user from workspace: ' + deleteError.message);
+      if (error) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
       }
-
-      return { success: true, message: 'User removed from workspace successfully.' };
+      return { success: true };
     }),
 
-  // Workspace Document Management
+  // Documents
   createWorkspaceDocument: protectedProcedure
     .input(
       z.object({
         workspaceId: z.string().uuid(),
-        title: z.string().min(1, 'Document title cannot be empty').max(255),
-        documentType: z.enum([
-            'Text Document',
-            'Code Notebook',
-            'Research Proposal',
-            'Methodology',
-            'Data Analysis',
-            'Literature Review',
-            'Generic Document',
-        ]).default('Generic Document'),
-        content: z.record(z.any()).optional().nullable(), // Assuming content is JSONB
+        title: z.string().min(1).max(255),
+        documentType: workspaceDocumentTypeSchema.default('Generic Document'),
+        content: z.record(z.any()).optional().nullable(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { user } = ctx;
-      const { workspaceId, title, documentType, content } = input;
+      await requireAcceptedMember(ctx.supabase, input.workspaceId, ctx.user.id, [
+        'owner',
+        'admin',
+        'editor',
+      ]);
 
-      if (!user || !user.id) {
-        throw new Error('User not authenticated');
-      }
-
-      // RLS will handle if user can create in this workspace based on their role
-      // The INSERT RLS policy also ensures created_by_user_id is auth.uid()
-      const { data, error } = await supabase
+      const { data, error } = await ctx.supabase
         .from('workspace_documents')
         .insert({
-          workspace_id: workspaceId,
-          title,
-          document_type: documentType,
-          content,
-          created_by_user_id: user.id, // Explicitly set here, RLS also checks
-          last_edited_by_user_id: user.id,
+          workspace_id: input.workspaceId,
+          title: input.title.trim(),
+          document_type: input.documentType,
+          content: input.content ?? { text: '' },
+          created_by_user_id: ctx.user.id,
+          last_edited_by_user_id: ctx.user.id,
         })
         .select()
         .single();
 
-      if (error) {
-        console.error('Error creating workspace document:', error);
-        throw new Error('Failed to create workspace document: ' + error.message);
+      if (error || !data) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: error?.message || 'Failed to create document.',
+        });
       }
-      if (!data) {
-        throw new Error('Failed to create workspace document, no data returned.');
-      }
-      return data as any; 
+      return data;
     }),
 
   getWorkspaceDocumentById: protectedProcedure
     .input(z.object({ documentId: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
-      const { user } = ctx;
-      const { documentId } = input;
-
-      if (!user || !user.id) {
-        throw new Error('User not authenticated');
-      }
-      
-      // RLS handles if the user can SELECT this document
-      const { data, error } = await supabase
+      const { data, error } = await ctx.supabase
         .from('workspace_documents')
-        .select('*, created_by:profiles!created_by_user_id(id, first_name, last_name, avatar_url), last_edited_by:profiles!last_edited_by_user_id(id, first_name, last_name, avatar_url)')
-        .eq('id', documentId)
+        .select('*')
+        .eq('id', input.documentId)
         .single();
 
-      if (error) {
-        console.error('Error fetching workspace document by ID:', error);
-        throw new Error('Failed to fetch workspace document: ' + error.message);
+      if (error || !data) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Document not found or access denied.' });
       }
-      if (!data) {
-        // This implies either document doesn't exist or RLS prevented access
-        throw new Error('Workspace document not found or access denied.'); 
-      }
-      return data as any;
+      await requireAcceptedMember(ctx.supabase, data.workspace_id, ctx.user.id);
+      return data;
     }),
 
   listWorkspaceDocuments: protectedProcedure
     .input(z.object({ workspaceId: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
-      const { user } = ctx;
-      const { workspaceId } = input;
+      await requireAcceptedMember(ctx.supabase, input.workspaceId, ctx.user.id);
 
-      if (!user || !user.id) {
-        throw new Error('User not authenticated');
-      }
-
-      // Before fetching documents, verify user is a member of the workspace for an extra layer of check, 
-      // though RLS on workspace_documents should handle this primarily.
-      const { count, error: memberCheckError } = await supabase
-        .from('workspace_members')
-        .select('*' , {count: 'exact', head: true})
-        .eq('workspace_id', workspaceId)
-        .eq('user_id', user.id)
-        .eq('invitation_status', 'accepted');
-
-      if (memberCheckError) {
-        console.error('Error verifying workspace membership:', memberCheckError);
-        throw new Error('Failed to verify workspace membership: ' + memberCheckError.message);
-      }
-
-      if (count === 0) {
-        throw new Error('Access denied or workspace not found.');
-      }
-      
-      // RLS handles filtering documents user can SELECT
-      const { data, error } = await supabase
+      const { data, error } = await ctx.supabase
         .from('workspace_documents')
-        .select('id, title, document_type, updated_at, created_by:profiles!created_by_user_id(first_name, last_name, avatar_url)')
-        .eq('workspace_id', workspaceId)
+        .select(
+          'id, title, document_type, updated_at, created_by:profiles!created_by_user_id(first_name, last_name, avatar_url)'
+        )
+        .eq('workspace_id', input.workspaceId)
         .order('updated_at', { ascending: false });
 
       if (error) {
-        console.error('Error listing workspace documents:', error);
-        throw new Error('Failed to list workspace documents: ' + error.message);
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
       }
       return data || [];
     }),
@@ -760,73 +489,381 @@ export const workspaceRouter = router({
         documentId: z.string().uuid(),
         title: z.string().min(1).max(255).optional(),
         content: z.record(z.any()).optional().nullable(),
-        documentType: z.enum([
-            'Text Document',
-            'Code Notebook',
-            'Research Proposal',
-            'Methodology',
-            'Data Analysis',
-            'Literature Review',
-            'Generic Document',
-        ]).optional(),
+        documentType: workspaceDocumentTypeSchema.optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { user } = ctx;
-      const { documentId, ...updatePayload } = input;
-
-      if (!user || !user.id) {
-        throw new Error('User not authenticated');
-      }
-
-      if (Object.keys(updatePayload).length === 0) {
-        throw new Error('No update data provided.');
-      }
-
-      const updateData: any = { ...updatePayload };
-      // Always update last_edited_by_user_id on any change
-      updateData.last_edited_by_user_id = user.id; 
-      // updated_at is handled by the trigger
-
-      // RLS handles if user can UPDATE this document
-      const { data, error } = await supabase
+      const { data: existing, error: findError } = await ctx.supabase
         .from('workspace_documents')
-        .update(updateData)
+        .select('workspace_id')
+        .eq('id', input.documentId)
+        .single();
+
+      if (findError || !existing) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Document not found.' });
+      }
+      await requireAcceptedMember(ctx.supabase, existing.workspace_id, ctx.user.id, [
+        'owner',
+        'admin',
+        'editor',
+      ]);
+
+      const { documentId, ...patch } = input;
+      const { data, error } = await ctx.supabase
+        .from('workspace_documents')
+        .update({
+          ...patch,
+          last_edited_by_user_id: ctx.user.id,
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', documentId)
         .select()
         .single();
 
-      if (error) {
-        console.error('Error updating workspace document:', error);
-        throw new Error('Failed to update workspace document: ' + error.message);
+      if (error || !data) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: error?.message || 'Failed to update document.',
+        });
       }
-      if (!data) {
-        throw new Error('Failed to update workspace document, no data returned or access denied.');
-      }
-      return data as any;
+      return data;
     }),
 
   deleteWorkspaceDocument: protectedProcedure
     .input(z.object({ documentId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      const { user } = ctx;
-      const { documentId } = input;
-
-      if (!user || !user.id) {
-        throw new Error('User not authenticated');
+      const { data: existing } = await ctx.supabase
+        .from('workspace_documents')
+        .select('workspace_id')
+        .eq('id', input.documentId)
+        .single();
+      if (!existing) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Document not found.' });
       }
+      await requireAcceptedMember(ctx.supabase, existing.workspace_id, ctx.user.id, [
+        'owner',
+        'admin',
+        'editor',
+      ]);
 
-      // RLS handles if user can DELETE this document
-      const { error } = await supabase
+      const { error } = await ctx.supabase
         .from('workspace_documents')
         .delete()
-        .eq('id', documentId);
-
+        .eq('id', input.documentId);
       if (error) {
-        console.error('Error deleting workspace document:', error);
-        throw new Error('Failed to delete workspace document: ' + error.message);
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
       }
-      return { success: true, message: 'Workspace document deleted successfully.' };
+      return { success: true };
     }),
 
-}); 
+  // Tasks
+  listWorkspaceTasks: protectedProcedure
+    .input(z.object({ workspaceId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      await requireAcceptedMember(ctx.supabase, input.workspaceId, ctx.user.id);
+      const { data, error } = await ctx.supabase
+        .from('workspace_tasks')
+        .select(
+          `
+          *,
+          assignee:profiles!assigned_to_user_id(id, first_name, last_name, avatar_url)
+        `
+        )
+        .eq('workspace_id', input.workspaceId)
+        .order('updated_at', { ascending: false });
+      if (error) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      }
+      return data || [];
+    }),
+
+  createWorkspaceTask: protectedProcedure
+    .input(
+      z.object({
+        workspaceId: z.string().uuid(),
+        title: z.string().min(1).max(255),
+        description: z.string().max(5000).optional().nullable(),
+        status: workspaceTaskStatusSchema.default('todo'),
+        assignedToUserId: z.string().uuid().optional().nullable(),
+        dueDate: z.string().optional().nullable(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await requireAcceptedMember(ctx.supabase, input.workspaceId, ctx.user.id, [
+        'owner',
+        'admin',
+        'editor',
+      ]);
+      const { data, error } = await ctx.supabase
+        .from('workspace_tasks')
+        .insert({
+          workspace_id: input.workspaceId,
+          title: input.title.trim(),
+          description: input.description ?? null,
+          status: input.status,
+          assigned_to_user_id: input.assignedToUserId ?? null,
+          due_date: input.dueDate ?? null,
+          created_by_user_id: ctx.user.id,
+        })
+        .select()
+        .single();
+      if (error || !data) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: error?.message || 'Failed to create task.',
+        });
+      }
+      return data;
+    }),
+
+  updateWorkspaceTask: protectedProcedure
+    .input(
+      z.object({
+        taskId: z.string().uuid(),
+        title: z.string().min(1).max(255).optional(),
+        description: z.string().max(5000).optional().nullable(),
+        status: workspaceTaskStatusSchema.optional(),
+        assignedToUserId: z.string().uuid().optional().nullable(),
+        dueDate: z.string().optional().nullable(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { data: existing } = await ctx.supabase
+        .from('workspace_tasks')
+        .select('workspace_id')
+        .eq('id', input.taskId)
+        .single();
+      if (!existing) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found.' });
+      }
+      await requireAcceptedMember(ctx.supabase, existing.workspace_id, ctx.user.id, [
+        'owner',
+        'admin',
+        'editor',
+      ]);
+
+      const { taskId, assignedToUserId, dueDate, ...rest } = input;
+      const { data, error } = await ctx.supabase
+        .from('workspace_tasks')
+        .update({
+          ...rest,
+          ...(assignedToUserId !== undefined ? { assigned_to_user_id: assignedToUserId } : {}),
+          ...(dueDate !== undefined ? { due_date: dueDate } : {}),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', taskId)
+        .select()
+        .single();
+      if (error || !data) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: error?.message || 'Failed to update task.',
+        });
+      }
+      return data;
+    }),
+
+  deleteWorkspaceTask: protectedProcedure
+    .input(z.object({ taskId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const { data: existing } = await ctx.supabase
+        .from('workspace_tasks')
+        .select('workspace_id')
+        .eq('id', input.taskId)
+        .single();
+      if (!existing) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found.' });
+      }
+      await requireAcceptedMember(ctx.supabase, existing.workspace_id, ctx.user.id, [
+        'owner',
+        'admin',
+        'editor',
+      ]);
+      const { error } = await ctx.supabase.from('workspace_tasks').delete().eq('id', input.taskId);
+      if (error) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      }
+      return { success: true };
+    }),
+
+  // Files
+  listWorkspaceFiles: protectedProcedure
+    .input(z.object({ workspaceId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      await requireAcceptedMember(ctx.supabase, input.workspaceId, ctx.user.id);
+      const { data, error } = await ctx.supabase
+        .from('workspace_files')
+        .select(
+          `
+          *,
+          uploader:profiles!uploaded_by_user_id(id, first_name, last_name, avatar_url)
+        `
+        )
+        .eq('workspace_id', input.workspaceId)
+        .order('created_at', { ascending: false });
+      if (error) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      }
+      return data || [];
+    }),
+
+  registerWorkspaceFile: protectedProcedure
+    .input(
+      z.object({
+        workspaceId: z.string().uuid(),
+        fileName: z.string().min(1).max(255),
+        storageObjectPath: z.string().min(1),
+        fileType: z.string().optional().nullable(),
+        fileSizeBytes: z.number().int().nonnegative().optional().nullable(),
+        description: z.string().max(500).optional().nullable(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await requireAcceptedMember(ctx.supabase, input.workspaceId, ctx.user.id, [
+        'owner',
+        'admin',
+        'editor',
+      ]);
+      const { data, error } = await ctx.supabase
+        .from('workspace_files')
+        .insert({
+          workspace_id: input.workspaceId,
+          file_name: input.fileName,
+          storage_object_path: input.storageObjectPath,
+          file_type: input.fileType ?? null,
+          file_size_bytes: input.fileSizeBytes ?? null,
+          description: input.description ?? null,
+          uploaded_by_user_id: ctx.user.id,
+        })
+        .select()
+        .single();
+      if (error || !data) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: error?.message || 'Failed to register file.',
+        });
+      }
+      return data;
+    }),
+
+  getWorkspaceFileSignedUrl: protectedProcedure
+    .input(z.object({ fileId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const { data: file } = await ctx.supabase
+        .from('workspace_files')
+        .select('*')
+        .eq('id', input.fileId)
+        .single();
+      if (!file) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'File not found.' });
+      }
+      await requireAcceptedMember(ctx.supabase, file.workspace_id, ctx.user.id);
+
+      const { data, error } = await ctx.supabase.storage
+        .from('workspace_files')
+        .createSignedUrl(file.storage_object_path, 60 * 10);
+
+      if (error || !data?.signedUrl) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: error?.message || 'Could not create download link.',
+        });
+      }
+      return { url: data.signedUrl, fileName: file.file_name };
+    }),
+
+  deleteWorkspaceFile: protectedProcedure
+    .input(z.object({ fileId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const { data: file } = await ctx.supabase
+        .from('workspace_files')
+        .select('*')
+        .eq('id', input.fileId)
+        .single();
+      if (!file) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'File not found.' });
+      }
+      await requireAcceptedMember(ctx.supabase, file.workspace_id, ctx.user.id, [
+        'owner',
+        'admin',
+        'editor',
+      ]);
+
+      await ctx.supabase.storage.from('workspace_files').remove([file.storage_object_path]);
+      const { error } = await ctx.supabase.from('workspace_files').delete().eq('id', input.fileId);
+      if (error) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      }
+      return { success: true };
+    }),
+
+  // Chat
+  listWorkspaceMessages: protectedProcedure
+    .input(z.object({ workspaceId: z.string().uuid(), limit: z.number().min(1).max(200).default(100) }))
+    .query(async ({ ctx, input }) => {
+      await requireAcceptedMember(ctx.supabase, input.workspaceId, ctx.user.id);
+      const { data, error } = await ctx.supabase
+        .from('workspace_chat_messages')
+        .select(
+          `
+          id, content, created_at, user_id, parent_message_id,
+          sender:profiles!user_id(id, first_name, last_name, avatar_url)
+        `
+        )
+        .eq('workspace_id', input.workspaceId)
+        .order('created_at', { ascending: true })
+        .limit(input.limit);
+      if (error) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      }
+      return data || [];
+    }),
+
+  sendWorkspaceMessage: protectedProcedure
+    .input(
+      z.object({
+        workspaceId: z.string().uuid(),
+        content: z.string().min(1).max(5000),
+        parentMessageId: z.string().uuid().optional().nullable(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await requireAcceptedMember(ctx.supabase, input.workspaceId, ctx.user.id);
+      const { data, error } = await ctx.supabase
+        .from('workspace_chat_messages')
+        .insert({
+          workspace_id: input.workspaceId,
+          user_id: ctx.user.id,
+          content: input.content.trim(),
+          parent_message_id: input.parentMessageId ?? null,
+        })
+        .select()
+        .single();
+      if (error || !data) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: error?.message || 'Failed to send message.',
+        });
+      }
+      return data;
+    }),
+
+  searchProfilesForInvite: protectedProcedure
+    .input(z.object({ query: z.string().min(1).max(80), limit: z.number().min(1).max(20).default(8) }))
+    .query(async ({ ctx, input }) => {
+      const q = input.query.trim();
+      const { data, error } = await ctx.supabase
+        .from('profiles')
+        .select('id, first_name, last_name, full_name, avatar_url, institution, title')
+        .neq('id', ctx.user.id)
+        .or(
+          `first_name.ilike.%${q}%,last_name.ilike.%${q}%,full_name.ilike.%${q}%`
+        )
+        .limit(input.limit);
+
+      if (error) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      }
+      return data || [];
+    }),
+});

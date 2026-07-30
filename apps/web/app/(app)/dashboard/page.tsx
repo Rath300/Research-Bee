@@ -127,6 +127,15 @@ export default function HomePage() {
       });
     }
 
+    steps.push({
+      id: 'workspaces',
+      title: 'Open a collaboration workspace',
+      description: 'Invite teammates into a shared room for docs, tasks, files, and chat.',
+      href: '/workspaces',
+      cta: 'Workspaces',
+      priority: 5,
+    });
+
     return steps.sort((a, b) => a.priority - b.priority).slice(0, 4);
   }, [
     profile,
