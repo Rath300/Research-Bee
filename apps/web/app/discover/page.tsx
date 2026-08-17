@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from '@/components/ui/Button';
-import Link from 'next/link';
+import { AccessibleProjectLink } from '@/components/project/AccessibleProjectLink';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { FiSearch, FiTrendingUp, FiClock, FiAlertCircle, FiLoader, FiUser } from 'react-icons/fi';
 import { Avatar } from '@/components/ui/Avatar';
@@ -122,7 +122,7 @@ export default function DiscoverPage() {
         {projects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {projects.map((project) => (
-              <Link href={`/research/${project.id}`} key={project.id} className="block h-full">
+              <AccessibleProjectLink projectId={project.id} key={project.id} className="block h-full">
                 <div className="bg-surface-primary border border-border-medium rounded-md flex flex-col justify-between h-full p-5 hover:bg-surface-hover transition-colors">
                   <div>
                     <h2 className="text-xl font-heading text-text-primary mb-2 truncate hover:text-accent-primary transition-colors" title={project.title}>
@@ -165,7 +165,7 @@ export default function DiscoverPage() {
                     <span>{project.created_at ? new Date(project.created_at).toLocaleDateString() : 'Date N/A'}</span>
                   </div>
                 </div>
-              </Link>
+              </AccessibleProjectLink>
             ))}
           </div>
         ) : (

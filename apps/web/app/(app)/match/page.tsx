@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import TinderCard from 'react-tinder-card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/lib/store';
@@ -26,6 +26,7 @@ export default function MatchPage() {
   const [applied, setApplied] = useState({ query: '', fieldOfStudy: '', skill: '' });
   const [localGone, setLocalGone] = useState<Set<string>>(new Set());
   const [mutualMatchId, setMutualMatchId] = useState<string | null>(null);
+  const swipingRef = useRef(false);
 
   const {
     data: candidates = [],
@@ -43,19 +44,21 @@ export default function MatchPage() {
   );
 
   const swipeMutation = api.matching.swipe.useMutation({
-    onSuccess: async (result) => {
+    onSuccess: (result) => {
       if (result.isMutual && result.matchId) {
         setMutualMatchId(result.matchId);
         trackMatch('request');
         success('It\'s a match! You can message them now.');
       }
-      await utils.matching.listCandidates.invalidate();
-      await utils.matching.listMatches.invalidate();
-      await utils.matching.listConversations.invalidate();
-      await utils.matching.listPendingIncoming.invalidate();
+      void utils.matching.listCandidates.invalidate();
+      void utils.matching.listMatches.invalidate();
+      void utils.matching.listConversations.invalidate();
+      void utils.matching.listPendingIncoming.invalidate();
     },
     onError: (err) => toastError(err.message || 'Could not save that action.'),
   });
+
+  const isSwiping = swipingRef.current || swipeMutation.isLoading;
 
   const visible = useMemo(
     () => candidates.filter((c) => !localGone.has(c.id)),
@@ -74,6 +77,8 @@ export default function MatchPage() {
   };
 
   const recordSwipe = async (direction: 'left' | 'right', targetId: string) => {
+    if (swipingRef.current || localGone.has(targetId)) return;
+    swipingRef.current = true;
     setLocalGone((prev) => new Set(prev).add(targetId));
     try {
       await swipeMutation.mutateAsync({ targetUserId: targetId, direction });
@@ -83,6 +88,8 @@ export default function MatchPage() {
         next.delete(targetId);
         return next;
       });
+    } finally {
+      swipingRef.current = false;
     }
   };
 
@@ -205,7 +212,7 @@ export default function MatchPage() {
                 onSwipe={(dir) => {
                   if (dir === 'left' || dir === 'right') void recordSwipe(dir, profile.id);
                 }}
-                preventSwipe={['up', 'down']}
+                preventSwipe={isSwiping || index !== visible.length - 1 ? ['left', 'right', 'up', 'down'] : ['up', 'down']}
               >
                 <div
                   className={`h-full rounded-lg border border-border-medium bg-surface-primary p-6 shadow-sm flex flex-col ${
@@ -221,8 +228,8 @@ export default function MatchPage() {
                           'Researcher'}
                       </h2>
                       <p className="text-sm text-text-muted">
-                        {profile.title || profile.field_of_study || 'Researcher'}
-                        {profile.institution ? ` · ${profile.institution}` : ''}
+                        {[profile.title, profile.field_of_study, profile.location].filter(Boolean).join(' · ') ||
+                          'Researcher'}
                       </p>
                     </div>
                   </div>
@@ -253,7 +260,7 @@ export default function MatchPage() {
               variant="outline"
               size="lg"
               onClick={() => void recordSwipe('left', current.id)}
-              disabled={swipeMutation.isLoading}
+              disabled={isSwiping}
               aria-label="Pass"
             >
               <FiX className="text-lg" />
@@ -261,7 +268,7 @@ export default function MatchPage() {
             <Button
               size="lg"
               onClick={() => void recordSwipe('right', current.id)}
-              disabled={swipeMutation.isLoading}
+              disabled={isSwiping}
               aria-label="Interested"
             >
               <FiHeart className="text-lg" />

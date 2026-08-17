@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { FiLoader, FiAlertCircle, FiUser, FiFileText, FiDownload, FiTag, FiCalendar, FiEye, FiArrowLeft } from 'react-icons/fi';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/lib/supabaseClient';
+import { ProjectAccessModal } from '@/components/project/ProjectAccessModal';
 
 export default function ResearchPostPage() {
   const router = useRouter();
@@ -60,6 +61,26 @@ export default function ResearchPostPage() {
   }
 
   if (error) {
+    const isAccessError = error.toLowerCase().includes('do not have access');
+
+    if (isAccessError) {
+      return (
+        <>
+          <ProjectAccessModal onClose={() => router.push('/discover')} />
+          <PageContainer title="Access restricted" className="bg-bg-primary min-h-screen text-text-primary flex items-center justify-center p-6">
+            <div className="bg-surface-primary border border-border-medium p-8 rounded-md shadow-sm text-center max-w-md">
+              <FiAlertCircle className="mx-auto text-red-500 text-5xl mb-4" />
+              <h2 className="text-2xl font-heading text-text-primary mb-2">Access restricted</h2>
+              <p className="text-text-secondary mb-6">You do not have access to this project.</p>
+              <Button variant="secondary" onClick={() => router.push('/discover')}>
+                Back to Discover
+              </Button>
+            </div>
+          </PageContainer>
+        </>
+      );
+    }
+
     return (
       <PageContainer title="Error" className="bg-bg-primary min-h-screen text-text-primary flex items-center justify-center p-6">
         <div className="bg-surface-primary border border-border-medium p-8 rounded-md shadow-sm text-center max-w-md">

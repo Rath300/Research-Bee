@@ -868,7 +868,7 @@ export const workspaceRouter = router({
 
       let query = ctx.supabase
         .from('profiles')
-        .select('id, first_name, last_name, full_name, avatar_url, institution, title')
+        .select('id, first_name, last_name, full_name, avatar_url, institution, title, field_of_study, location')
         .neq('id', ctx.user.id)
         .not('first_name', 'is', null)
         .order('first_name', { ascending: true })

@@ -15,7 +15,9 @@ import { ProjectChat } from '@/components/project/ProjectChat';
 import { TaskManager } from '@/components/project/TaskManager';
 import { ProjectNotes } from '@/components/project/ProjectNotes';
 import { JoinRequests } from '@/components/project/JoinRequests';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ProjectAccessModal } from '@/components/project/ProjectAccessModal';
+import { FiAlertCircle } from 'react-icons/fi';
+import { useRouter } from 'next/navigation';
 
 type Collaborator = NonNullable<ReturnType<typeof api.project.listCollaborators.useQuery>['data']>[number];
 
@@ -235,6 +237,7 @@ const InviteCollaboratorForm = ({ projectId }: { projectId: string }) => {
 
 export default function ProjectPage({ params }: ProjectPageProps) {
   const { id: projectId } = params;
+  const router = useRouter();
 
   // Fetch project details
   const { data: project, isLoading: isProjectLoading, error: projectError } = api.project.getById.useQuery({ id: projectId });
@@ -247,7 +250,32 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   }
 
   if (projectError) {
-    return <div className="p-8 text-red-500">Error loading project: {projectError.message}</div>;
+    const isForbidden =
+      projectError.data?.code === 'FORBIDDEN' ||
+      projectError.message.toLowerCase().includes('do not have access');
+
+    if (isForbidden) {
+      return (
+        <>
+          <ProjectAccessModal onClose={() => router.back()} />
+          <div className="p-8 bg-bg-primary min-h-[50vh] flex items-center justify-center">
+            <div className="text-center max-w-md">
+              <FiAlertCircle className="mx-auto text-red-500 text-5xl mb-4" />
+              <p className="text-text-secondary mb-4">You do not have access to this project.</p>
+              <Button variant="secondary" onClick={() => router.back()}>
+                Go back
+              </Button>
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    return (
+      <div className="p-8 bg-bg-primary">
+        <div className="text-red-500">Error loading project: {projectError.message}</div>
+      </div>
+    );
   }
 
   if (!project) {

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/lib/supabaseClient";
 import Link from 'next/link';
+import { AccessibleProjectLink } from '@/components/project/AccessibleProjectLink';
 import { FiCalendar, FiClock, FiUsers } from "react-icons/fi";
 import { type Database } from '@/lib/database.types';
 type Project = Database['public']['Tables']['projects']['Row'];
@@ -66,7 +67,7 @@ export default function ResearchList({ userId }: ResearchListProps) {
   return (
     <div className="space-y-4">
       {projects.map((project) => (
-        <Link href={`/projects/${project.id}`} key={project.id} className="block p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+        <AccessibleProjectLink projectId={project.id} key={project.id} className="block p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
           <h3 className="text-xl font-bold mb-2">{project.title}</h3>
           <p className="text-gray-800 mb-4">{project.description || 'No description available.'}</p>
           <div className="flex items-center text-sm text-gray-600 mb-4">
@@ -81,7 +82,7 @@ export default function ResearchList({ userId }: ResearchListProps) {
               {'Unknown'}
             </span>
           </div>
-        </Link>
+        </AccessibleProjectLink>
       ))}
     </div>
   );

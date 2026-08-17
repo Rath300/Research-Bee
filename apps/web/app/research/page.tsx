@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { AccessibleProjectLink } from '@/components/project/AccessibleProjectLink';
 import { supabase } from '@/lib/supabaseClient';
 import { type Database } from '@/lib/database.types';
 import { PageContainer } from '@/components/layout/PageContainer'; // Assuming this exists and is styled for dark theme
@@ -136,11 +137,11 @@ export default function ResearchPage() {
           </div>
         </div>
         
-                    <Link href={`/projects/${project.id}`} className="block mb-2">
+                    <AccessibleProjectLink projectId={project.id} className="block mb-2">
                       <h2 className="text-xl lg:text-2xl font-heading text-text-primary hover:text-accent-primary transition-colors duration-150">
                         {project.title}
                       </h2>
-                    </Link>
+                    </AccessibleProjectLink>
                     
                     {truncatedContent && (
                         <p className="text-text-secondary text-sm mb-4 line-clamp-3">
@@ -157,9 +158,9 @@ export default function ResearchPage() {
                     )}
                   </div>
                   <div className="bg-surface-secondary px-5 sm:px-6 py-3 border-t border-border-light">
-                    <Link href={`/projects/${project.id}`} className="text-sm font-sans font-medium text-accent-primary hover:text-accent-primary-hover inline-flex items-center">
+                    <AccessibleProjectLink projectId={project.id} className="text-sm font-sans font-medium text-accent-primary hover:text-accent-primary-hover inline-flex items-center">
                         View Project <FiExternalLink className="ml-1.5 h-4 w-4" />
-                    </Link>
+                    </AccessibleProjectLink>
                   </div>
                 </div>
               );

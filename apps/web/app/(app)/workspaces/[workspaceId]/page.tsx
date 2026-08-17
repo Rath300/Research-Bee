@@ -340,7 +340,7 @@ function MembersTab({
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{displayName(p)}</p>
                       <p className="text-xs text-text-muted truncate">
-                        {p.title || p.institution || 'Researcher'}
+                        {[p.title, p.field_of_study, p.location].filter(Boolean).join(' · ') || 'Researcher'}
                       </p>
                     </div>
                     <Button

@@ -1,0 +1,877 @@
+[
+  {
+    "id": "e4a201b8-9e58-51d5-92f0-2b6bea193d82",
+    "title": "Single-cell atlas of treatment response — cohort 1",
+    "leader_id": "267232f8-9f8c-5ebf-a7d9-b4d79c07c9e7"
+  },
+  {
+    "id": "2847b7d8-ca82-5bcc-a2e5-52acc9c9536e",
+    "title": "Urban heat mitigation with satellite ML — cohort 1",
+    "leader_id": "709fc30c-ecb1-5dd2-89c7-17f00264d537"
+  },
+  {
+    "id": "082ad501-fcfb-506b-a25b-2b0567047a52",
+    "title": "High-throughput electrolyte screening — cohort 1",
+    "leader_id": "74d768ae-72db-5222-929e-eb0479eb9c34"
+  },
+  {
+    "id": "84987ce5-845d-51db-9110-8bcf9cd82a4e",
+    "title": "Accessible clinical note summarization — cohort 1",
+    "leader_id": "0d6691d2-c410-5f1e-840b-0d2aab1580d0"
+  },
+  {
+    "id": "68c477cb-2efe-5f86-a768-01e068d23ea9",
+    "title": "Closed-loop stimulation for memory — cohort 1",
+    "leader_id": "38027771-452e-56a6-93ee-0327efca8125"
+  },
+  {
+    "id": "58041fac-7a28-5d8a-8a61-a339b2c106e8",
+    "title": "Community vaccine confidence study — cohort 1",
+    "leader_id": "b7c96328-bb46-5e8b-8652-b1c7f00c6ee2"
+  },
+  {
+    "id": "3232a83d-295c-5a39-a628-cae4e7f3267a",
+    "title": "Near-term quantum error mitigation — cohort 1",
+    "leader_id": "a26aee00-05f2-505c-a479-ae1852915911"
+  },
+  {
+    "id": "d80328f6-0069-5263-9d4a-58c6d933ce50",
+    "title": "Robust evaluation for clinical LLMs — cohort 1",
+    "leader_id": "5ab392fb-1d11-51a6-8cb3-22713cd46cd1"
+  },
+  {
+    "id": "f6e88ccf-3d3f-57a3-8169-2ff1e9deee18",
+    "title": "Photoredox catalysis for late-stage edits — cohort 1",
+    "leader_id": "1c990b4a-b9a6-5f9b-b95b-fcab06fcbafa"
+  },
+  {
+    "id": "401d9bd0-b063-59cf-94e0-66235e8738b1",
+    "title": "STEM identity in first-gen undergraduates — cohort 1",
+    "leader_id": "16493c35-46fb-5b58-9637-c2f4434b85ec"
+  },
+  {
+    "id": "2420e793-6a9f-5cc2-8536-9af8a452eca3",
+    "title": "Dexterous packing under uncertainty — cohort 1",
+    "leader_id": "9ac8eea0-1e2b-5779-a280-6cce9c48cb43"
+  },
+  {
+    "id": "5ef4d040-db55-5d84-a92f-d6ba7eb7c252",
+    "title": "Transit spectroscopy pipeline for JWST — cohort 1",
+    "leader_id": "351cf58c-7613-5c7f-bc08-0cdbbffa0c80"
+  },
+  {
+    "id": "a4a9df50-284b-59d8-910e-1c82cbd7dce8",
+    "title": "Vascularized cardiac organoids — cohort 1",
+    "leader_id": "a70cb529-abe7-5993-b507-4f86d81b0818"
+  },
+  {
+    "id": "d47e0ec1-9df1-5511-9d47-4e2d4e6ac303",
+    "title": "Labor market effects of credentialing — cohort 1",
+    "leader_id": "b90f7659-f5b3-50dc-808c-9649704ff40c"
+  },
+  {
+    "id": "e8d2b101-2a2e-5c57-9ef1-741e49d219ed",
+    "title": "Low-cost water contaminant sensing — cohort 1",
+    "leader_id": "3c1381f6-3bd4-58f0-a16f-7970097753d8"
+  },
+  {
+    "id": "00746766-f512-57a1-9e6f-23dce3912b42",
+    "title": "Federated learning for rare disease cohorts — cohort 1",
+    "leader_id": "4c3e76fa-0ddb-50bc-a671-89848b278b2f"
+  },
+  {
+    "id": "040900de-b992-5c38-901d-26af2afda76a",
+    "title": "Wildfire smoke exposure forecasting — cohort 1",
+    "leader_id": "df793a8b-bfdb-5279-bdb9-0911c3e88ec3"
+  },
+  {
+    "id": "a2d2552a-592f-51b2-ac3b-31dedc4d1582",
+    "title": "Solid-state battery interface imaging — cohort 1",
+    "leader_id": "c5ea69a5-afb0-5cdb-9d92-40262165695f"
+  },
+  {
+    "id": "f1038513-5c16-5887-92e5-1cec2ee39309",
+    "title": "Classroom AI tutor field study — cohort 1",
+    "leader_id": "cb9b4f11-a112-5fce-bd18-919d39edae5c"
+  },
+  {
+    "id": "56cf7b1d-54ca-51a3-a6a9-a6273399fe76",
+    "title": "Privacy-preserving wearable analytics — cohort 1",
+    "leader_id": "dd91f09c-8d09-5595-bb40-08e71cdda7c8"
+  },
+  {
+    "id": "91237cfa-02c0-58ad-88ed-60c42e0263dc",
+    "title": "Single-cell atlas of treatment response — cohort 2",
+    "leader_id": "0cdac292-5ccb-5dbb-bb01-5791779407d1"
+  },
+  {
+    "id": "00a92ecf-d3eb-5ed2-9cc6-a8271cd7f497",
+    "title": "Urban heat mitigation with satellite ML — cohort 2",
+    "leader_id": "580ae99f-3b88-5508-b4a3-87234df7c252"
+  },
+  {
+    "id": "5c06811e-67ba-50cd-bf95-5eec033889aa",
+    "title": "High-throughput electrolyte screening — cohort 2",
+    "leader_id": "c4795637-3d3c-53be-8dba-8e6e4de6ba0a"
+  },
+  {
+    "id": "be8143ad-d929-5042-965a-0a34d182975f",
+    "title": "Accessible clinical note summarization — cohort 2",
+    "leader_id": "4adc31e6-1696-54de-b1d3-788d08357dda"
+  },
+  {
+    "id": "084a7114-e3d1-5b39-b320-f4588221365b",
+    "title": "Closed-loop stimulation for memory — cohort 2",
+    "leader_id": "4f5f927c-9f53-5dd4-8ae7-1cf954863409"
+  },
+  {
+    "id": "fc646fe0-e5a2-57aa-9b23-db59971b4079",
+    "title": "Community vaccine confidence study — cohort 2",
+    "leader_id": "9cb52b31-aefd-52b7-8345-eb5e78c8cffa"
+  },
+  {
+    "id": "25e21d98-8580-525f-97b5-569bb6293035",
+    "title": "Near-term quantum error mitigation — cohort 2",
+    "leader_id": "9fca4480-5d97-582c-b0f2-6e551a2fd883"
+  },
+  {
+    "id": "91ef7266-cda5-504f-bfcb-b3dc9c50724f",
+    "title": "Robust evaluation for clinical LLMs — cohort 2",
+    "leader_id": "8b3647c6-c5a6-5d0a-b381-3c9ed7bf1a2c"
+  },
+  {
+    "id": "8559a29a-947e-53a4-a10a-e984708ba2fe",
+    "title": "Photoredox catalysis for late-stage edits — cohort 2",
+    "leader_id": "141c92ef-d422-58bc-90d5-247e09ea80e4"
+  },
+  {
+    "id": "614a4fd1-c176-5e1c-bbdb-98a5887b9ee5",
+    "title": "STEM identity in first-gen undergraduates — cohort 2",
+    "leader_id": "ff2a2b72-aacc-562d-876e-9a52304bd7a0"
+  },
+  {
+    "id": "a98a8f5b-b0f4-5dcd-8859-5e917367616e",
+    "title": "Dexterous packing under uncertainty — cohort 2",
+    "leader_id": "fbfd9e14-c1b3-5fdd-9997-63ce47de5223"
+  },
+  {
+    "id": "dad9b37f-3ee0-50a9-87fb-507c501fe91e",
+    "title": "Transit spectroscopy pipeline for JWST — cohort 2",
+    "leader_id": "99b95750-e984-51a8-a79e-61dd17b7bfc8"
+  },
+  {
+    "id": "ade53c65-20fc-5616-9581-da5cfe7157f6",
+    "title": "Vascularized cardiac organoids — cohort 2",
+    "leader_id": "ecda9e9a-9d5f-564d-b7ba-2c13bf75ae56"
+  },
+  {
+    "id": "dfc0781e-89e5-5ce2-a216-f5baeae9c26b",
+    "title": "Labor market effects of credentialing — cohort 2",
+    "leader_id": "501b1980-4f2e-559e-a732-fb5f6ddf50e8"
+  },
+  {
+    "id": "52931c65-6064-5a19-b387-9adc6e5ceca8",
+    "title": "Low-cost water contaminant sensing — cohort 2",
+    "leader_id": "f5ea9642-1ad9-5e62-867d-d340b40a835e"
+  },
+  {
+    "id": "850945d1-3baa-569e-97d2-968161c0482a",
+    "title": "Federated learning for rare disease cohorts — cohort 2",
+    "leader_id": "1a4e7bd5-105e-58dd-a7bb-c054c41106a8"
+  },
+  {
+    "id": "683258f5-f796-5b28-8f00-292f17af0a3e",
+    "title": "Wildfire smoke exposure forecasting — cohort 2",
+    "leader_id": "b44be18a-5c2b-51eb-ad8d-a3209dd5bf61"
+  },
+  {
+    "id": "21835700-29c3-5987-ba9c-2b11aa7d8267",
+    "title": "Solid-state battery interface imaging — cohort 2",
+    "leader_id": "27c6972c-d454-52b7-87c7-d8f9487c4c47"
+  },
+  {
+    "id": "93ac8f40-21eb-5f53-9337-0a27506bb66d",
+    "title": "Classroom AI tutor field study — cohort 2",
+    "leader_id": "b6ec1651-815e-5428-bde8-7c2774bd9d17"
+  },
+  {
+    "id": "7c6195c7-374e-547f-80f2-90b9b688abfd",
+    "title": "Privacy-preserving wearable analytics — cohort 2",
+    "leader_id": "4f9252df-fe9d-5b34-ab99-742576b906c9"
+  },
+  {
+    "id": "22e870f7-d324-5495-bde4-d717a5ef5b73",
+    "title": "Single-cell atlas of treatment response — cohort 3",
+    "leader_id": "a16c575b-a751-5a96-a89f-1c0abb930432"
+  },
+  {
+    "id": "790e361d-97ef-5648-b9fc-ccc6f6e02061",
+    "title": "Urban heat mitigation with satellite ML — cohort 3",
+    "leader_id": "5b927d33-c8fe-56b5-b46d-d9b4afc0e5a1"
+  },
+  {
+    "id": "e4dd2529-790b-564e-a8db-870cdc0f674c",
+    "title": "High-throughput electrolyte screening — cohort 3",
+    "leader_id": "e82aadde-599d-5823-9c92-7aa26f607621"
+  },
+  {
+    "id": "9db9c0a3-c666-5d3a-98a1-0f3605c4f615",
+    "title": "Accessible clinical note summarization — cohort 3",
+    "leader_id": "7c94bca1-d022-5ce0-9f41-30058f518391"
+  },
+  {
+    "id": "f6303786-53e3-56be-bbe1-bd1206d6047d",
+    "title": "Closed-loop stimulation for memory — cohort 3",
+    "leader_id": "cbc72d17-40df-503c-9380-64860d555aeb"
+  },
+  {
+    "id": "b48c2459-03bc-541e-b2a3-017671348be1",
+    "title": "Community vaccine confidence study — cohort 3",
+    "leader_id": "89b2a66e-af73-5706-9535-645704dc5830"
+  },
+  {
+    "id": "d6b05f97-0a8b-5979-b060-9662e21aceed",
+    "title": "Near-term quantum error mitigation — cohort 3",
+    "leader_id": "e28386aa-07eb-5856-a38f-b6297689b1f8"
+  },
+  {
+    "id": "0ec1104d-ee5f-5212-bf6b-472b29d567f9",
+    "title": "Robust evaluation for clinical LLMs — cohort 3",
+    "leader_id": "c97ae47d-81ea-5774-b2f6-a4dc94d6c23b"
+  },
+  {
+    "id": "ef0f6363-5ba8-599c-bbfb-088c3bfae236",
+    "title": "Photoredox catalysis for late-stage edits — cohort 3",
+    "leader_id": "cdd62380-8ae5-5e3c-b0b3-9c1f36505805"
+  },
+  {
+    "id": "043d7c71-a035-5200-b390-0816dd5858ff",
+    "title": "STEM identity in first-gen undergraduates — cohort 3",
+    "leader_id": "759374f9-7519-51f6-b575-a2d47a6aa1ff"
+  },
+  {
+    "id": "994d9835-e6e8-5c25-b3a0-3c8ded88371b",
+    "title": "Dexterous packing under uncertainty — cohort 3",
+    "leader_id": "7b5517ea-0ef8-5b36-a218-708b14454dca"
+  },
+  {
+    "id": "445bc8c7-a029-546c-af22-ffc8904ad0e0",
+    "title": "Transit spectroscopy pipeline for JWST — cohort 3",
+    "leader_id": "336b397d-d50b-5d74-8741-c9b03b5c524d"
+  },
+  {
+    "id": "4cf1e213-c673-587e-85c8-29a3d1038835",
+    "title": "Vascularized cardiac organoids — cohort 3",
+    "leader_id": "d2162c88-23f7-5ae8-bfb5-6fee7e00733a"
+  },
+  {
+    "id": "03ae3c5f-0178-5670-bc4f-abcca7e206ab",
+    "title": "Labor market effects of credentialing — cohort 3",
+    "leader_id": "21e98b9b-b9a6-517e-9abf-e6798c78438a"
+  },
+  {
+    "id": "27092f10-954d-57fe-82fd-97a9a0658466",
+    "title": "Low-cost water contaminant sensing — cohort 3",
+    "leader_id": "0f083399-fe7b-5451-96d4-1693c91f7dd3"
+  },
+  {
+    "id": "1b825679-a97d-57dc-880f-6793d18b1ddc",
+    "title": "Federated learning for rare disease cohorts — cohort 3",
+    "leader_id": "6e4d3cfc-c5c9-53e9-adcd-5a7d832c63db"
+  },
+  {
+    "id": "411496db-7b55-5b6a-934c-71078d1f7583",
+    "title": "Wildfire smoke exposure forecasting — cohort 3",
+    "leader_id": "5eced242-2d6a-5a6f-90c5-15217bb38c63"
+  },
+  {
+    "id": "38669eea-5422-5a02-b33f-61b82a060b2b",
+    "title": "Solid-state battery interface imaging — cohort 3",
+    "leader_id": "d20f4348-b149-5d7a-9be9-ea35b968d949"
+  },
+  {
+    "id": "54f9bde4-e146-56cb-b68c-e3d4720b2fbc",
+    "title": "Classroom AI tutor field study — cohort 3",
+    "leader_id": "741dbc0c-be9e-585d-a05c-2d604bdbf3c9"
+  },
+  {
+    "id": "2dcff12b-c44a-543e-8000-6761c7c8550d",
+    "title": "Privacy-preserving wearable analytics — cohort 3",
+    "leader_id": "2e103cd9-7011-5c18-b7dc-84a0f1fba2f4"
+  },
+  {
+    "id": "5814e2ed-9947-5bc8-bf74-1ac984f8e3cf",
+    "title": "Single-cell atlas of treatment response — cohort 4",
+    "leader_id": "d5b9e176-5342-5bee-9f23-5db9daada176"
+  },
+  {
+    "id": "ee797424-45b5-514d-b123-d79393f9e70e",
+    "title": "Urban heat mitigation with satellite ML — cohort 4",
+    "leader_id": "3c5bf808-932d-5678-af65-94323984b8c4"
+  },
+  {
+    "id": "d4bc4173-2c7c-5347-9589-83a3bbbfe6a8",
+    "title": "High-throughput electrolyte screening — cohort 4",
+    "leader_id": "1952c12b-20b6-5a8d-9327-a2a403e64b82"
+  },
+  {
+    "id": "c61f7760-ddda-540b-94a2-0f3fde00c27c",
+    "title": "Accessible clinical note summarization — cohort 4",
+    "leader_id": "bddaf6a2-6e9b-5912-baf2-aa7375c27586"
+  },
+  {
+    "id": "9df03379-f6c8-5309-8995-cb68370a2052",
+    "title": "Closed-loop stimulation for memory — cohort 4",
+    "leader_id": "9854d497-ac03-578d-95e5-3cdae50909a9"
+  },
+  {
+    "id": "0efb964d-44a7-57e9-bf76-07a41c1344d6",
+    "title": "Community vaccine confidence study — cohort 4",
+    "leader_id": "6bd68129-2ff5-5200-a817-861e1d790a75"
+  },
+  {
+    "id": "6d3bdbfa-68d1-598c-bbb3-72877cf3c983",
+    "title": "Near-term quantum error mitigation — cohort 4",
+    "leader_id": "21147e8d-26d7-519f-8755-eaa13e0d317d"
+  },
+  {
+    "id": "1b389326-391c-51ac-ae90-70101731ac01",
+    "title": "Robust evaluation for clinical LLMs — cohort 4",
+    "leader_id": "b5973822-f42d-58a6-a6e9-2bf9be95b40c"
+  },
+  {
+    "id": "0f5b21bc-b985-5b51-9e2d-02f75457be88",
+    "title": "Photoredox catalysis for late-stage edits — cohort 4",
+    "leader_id": "cf10333a-2152-5178-8468-d28b33af4122"
+  },
+  {
+    "id": "19856692-8b72-5f8d-bdc7-ce68adf1fca2",
+    "title": "STEM identity in first-gen undergraduates — cohort 4",
+    "leader_id": "e9fba451-c2fd-5da4-a9b4-2a31b71b17b9"
+  },
+  {
+    "id": "2ceb6667-a1cd-552f-9f00-e008c47f256b",
+    "title": "Dexterous packing under uncertainty — cohort 4",
+    "leader_id": "e10d2d9b-c233-566a-ac41-e6d4e471093c"
+  },
+  {
+    "id": "5478e1b7-5971-51c8-b39f-f79cb548de3e",
+    "title": "Transit spectroscopy pipeline for JWST — cohort 4",
+    "leader_id": "f6e2d234-fde7-5fe0-852b-594ab5cd9440"
+  },
+  {
+    "id": "949c5f36-0c68-56af-a181-dd560e485e0b",
+    "title": "Vascularized cardiac organoids — cohort 4",
+    "leader_id": "c29413cc-cde1-57f5-a2ed-445ab337a903"
+  },
+  {
+    "id": "cfb087a4-edcb-5581-bba4-4367b8f02df0",
+    "title": "Labor market effects of credentialing — cohort 4",
+    "leader_id": "989fdb95-2d0d-5cb6-ac91-d6b20bdf5cec"
+  },
+  {
+    "id": "4313ea17-488c-5903-b91f-036901569ac5",
+    "title": "Low-cost water contaminant sensing — cohort 4",
+    "leader_id": "920410e2-89ac-581b-95cc-1c86177f436b"
+  },
+  {
+    "id": "353a3fbf-0b8f-5084-852f-a3235f5f8ba1",
+    "title": "Federated learning for rare disease cohorts — cohort 4",
+    "leader_id": "d3622f86-31ec-5a96-9fe9-e544f725abfb"
+  },
+  {
+    "id": "99e17770-9853-5a4a-907f-e54be2670742",
+    "title": "Wildfire smoke exposure forecasting — cohort 4",
+    "leader_id": "65cd2b4f-2d43-5020-a880-8286d1c3416a"
+  },
+  {
+    "id": "4b06c2b0-d019-59a0-8000-15b54806494d",
+    "title": "Solid-state battery interface imaging — cohort 4",
+    "leader_id": "47b81f54-6417-5024-893d-0269a6070530"
+  },
+  {
+    "id": "56161549-8920-5681-83be-28893ffd4744",
+    "title": "Classroom AI tutor field study — cohort 4",
+    "leader_id": "e6888c10-ffc4-55cd-a2ca-637db638e9f6"
+  },
+  {
+    "id": "ed629457-cbd3-56b3-8796-249ea9d5cf27",
+    "title": "Privacy-preserving wearable analytics — cohort 4",
+    "leader_id": "83b95081-a3eb-5f38-a45e-8595a7e8bf2d"
+  },
+  {
+    "id": "1ba9a068-c0a7-5dfc-baa9-db414e97013f",
+    "title": "Single-cell atlas of treatment response — cohort 5",
+    "leader_id": "33258244-df5a-5c2f-933d-31972bac2f03"
+  },
+  {
+    "id": "a105eea5-e532-5da7-b6e0-e260779ad51a",
+    "title": "Urban heat mitigation with satellite ML — cohort 5",
+    "leader_id": "cf28dd5f-d2a7-5d1a-9d64-5f2c87bd9973"
+  },
+  {
+    "id": "7f37f0ec-4d34-5499-b6fa-318d368ef829",
+    "title": "High-throughput electrolyte screening — cohort 5",
+    "leader_id": "66f8ed4c-881a-5f05-b0d7-e37578b092a8"
+  },
+  {
+    "id": "ca8e133e-7dbb-50c4-8540-e2887414aa28",
+    "title": "Accessible clinical note summarization — cohort 5",
+    "leader_id": "6490af71-00ff-5064-aa50-0148033fd2b3"
+  },
+  {
+    "id": "0f7c1dc4-1751-5f0c-bcaf-754bcd0fc5f7",
+    "title": "Closed-loop stimulation for memory — cohort 5",
+    "leader_id": "4d7f8de8-8986-5e67-be38-0a78f0103500"
+  },
+  {
+    "id": "cf0098e0-2f49-52ce-8bc3-7a437af0d8b6",
+    "title": "Community vaccine confidence study — cohort 5",
+    "leader_id": "58b90013-6680-5c53-a0f1-a6501144e5d5"
+  },
+  {
+    "id": "f46e9852-6d7b-55cb-af82-ea2e48d1ec1f",
+    "title": "Near-term quantum error mitigation — cohort 5",
+    "leader_id": "c76e3013-9ccc-54e7-b7d0-8f70ef55b827"
+  },
+  {
+    "id": "e06427a5-1b51-5ed3-a977-4b38bbd729a8",
+    "title": "Robust evaluation for clinical LLMs — cohort 5",
+    "leader_id": "b4d49441-89be-58b6-a088-2ee59f3678f0"
+  },
+  {
+    "id": "148f1e1d-a0df-5a2d-abd0-c62349e3651d",
+    "title": "Photoredox catalysis for late-stage edits — cohort 5",
+    "leader_id": "f5939c13-971e-5b2a-b538-c59c5717412e"
+  },
+  {
+    "id": "301e20de-b10c-5b5c-b1e6-70f33a312081",
+    "title": "STEM identity in first-gen undergraduates — cohort 5",
+    "leader_id": "a6ab7341-b2e9-5fd2-9e89-a68540689827"
+  },
+  {
+    "id": "317144e7-e7f2-5473-b446-3fde38633c7c",
+    "title": "Dexterous packing under uncertainty — cohort 5",
+    "leader_id": "5849b0a9-7046-5a1b-afa8-46c7b4f20d3e"
+  },
+  {
+    "id": "47dc0361-67ef-55eb-8306-2a9e55d6d87b",
+    "title": "Transit spectroscopy pipeline for JWST — cohort 5",
+    "leader_id": "b42e0014-ffee-565d-bb75-bc5256bb4798"
+  },
+  {
+    "id": "b8fee438-6ea8-583c-b6e7-6c989b881799",
+    "title": "Vascularized cardiac organoids — cohort 5",
+    "leader_id": "7cf7e55e-654d-5e79-b232-39768fa55c75"
+  },
+  {
+    "id": "f0486bcb-1e45-5a14-add6-6ecf9f0de3c4",
+    "title": "Labor market effects of credentialing — cohort 5",
+    "leader_id": "d74dc0cb-820b-5f6f-954d-0d679912ed4e"
+  },
+  {
+    "id": "d1c0bc15-1ab8-545b-972e-c2d5a2db681a",
+    "title": "Low-cost water contaminant sensing — cohort 5",
+    "leader_id": "3e51c6e0-9b46-5e74-b5a1-d55b56ac649a"
+  },
+  {
+    "id": "dd2832f3-56ac-5431-8b82-f5b5a2aa37d9",
+    "title": "Federated learning for rare disease cohorts — cohort 5",
+    "leader_id": "a1cfdb84-f2b7-5750-8d60-403618604cff"
+  },
+  {
+    "id": "3b2a2fb6-3869-5b82-9a96-165dcde1267d",
+    "title": "Wildfire smoke exposure forecasting — cohort 5",
+    "leader_id": "b5d58a15-c8e8-56e5-81e0-ac6acec9a6e9"
+  },
+  {
+    "id": "c492e3a5-bae7-557b-8040-2e8e0ffe7571",
+    "title": "Solid-state battery interface imaging — cohort 5",
+    "leader_id": "411ecfe2-5b84-5b56-8f61-12a1ab560130"
+  },
+  {
+    "id": "005a99dd-8e91-5b20-ab65-c1cb32e1e2e6",
+    "title": "Classroom AI tutor field study — cohort 5",
+    "leader_id": "53c3ff93-411e-50a0-9ecf-897fc8d295e5"
+  },
+  {
+    "id": "e76031a2-e73e-58ad-be6a-f67ac24d7b59",
+    "title": "Privacy-preserving wearable analytics — cohort 5",
+    "leader_id": "e0e15c9d-ff83-5981-8131-0ffadb1f8039"
+  },
+  {
+    "id": "2678fa56-7b34-5a13-b03f-96e95fbbe742",
+    "title": "Single-cell atlas of treatment response — cohort 6",
+    "leader_id": "b46ba655-d46a-5881-bcdb-12ef339ea9ed"
+  },
+  {
+    "id": "0a9ae595-b6d9-5747-b184-bc3ac92c6165",
+    "title": "Urban heat mitigation with satellite ML — cohort 6",
+    "leader_id": "a0287439-3f10-5c9b-ba3d-e61900b5b645"
+  },
+  {
+    "id": "25e9fff6-53c2-5798-a94d-51ee5852dbc5",
+    "title": "High-throughput electrolyte screening — cohort 6",
+    "leader_id": "0eeafb98-2d89-5efc-8741-38e06bfbe82a"
+  },
+  {
+    "id": "e87b7eb0-970a-559f-b0af-b82e57a62827",
+    "title": "Accessible clinical note summarization — cohort 6",
+    "leader_id": "943b1eab-1775-54ca-a17c-f0920547e262"
+  },
+  {
+    "id": "d7c45cf5-19db-520c-bca9-fb8f365520e1",
+    "title": "Closed-loop stimulation for memory — cohort 6",
+    "leader_id": "ea75494b-778d-5b9d-adec-10e899cbe58b"
+  },
+  {
+    "id": "3b77b4e6-3543-512b-94fc-6cc87cf058e8",
+    "title": "Community vaccine confidence study — cohort 6",
+    "leader_id": "2360b72e-5c53-5e7f-ace7-f7fac219aa51"
+  },
+  {
+    "id": "6f5e7675-757f-57c2-b333-419065c423e0",
+    "title": "Near-term quantum error mitigation — cohort 6",
+    "leader_id": "208248a0-3e51-5290-a619-d99fe0b447c4"
+  },
+  {
+    "id": "6ca8778c-4d35-5202-9814-0e9e6a124f8e",
+    "title": "Robust evaluation for clinical LLMs — cohort 6",
+    "leader_id": "0074bf92-b52b-5be5-a22e-1da8b5d4723e"
+  },
+  {
+    "id": "cb99dcf8-9adb-5f2f-9b6f-0a9aeb516b7f",
+    "title": "Photoredox catalysis for late-stage edits — cohort 6",
+    "leader_id": "8cbf2f75-0135-5d9b-9c26-f61b4f77782f"
+  },
+  {
+    "id": "0984b152-8baf-5455-8215-8cd89a3af377",
+    "title": "STEM identity in first-gen undergraduates — cohort 6",
+    "leader_id": "22314fa6-d17d-5a1e-a28f-5cbbad329bbd"
+  },
+  {
+    "id": "cc31f0c4-3b1a-59ef-ad4c-0d800853c95f",
+    "title": "Dexterous packing under uncertainty — cohort 6",
+    "leader_id": "dfe0bb20-7e45-5dff-94cd-eb73fd866caf"
+  },
+  {
+    "id": "13b36e0c-faed-54df-b673-2364c23d441d",
+    "title": "Transit spectroscopy pipeline for JWST — cohort 6",
+    "leader_id": "e80be953-6326-5a40-841c-c1f0e10bed03"
+  },
+  {
+    "id": "32a2c9e6-592a-5c08-a00a-d82f18f18a05",
+    "title": "Vascularized cardiac organoids — cohort 6",
+    "leader_id": "3ec37d15-5fa4-564a-9d64-73c7e4cef562"
+  },
+  {
+    "id": "1fad6a86-74ee-5c1d-8378-7298d40c858e",
+    "title": "Labor market effects of credentialing — cohort 6",
+    "leader_id": "167912b2-9bb9-5e29-98a5-be084c81c065"
+  },
+  {
+    "id": "a59f00a3-adc8-5929-a6f6-f35bda5bfc5f",
+    "title": "Low-cost water contaminant sensing — cohort 6",
+    "leader_id": "39eb90fe-7518-546f-bea0-b51e1a06f6d5"
+  },
+  {
+    "id": "5875b89a-376a-5cca-b6b7-49958dfa5d06",
+    "title": "Federated learning for rare disease cohorts — cohort 6",
+    "leader_id": "43ab8de9-c0de-58d7-88ed-ee3d8239b92a"
+  },
+  {
+    "id": "46ba59c9-b531-5cfe-8b09-fc9c38bbe523",
+    "title": "Wildfire smoke exposure forecasting — cohort 6",
+    "leader_id": "44db6280-e642-55b6-a277-62e332fa5fe6"
+  },
+  {
+    "id": "a854f1ba-7dfd-5148-bd65-84ac00ada30e",
+    "title": "Solid-state battery interface imaging — cohort 6",
+    "leader_id": "1144404b-4bfe-578a-9943-5b808cc2e1ec"
+  },
+  {
+    "id": "c5105ef8-2bf5-58f2-88ee-7eecd24286ab",
+    "title": "Classroom AI tutor field study — cohort 6",
+    "leader_id": "4d4eb495-2ed3-5e3b-8fef-b8f2ef52228b"
+  },
+  {
+    "id": "ba0d1ba0-4ef6-5803-a91e-aa90fb16aa28",
+    "title": "Privacy-preserving wearable analytics — cohort 6",
+    "leader_id": "771396d8-5aa2-533f-bcc2-9973a4fda339"
+  },
+  {
+    "id": "3db59d3b-4646-5158-a487-c65cee4e8b78",
+    "title": "Single-cell atlas of treatment response — cohort 7",
+    "leader_id": "bf2e3dfe-1520-58a2-85cc-193abe7a717b"
+  },
+  {
+    "id": "8b01a7e7-6445-55c6-9a20-bc21a1da423f",
+    "title": "Urban heat mitigation with satellite ML — cohort 7",
+    "leader_id": "e976d75b-8eb0-50ae-9a33-9d83f24dbfe1"
+  },
+  {
+    "id": "bc0b1789-d273-554d-b416-f8541533bc1f",
+    "title": "High-throughput electrolyte screening — cohort 7",
+    "leader_id": "1a4f1172-56b2-5bf5-86b5-15830d74e3c6"
+  },
+  {
+    "id": "1b6196a0-26cb-55fc-9d08-b9697ab9425c",
+    "title": "Accessible clinical note summarization — cohort 7",
+    "leader_id": "bc3dcd37-9978-5ee3-a184-d8fb75eb495f"
+  },
+  {
+    "id": "0e0760b3-fe9f-5fff-8ca7-10b9514130bb",
+    "title": "Closed-loop stimulation for memory — cohort 7",
+    "leader_id": "0c89279c-761b-5955-a37f-d11d903a5859"
+  },
+  {
+    "id": "b9d96a3c-0e9e-59fc-82dd-ba3646637423",
+    "title": "Community vaccine confidence study — cohort 7",
+    "leader_id": "8c85384f-85a2-5463-b32d-ddc909a7e0d2"
+  },
+  {
+    "id": "905f847c-ad20-5c46-ac3e-42d39c6fef35",
+    "title": "Near-term quantum error mitigation — cohort 7",
+    "leader_id": "8b35e403-b8e9-53c9-86b8-492d6a0f3fdc"
+  },
+  {
+    "id": "a0ece156-0b60-524b-80d0-252dfb1e465b",
+    "title": "Robust evaluation for clinical LLMs — cohort 7",
+    "leader_id": "6886be6f-f1ff-5025-89c6-eaf7ba81f28f"
+  },
+  {
+    "id": "376e33ad-4e79-5657-a0ae-5b619f8de3a2",
+    "title": "Photoredox catalysis for late-stage edits — cohort 7",
+    "leader_id": "f6401a65-1a5f-5ea5-85c6-345c94af6138"
+  },
+  {
+    "id": "8e4793d1-5aa7-5d7f-95ca-5ef2e6a25c64",
+    "title": "STEM identity in first-gen undergraduates — cohort 7",
+    "leader_id": "c0191e5c-cf8d-5cd5-ad91-0d315ea0fa4c"
+  },
+  {
+    "id": "7d27a2f7-f8e8-592c-bbfa-97ef390d9bbf",
+    "title": "Dexterous packing under uncertainty — cohort 7",
+    "leader_id": "8be15157-cad0-532e-962a-a7cbe9d15168"
+  },
+  {
+    "id": "be78d2c1-7a4e-5e7d-a698-77de6ff1ef64",
+    "title": "Transit spectroscopy pipeline for JWST — cohort 7",
+    "leader_id": "b03663f0-3559-504c-9edd-b309b7ecae32"
+  },
+  {
+    "id": "9cbb6b80-fbf2-52ee-9717-11188dd611ea",
+    "title": "Vascularized cardiac organoids — cohort 7",
+    "leader_id": "cd79b605-9942-507b-9ddb-bf83f9eb116e"
+  },
+  {
+    "id": "5c974b83-1094-5a84-b9a6-5fa25b25a705",
+    "title": "Labor market effects of credentialing — cohort 7",
+    "leader_id": "67b685cd-7359-54d3-8f4d-1e2ab27e3714"
+  },
+  {
+    "id": "5b94732b-c637-540a-8a30-ff9f0683f906",
+    "title": "Low-cost water contaminant sensing — cohort 7",
+    "leader_id": "7965f5bd-8aa9-5a03-915e-eb6837c31111"
+  },
+  {
+    "id": "c27e8b54-01d0-5533-b863-8773466fb847",
+    "title": "Federated learning for rare disease cohorts — cohort 7",
+    "leader_id": "263df343-2b67-501a-b026-d2ab5db9eead"
+  },
+  {
+    "id": "3363e0b9-75bf-5575-8ef1-9b56f223b392",
+    "title": "Wildfire smoke exposure forecasting — cohort 7",
+    "leader_id": "e76720a9-335c-505e-ae5f-74940d7283ed"
+  },
+  {
+    "id": "e2b8bc45-b868-537b-b76b-e7a3bf90b84c",
+    "title": "Solid-state battery interface imaging — cohort 7",
+    "leader_id": "d10ff30d-b52f-5005-b7d9-c5bc93e5cc0a"
+  },
+  {
+    "id": "fc60331e-d8c1-5ee1-8ce2-83a40147b958",
+    "title": "Classroom AI tutor field study — cohort 7",
+    "leader_id": "1b8db4bd-1661-5871-85a7-42b10fcbd03e"
+  },
+  {
+    "id": "b72d11b7-3433-5b16-827e-c078d5c5af90",
+    "title": "Privacy-preserving wearable analytics — cohort 7",
+    "leader_id": "922c0481-709a-5db3-8ec3-323549ac8205"
+  },
+  {
+    "id": "32b35b68-0e63-5d98-a14b-bd3fb553e224",
+    "title": "Single-cell atlas of treatment response — cohort 8",
+    "leader_id": "8010c4d8-6cd3-5f25-ae46-530415093ae1"
+  },
+  {
+    "id": "153d56af-f3d1-5a23-97a2-bd23cf51b9a8",
+    "title": "Urban heat mitigation with satellite ML — cohort 8",
+    "leader_id": "98ecb9b0-0e91-5dca-a993-8f405c25082e"
+  },
+  {
+    "id": "ea8c5752-27d6-5568-927c-57bcc5011967",
+    "title": "High-throughput electrolyte screening — cohort 8",
+    "leader_id": "6cfe4848-6986-54fe-a7ca-84c7ea6cbaf3"
+  },
+  {
+    "id": "7399b783-001c-522a-8066-f0051456d675",
+    "title": "Accessible clinical note summarization — cohort 8",
+    "leader_id": "ebdecad2-1d7c-5241-b8b8-1a818d5053e8"
+  },
+  {
+    "id": "e118651e-fb5c-5f53-9f05-00fd164a73bf",
+    "title": "Closed-loop stimulation for memory — cohort 8",
+    "leader_id": "85f6d768-cfd3-5bbd-bd45-e91545470704"
+  },
+  {
+    "id": "3576779e-b114-54a2-a1b0-459cecca304b",
+    "title": "Community vaccine confidence study — cohort 8",
+    "leader_id": "d1642b7a-bec4-5599-a12f-ba794b970a1a"
+  },
+  {
+    "id": "7e015e99-e727-5b7c-90bd-3b4166f73b68",
+    "title": "Near-term quantum error mitigation — cohort 8",
+    "leader_id": "d697ec13-f35f-5dea-b674-ad073ba2bdbe"
+  },
+  {
+    "id": "cd9834ad-0eee-5ff2-a1d2-ff7b24c8b067",
+    "title": "Robust evaluation for clinical LLMs — cohort 8",
+    "leader_id": "286f6e32-59c8-55a8-98f8-07365047f533"
+  },
+  {
+    "id": "3e20cdf2-3c55-5376-af9b-ce7d12fe388b",
+    "title": "Photoredox catalysis for late-stage edits — cohort 8",
+    "leader_id": "5c878df6-6529-5f68-9216-05a31f1e8298"
+  },
+  {
+    "id": "97ff1eb4-9a60-5b94-8fce-a6708501d5e5",
+    "title": "STEM identity in first-gen undergraduates — cohort 8",
+    "leader_id": "798513e5-d965-5b36-bf44-b9d5e4e8bc45"
+  },
+  {
+    "id": "68bc713c-d0db-5594-a963-3a4fcffd853e",
+    "title": "Dexterous packing under uncertainty — cohort 8",
+    "leader_id": "6319ca6f-597f-527a-9054-f3c55e285ac6"
+  },
+  {
+    "id": "ae06a819-c68c-575c-a1e1-ab3bc611a88f",
+    "title": "Transit spectroscopy pipeline for JWST — cohort 8",
+    "leader_id": "e41726ba-773d-50ad-abe7-f9242f380a28"
+  },
+  {
+    "id": "4fc0f7b3-37f1-55e4-a0d6-4c52c771c99f",
+    "title": "Vascularized cardiac organoids — cohort 8",
+    "leader_id": "957da403-be4b-59f1-a76e-e10c38cdeb88"
+  },
+  {
+    "id": "e04882b0-cac3-5d51-9575-8e5efe3b2a35",
+    "title": "Labor market effects of credentialing — cohort 8",
+    "leader_id": "3c41b4f4-be38-5d6e-823d-22a6e6002f5e"
+  },
+  {
+    "id": "f487b60e-93a9-5c06-bd0a-30261755d016",
+    "title": "Low-cost water contaminant sensing — cohort 8",
+    "leader_id": "8ee271da-ffce-5d60-8b27-9df4772513ff"
+  },
+  {
+    "id": "329abbb8-74ee-5f93-90bd-99517a7f78ac",
+    "title": "Federated learning for rare disease cohorts — cohort 8",
+    "leader_id": "aeac8e3e-5ce4-57e9-ba61-066c96133778"
+  },
+  {
+    "id": "26b48f3a-9ac5-53e2-808d-5898868a141e",
+    "title": "Wildfire smoke exposure forecasting — cohort 8",
+    "leader_id": "2ef1bc7f-dfbc-5406-a37f-f2449b226f52"
+  },
+  {
+    "id": "c8c57fe9-ed66-5090-b910-23bb96ffd68e",
+    "title": "Solid-state battery interface imaging — cohort 8",
+    "leader_id": "cddd6cc8-b0f6-5c87-ba64-26034bd10314"
+  },
+  {
+    "id": "839b0923-301c-516f-9af0-416428a580bf",
+    "title": "Classroom AI tutor field study — cohort 8",
+    "leader_id": "c451a0ea-490e-5aa2-b12b-707f77b59b04"
+  },
+  {
+    "id": "5fa51902-18b7-5d71-96d9-1abc03d6fb82",
+    "title": "Privacy-preserving wearable analytics — cohort 8",
+    "leader_id": "b165923d-c2b6-5c6b-9f53-5bd45fdc7a2c"
+  },
+  {
+    "id": "9ea58674-7b56-5a3c-a1fa-56cd508bc560",
+    "title": "Single-cell atlas of treatment response — cohort 9",
+    "leader_id": "79883a6b-e9c7-5f22-a98f-8d636b320410"
+  },
+  {
+    "id": "5e26edc7-822e-5040-91bc-2de03431bdeb",
+    "title": "Urban heat mitigation with satellite ML — cohort 9",
+    "leader_id": "d4d6e180-4554-5046-b730-9f17ed97b918"
+  },
+  {
+    "id": "88d1948b-73b2-55c2-923f-c6930213d014",
+    "title": "High-throughput electrolyte screening — cohort 9",
+    "leader_id": "43e41d82-f25d-529d-8b80-2b46f9cbb827"
+  },
+  {
+    "id": "794b0cf8-9979-59bc-850a-bc1bbd200184",
+    "title": "Accessible clinical note summarization — cohort 9",
+    "leader_id": "90417be3-0d6e-57da-a1d1-19707b745db1"
+  },
+  {
+    "id": "6c7be1b5-2864-5891-aa96-8a655709c3b9",
+    "title": "Closed-loop stimulation for memory — cohort 9",
+    "leader_id": "bf27d27b-b8a0-5585-b4d7-53f3c05d1d98"
+  },
+  {
+    "id": "cff710c8-0dfc-5fd7-9dab-9ace36a549ed",
+    "title": "Community vaccine confidence study — cohort 9",
+    "leader_id": "7d423b06-d535-5871-ace9-41c2e74afcf3"
+  },
+  {
+    "id": "ba3b3b52-d95e-5cb2-9763-a1e271df6458",
+    "title": "Near-term quantum error mitigation — cohort 9",
+    "leader_id": "0bbe96ba-9491-5ed6-b11e-242435627659"
+  },
+  {
+    "id": "05bd6871-4eac-57b0-84c4-e7bbf097ce7d",
+    "title": "Robust evaluation for clinical LLMs — cohort 9",
+    "leader_id": "d15aeece-2666-53ef-84fa-796fcea941ac"
+  },
+  {
+    "id": "cab5337f-4531-5e25-942f-4319472cbf13",
+    "title": "Photoredox catalysis for late-stage edits — cohort 9",
+    "leader_id": "a9d11e5e-de4e-5d12-a4ef-68caad1fa6e6"
+  },
+  {
+    "id": "d18e2b0c-9d09-575d-8076-59330f28de8f",
+    "title": "STEM identity in first-gen undergraduates — cohort 9",
+    "leader_id": "d63b4a07-16a6-5aaf-a424-19eeb32de742"
+  },
+  {
+    "id": "4aa47764-e832-50d0-b271-5e49f678efa1",
+    "title": "Dexterous packing under uncertainty — cohort 9",
+    "leader_id": "6510f451-b055-5a67-b046-c091af0bfceb"
+  },
+  {
+    "id": "755a8109-4f23-5e4a-a861-9639d3b72f7e",
+    "title": "Transit spectroscopy pipeline for JWST — cohort 9",
+    "leader_id": "82460b63-ab6d-5495-b1e4-7276302ad4b6"
+  },
+  {
+    "id": "34c854f1-df36-5405-95b6-430b7bd04808",
+    "title": "Vascularized cardiac organoids — cohort 9",
+    "leader_id": "7f42567e-4516-5320-b4de-fa1b0fcdb83b"
+  },
+  {
+    "id": "e7976180-6c96-51df-9343-2718b6e5d3ab",
+    "title": "Labor market effects of credentialing — cohort 9",
+    "leader_id": "c776d122-b5ca-5db6-b52b-f86bdf39ecdc"
+  },
+  {
+    "id": "4dcf5d62-e8a3-5277-93fc-278f8d325442",
+    "title": "Low-cost water contaminant sensing — cohort 9",
+    "leader_id": "56f8439d-f665-534b-a3ed-49809023f629"
+  }
+]

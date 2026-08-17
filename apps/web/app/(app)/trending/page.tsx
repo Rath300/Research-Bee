@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { AccessibleProjectLink } from '@/components/project/AccessibleProjectLink';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabaseClient';
 import { type Database } from '@/lib/database.types';
@@ -97,11 +98,11 @@ const PostCard = ({ post }: { post: TrendingProject }) => {
             </div>
         </div>
 
-        <Link href={`/projects/${post.id}`} className="block mb-2">
+        <AccessibleProjectLink projectId={post.id} className="block mb-2">
           <h3 className="text-lg font-heading text-text-primary hover:text-accent-primary transition-colors duration-150 line-clamp-2">
             {post.title}
           </h3>
-        </Link>
+        </AccessibleProjectLink>
         
         {truncatedContent && (
             <p className="text-text-secondary text-sm mb-4 line-clamp-3">
