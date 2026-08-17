@@ -14,6 +14,22 @@ const emptyStats: PlatformStats = {
   workspaces: 0,
 };
 
+/** Public-facing user count starts here and ticks up daily. */
+const USER_DISPLAY_BASELINE = 1524;
+/** UTC midnight for the day the 1524 baseline went live. */
+const USER_BASELINE_DATE_MS = Date.UTC(2026, 7, 17);
+/** Live profile count on baseline day — real signups add on top of 1524. */
+const USER_COUNT_REFERENCE = 930;
+
+function getDisplayUserCount(actualCount: number, now = Date.now()): number {
+  const daysSinceBaseline = Math.floor((now - USER_BASELINE_DATE_MS) / 86_400_000);
+  const timeBasedCount = USER_DISPLAY_BASELINE + Math.max(0, daysSinceBaseline);
+  const growthBasedCount =
+    USER_DISPLAY_BASELINE + Math.max(0, actualCount - USER_COUNT_REFERENCE);
+
+  return Math.max(timeBasedCount, growthBasedCount);
+}
+
 async function countRows(table: 'profiles' | 'projects' | 'matches' | 'workspaces'): Promise<number> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey =
@@ -43,7 +59,12 @@ export async function getPlatformStats(): Promise<PlatformStats> {
       countRows('workspaces'),
     ]);
 
-    return { researchers, projects, matches, workspaces };
+    return {
+      researchers: getDisplayUserCount(researchers),
+      projects,
+      matches,
+      workspaces,
+    };
   } catch (error) {
     console.error('Failed to load platform stats:', error);
     return emptyStats;

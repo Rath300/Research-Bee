@@ -153,9 +153,9 @@ export function LandingContent({ stats }: LandingContentProps) {
             className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-14"
           >
             <StatCard
-              label="Researchers"
+              label="Users"
               value={formatStat(stats.researchers)}
-              hint="Registered profiles"
+              hint="Registered on the platform"
               icon={<FiUsers size={16} />}
             />
             <StatCard

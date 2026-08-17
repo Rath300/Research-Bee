@@ -1,7 +1,7 @@
 import { getPlatformStats } from '@/lib/platform-stats';
 import { LandingContent } from '@/components/marketing/LandingContent';
 
-export const revalidate = 300;
+export const revalidate = 86400;
 
 export default async function LandingPage() {
   const stats = await getPlatformStats();
