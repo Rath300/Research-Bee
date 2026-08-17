@@ -7,6 +7,8 @@ import { api } from '@/lib/trpc';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { ProfileCompletenessMeter } from '@/components/profile/ProfileCompletenessMeter';
+import { StatCard } from '@/components/ui/StatCard';
+import { DashboardSkeleton } from '@/components/ui/LoadingSkeleton';
 import { Avatar } from '@/components/ui/Avatar';
 import {
   FiSearch,
@@ -14,9 +16,9 @@ import {
   FiMessageSquare,
   FiBriefcase,
   FiArrowRight,
-  FiLoader,
   FiCheckCircle,
   FiX,
+  FiUsers,
 } from 'react-icons/fi';
 import {
   getProfileCompleteness,
@@ -153,12 +155,21 @@ export default function HomePage() {
     conversationsQuery.isLoading ||
     projectsQuery.isLoading;
 
+  const matchCount = matchesQuery.data?.length ?? 0;
+  const pendingCount = pendingQuery.data?.length ?? 0;
+  const chatCount = conversationsQuery.data?.length ?? 0;
+  const projectCount = projectsQuery.data?.length ?? 0;
+
   const recentMatches = (matchesQuery.data ?? []).slice(0, 3);
 
   const dismissOnboardingBanner = () => {
     dismissBannerStorage();
     setShowOnboardingBanner(false);
   };
+
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -198,17 +209,39 @@ export default function HomePage() {
         </p>
       </div>
 
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatCard
+          label="Matches"
+          value={matchCount}
+          hint={pendingCount > 0 ? `${pendingCount} pending` : 'Mutual connections'}
+          icon={<FiHeart size={16} />}
+        />
+        <StatCard
+          label="Projects"
+          value={projectCount}
+          hint="Active workspaces"
+          icon={<FiBriefcase size={16} />}
+        />
+        <StatCard
+          label="Chats"
+          value={chatCount}
+          hint="Open conversations"
+          icon={<FiMessageSquare size={16} />}
+        />
+        <StatCard
+          label="Profile"
+          value={`${completeness.percent}%`}
+          hint={completeness.isGateComplete ? 'Looking good' : 'Complete to match'}
+          icon={<FiUsers size={16} />}
+        />
+      </div>
+
       <div className="grid md:grid-cols-3 gap-4">
         <div className="md:col-span-2 space-y-3">
           <h2 className="text-sm font-ui font-medium text-text-muted uppercase tracking-wide">
             Suggested next steps
           </h2>
-          {isLoading ? (
-            <div className="flex justify-center py-10">
-              <FiLoader className="animate-spin text-accent-primary text-xl" />
-            </div>
-          ) : (
-            nextSteps.map((step) => (
+          {nextSteps.map((step) => (
               <Card key={step.id} className="border-border-medium">
                 <CardContent className="p-4 flex items-start gap-3">
                   <div className="mt-0.5 text-accent-primary">
@@ -225,8 +258,7 @@ export default function HomePage() {
                   </Link>
                 </CardContent>
               </Card>
-            ))
-          )}
+            ))}
         </div>
 
         <div className="space-y-4">

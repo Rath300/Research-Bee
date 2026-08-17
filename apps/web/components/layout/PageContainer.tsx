@@ -11,7 +11,7 @@ export function PageContainer({ title, children, className }: PageContainerProps
   return (
     <>
       <Head>
-        <title>{`${title} | ResearchCollab`}</title>
+        <title>{`${title} | ResearchBee`}</title>
       </Head>
       <div className={`${className || ''}`}>
         {children}

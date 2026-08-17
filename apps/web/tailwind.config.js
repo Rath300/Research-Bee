@@ -41,6 +41,7 @@ module.exports = {
         'accent-warning': '#B45309',
         'accent-error': '#B91C1C',
         'accent-soft': '#E8F0EB',
+        'accent-muted': '#E8F0EB',
 
         // Warm stone borders
         'border-light': '#F5F5F4',

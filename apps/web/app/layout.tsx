@@ -28,6 +28,9 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'ResearchBee — Find research collaborators',
   description: 'Find research collaborators, join projects, and build meaningful connections in the research community.',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

@@ -23,6 +23,7 @@ import {
 } from 'react-icons/fi';
 import Image from 'next/image';
 import { useToast } from '@/components/ui/Toast';
+import { BeeLogo } from '@/components/ui/BeeLogo';
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -53,6 +54,7 @@ export function Sidebar() {
   ];
 
   const exploreItems = [
+    { label: 'Discover projects', href: '/discover', icon: <FiSearch /> },
     { label: 'Trending projects', href: '/trending', icon: <FiTrendingUp /> },
     { label: 'External papers', href: '/external-research', icon: <FiBookOpen /> },
   ];
@@ -101,12 +103,17 @@ export function Sidebar() {
               sidebarOpen ? 'items-center' : 'items-center flex-col justify-center'
             }`}
           >
-            {sidebarOpen && (
+            {sidebarOpen ? (
               <Link
                 href="/dashboard"
-                className="font-display text-lg font-semibold text-text-primary no-underline hover:text-text-primary truncate mr-2"
+                className="flex items-center gap-2 font-display text-lg font-semibold text-text-primary no-underline hover:text-text-primary truncate mr-2"
               >
+                <BeeLogo size={22} />
                 ResearchBee
+              </Link>
+            ) : (
+              <Link href="/dashboard" className="mb-1" aria-label="ResearchBee home">
+                <BeeLogo size={24} />
               </Link>
             )}
             <button
