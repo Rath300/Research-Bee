@@ -4,6 +4,15 @@
  */
 const fs = require('fs');
 const path = require('path');
+const {
+  educationTier,
+  titleForTier,
+  fieldForTier,
+  skillsForTier,
+  interestsForTier,
+  bioForTier,
+  pitchForTier,
+} = require('./population-personas.cjs');
 
 const FIRST = [
   'Maya','Priya','James','Sofia','Noah','Aisha','Liam','Elena','Omar','Grace','Kenji','Amelia','Diego','Hannah','Rohan',
@@ -19,14 +28,10 @@ const LAST = [
   'Watson','Sanders','Price','Bennett','Wood','Barnes','Ross','Henderson','Coleman','Jenkins','Perry','Powell','Long','Patterson',
   'Okonkwo','Schmidt','Nakamura','Fontaine','Kowalski','Okafor','Lindqvist','Mensah','Vargas','Hoffman',
 ];
-const FIELDS = [
+const GRAD_FIELDS = [
   'Computational Biology','Climate Science','Materials Science','Human-Computer Interaction','Neuroscience',
   'Public Health','Quantum Information','Machine Learning','Chemistry','Education Research','Robotics',
   'Astrophysics','Bioengineering','Economics','Environmental Engineering',
-];
-const TITLES = [
-  'PhD Candidate','Postdoctoral Researcher','Research Scientist','Lab Manager','Staff Scientist',
-  'Research Engineer','Graduate Researcher','Independent Researcher','Methods Specialist','Data Scientist',
 ];
 const CITIES = [
   'Cambridge, MA','Palo Alto, CA','Berkeley, CA','Boston, MA','Toronto, ON','Zurich, CH','London, UK',
@@ -82,13 +87,16 @@ const TASK_TITLES = [
 function uniquePersona(i) {
   const first = FIRST[i % FIRST.length];
   const last = LAST[Math.floor(i / FIRST.length) % LAST.length];
-  const field = FIELDS[i % FIELDS.length];
-  const title = TITLES[i % TITLES.length];
+  const tier = educationTier(i);
+  const title = titleForTier(tier, i);
+  const field = fieldForTier(tier, i, GRAD_FIELDS);
   const location = CITIES[i % CITIES.length];
-  const focus = ['methods', 'analysis', 'fieldwork', 'writing', 'instrumentation'][i % 5];
-  const bio = `${title} in ${field}. Interested in ${focus} and long-horizon collaboration with clear deliverables.`;
-  const pitch = `Open to partners with complementary skills — prefer written scope and shared milestones.`;
-  return { first, last, full_name: `${first} ${last}`, title, field, location, bio, pitch };
+  const interests = interestsForTier(tier, i);
+  const skills = skillsForTier(tier, i);
+  const focus = interests.join(' and ');
+  const bio = bioForTier(tier, title, field, focus);
+  const pitch = pitchForTier(tier, skills[0], skills[1] || 'research design');
+  return { first, last, full_name: `${first} ${last}`, title, field, location, bio, pitch, skills, interests };
 }
 
 function projectCopy(pIndex) {
@@ -128,9 +136,22 @@ async function main() {
         title = $4, institution = NULL,
         field_of_study = $5, location = $6,
         bio = $7, collaboration_pitch = $8,
+        skills = $9, interests = $10,
         updated_at = now()
-      WHERE id = $9`,
-      [u.first, u.last, u.full_name, u.title, u.field, u.location, u.bio, u.pitch, synthUsers[i].id]
+      WHERE id = $11`,
+      [
+        u.first,
+        u.last,
+        u.full_name,
+        u.title,
+        u.field,
+        u.location,
+        u.bio,
+        u.pitch,
+        u.skills,
+        u.interests,
+        synthUsers[i].id,
+      ]
     );
   }
 
@@ -162,9 +183,18 @@ async function main() {
 
   const r = await client.query(`
     SELECT
-      (SELECT count(DISTINCT p.full_name)::int FROM public.profiles p
+      (SELECT count(*)::int FROM public.profiles p
         JOIN auth.users au ON au.id = p.id
-        WHERE coalesce((au.raw_app_meta_data->>'rb_synth')::boolean,false)) AS unique_synth_names,
+        WHERE coalesce((au.raw_app_meta_data->>'rb_synth')::boolean,false)
+          AND p.title ILIKE ANY (ARRAY['%High School%','%AP Research%','%Science Fair%','%STEM Club%','%Independent Study%','%Junior Researcher%'])) AS hs_count,
+      (SELECT count(*)::int FROM public.profiles p
+        JOIN auth.users au ON au.id = p.id
+        WHERE coalesce((au.raw_app_meta_data->>'rb_synth')::boolean,false)
+          AND p.title ILIKE ANY (ARRAY['%Undergraduate%','%Honors Thesis%','%Lab Intern%','%Research Assistant%'])) AS undergrad_count,
+      (SELECT count(*)::int FROM public.profiles p
+        JOIN auth.users au ON au.id = p.id
+        WHERE coalesce((au.raw_app_meta_data->>'rb_synth')::boolean,false)
+          AND p.title ILIKE ANY (ARRAY['%PhD%','%Doctoral%','%Postdoctoral%'])) AS phd_count,
       (SELECT count(*)::int FROM public.profiles WHERE institution IS NOT NULL) AS with_institution,
       (SELECT count(*)::int FROM public.projects WHERE title ILIKE '%cohort%') AS cohort_titles
   `);

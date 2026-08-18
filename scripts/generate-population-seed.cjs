@@ -7,6 +7,15 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const {
+  educationTier,
+  titleForTier,
+  fieldForTier,
+  skillsForTier,
+  interestsForTier,
+  bioForTier,
+  pitchForTier,
+} = require('./population-personas.cjs');
 
 const OUT = path.join(__dirname, 'seed-data');
 const USER_COUNT = 1000;
@@ -78,6 +87,7 @@ const TITLES = [
   'PhD Candidate','Postdoctoral Researcher','Research Scientist','Assistant Professor','Associate Professor',
   'Lab Manager','Staff Scientist','Research Engineer','Visiting Scholar','Graduate Researcher',
 ];
+const GRAD_FIELDS = FIELDS.map((f) => f.field);
 const LOOKING = [
   'co-authors','experimental collaborators','computational partners','mentorship','grant collaborators',
   'industry partners','cross-disciplinary teammates','data partners',
@@ -133,16 +143,25 @@ function pick(arr, i) {
 function persona(i) {
   const first = FIRST[i % FIRST.length];
   const last = LAST[Math.floor(i / FIRST.length) % LAST.length];
-  const fieldMeta = pick(FIELDS, i * 3 + 1);
-  const title = pick(TITLES, i * 2);
+  const tier = educationTier(i);
+  const title = titleForTier(tier, i);
+  const fieldName = fieldForTier(tier, i, GRAD_FIELDS);
+  const fieldMeta =
+    tier === 'phd'
+      ? FIELDS.find((f) => f.field === fieldName) || pick(FIELDS, i * 3 + 1)
+      : {
+          field: fieldName,
+          skills: skillsForTier(tier, i),
+          interests: interestsForTier(tier, i),
+        };
   const id = uuidFrom(`user-${i}`);
   const emailLocal = `${first}.${last}.${String(100 + (i % 900))}`.toLowerCase().replace(/[^a-z0-9.]/g, '');
   const domains = ['gmail.com', 'outlook.com', 'icloud.com', 'yahoo.com', 'proton.me'];
   const email = `${emailLocal}@${pick(domains, i)}`;
   const location = pick(CITIES, i);
   const focus = fieldMeta.interests.slice(0, 2).join(' and ');
-  const bio = `${title} in ${fieldMeta.field}. Focused on ${focus}. Open to careful, long-term collaboration.`;
-  const pitch = `Looking for collaborators who bring complementary strengths in ${fieldMeta.skills[0]} and ${fieldMeta.skills[1] || 'experimental design'}. Prefer clear scope and reproducible workflows.`;
+  const bio = bioForTier(tier, title, fieldMeta.field, focus);
+  const pitch = pitchForTier(tier, fieldMeta.skills[0], fieldMeta.skills[1] || 'experimental design');
   return {
     i,
     id,
