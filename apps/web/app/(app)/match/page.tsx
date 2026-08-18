@@ -13,6 +13,7 @@ import { FiLoader, FiAlertCircle, FiHeart, FiX, FiRefreshCw, FiSearch, FiMessage
 import Link from 'next/link';
 import { api } from '@/lib/trpc';
 import { trackMatch } from '@/lib/analytics';
+import { useToast } from '@/components/ui/Toast';
 import { formatBio } from '@/lib/format-bio';
 
 type Candidate = {
