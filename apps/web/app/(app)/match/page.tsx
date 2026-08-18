@@ -13,7 +13,56 @@ import { FiLoader, FiAlertCircle, FiHeart, FiX, FiRefreshCw, FiSearch, FiMessage
 import Link from 'next/link';
 import { api } from '@/lib/trpc';
 import { trackMatch } from '@/lib/analytics';
-import { useToast } from '@/components/ui/Toast';
+import { formatBio } from '@/lib/format-bio';
+
+type Candidate = {
+  id: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  full_name?: string | null;
+  title?: string | null;
+  bio?: string | null;
+  avatar_url?: string | null;
+  skills?: string[] | null;
+  field_of_study?: string | null;
+  location?: string | null;
+};
+
+function ProfileCardContent({ profile }: { profile: Candidate }) {
+  return (
+    <div className="h-full rounded-lg border border-border-medium bg-surface-primary p-6 shadow-sm flex flex-col">
+      <div className="flex items-center gap-3 mb-4">
+        <Avatar src={profile.avatar_url} alt={profile.first_name || 'Profile'} size="lg" />
+        <div>
+          <h2 className="font-heading text-xl font-semibold text-text-primary">
+            {[profile.first_name, profile.last_name].filter(Boolean).join(' ') ||
+              profile.full_name ||
+              'Researcher'}
+          </h2>
+          <p className="text-sm text-text-muted">
+            {[profile.title, profile.field_of_study, profile.location].filter(Boolean).join(' · ') ||
+              'Researcher'}
+          </p>
+        </div>
+      </div>
+      <p className="text-sm text-text-secondary leading-relaxed flex-1 overflow-y-auto">
+        {formatBio(profile.bio) || 'No bio yet.'}
+      </p>
+      {!!profile.skills?.length && (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {profile.skills.slice(0, 6).map((tag) => (
+            <span
+              key={tag}
+              className="text-xs px-2 py-0.5 rounded-md bg-accent-muted text-accent-primary"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function MatchPage() {
   const { user } = useAuthStore();
@@ -26,7 +75,8 @@ export default function MatchPage() {
   const [applied, setApplied] = useState({ query: '', fieldOfStudy: '', skill: '' });
   const [localGone, setLocalGone] = useState<Set<string>>(new Set());
   const [mutualMatchId, setMutualMatchId] = useState<string | null>(null);
-  const swipingRef = useRef(false);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const processedIdsRef = useRef<Set<string>>(new Set());
 
   const {
     data: candidates = [],
@@ -48,9 +98,8 @@ export default function MatchPage() {
       if (result.isMutual && result.matchId) {
         setMutualMatchId(result.matchId);
         trackMatch('request');
-        success('It\'s a match! You can message them now.');
+        success("It's a match! You can message them now.");
       }
-      void utils.matching.listCandidates.invalidate();
       void utils.matching.listMatches.invalidate();
       void utils.matching.listConversations.invalidate();
       void utils.matching.listPendingIncoming.invalidate();
@@ -58,17 +107,17 @@ export default function MatchPage() {
     onError: (err) => toastError(err.message || 'Could not save that action.'),
   });
 
-  const isSwiping = swipingRef.current || swipeMutation.isLoading;
-
   const visible = useMemo(
     () => candidates.filter((c) => !localGone.has(c.id)),
     [candidates, localGone]
   );
   const current = visible[visible.length - 1];
+  const previewStack = visible.slice(Math.max(0, visible.length - 3), visible.length - 1);
 
   const applyFilters = (e?: React.FormEvent) => {
     e?.preventDefault();
     setLocalGone(new Set());
+    processedIdsRef.current = new Set();
     setApplied({
       query: query.trim(),
       fieldOfStudy: fieldOfStudy.trim(),
@@ -77,19 +126,25 @@ export default function MatchPage() {
   };
 
   const recordSwipe = async (direction: 'left' | 'right', targetId: string) => {
-    if (swipingRef.current || localGone.has(targetId)) return;
-    swipingRef.current = true;
+    if (isSwiping || processedIdsRef.current.has(targetId) || localGone.has(targetId)) {
+      return;
+    }
+
+    processedIdsRef.current.add(targetId);
+    setIsSwiping(true);
     setLocalGone((prev) => new Set(prev).add(targetId));
+
     try {
       await swipeMutation.mutateAsync({ targetUserId: targetId, direction });
     } catch {
+      processedIdsRef.current.delete(targetId);
       setLocalGone((prev) => {
         const next = new Set(prev);
         next.delete(targetId);
         return next;
       });
     } finally {
-      swipingRef.current = false;
+      setIsSwiping(false);
     }
   };
 
@@ -173,9 +228,10 @@ export default function MatchPage() {
             size="sm"
             onClick={() => {
               setLocalGone(new Set());
+              processedIdsRef.current = new Set();
               void refetch();
             }}
-            disabled={isFetching}
+            disabled={isFetching || isSwiping}
           >
             <FiRefreshCw className={isFetching ? 'animate-spin mr-1' : 'mr-1'} /> Refresh
           </Button>
@@ -205,52 +261,30 @@ export default function MatchPage() {
           />
         ) : (
           <div className="relative h-[480px] max-w-lg mx-auto">
-            {visible.map((profile, index) => (
-              <TinderCard
+            {previewStack.map((profile, index) => (
+              <div
                 key={profile.id}
-                className="absolute inset-0"
-                onSwipe={(dir) => {
-                  if (dir === 'left' || dir === 'right') void recordSwipe(dir, profile.id);
-                }}
-                preventSwipe={isSwiping || index !== visible.length - 1 ? ['left', 'right', 'up', 'down'] : ['up', 'down']}
+                className="absolute inset-0 scale-[0.96] translate-y-2 pointer-events-none opacity-70"
+                style={{ zIndex: index }}
               >
-                <div
-                  className={`h-full rounded-lg border border-border-medium bg-surface-primary p-6 shadow-sm flex flex-col ${
-                    index === visible.length - 1 ? 'z-10' : 'z-0'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <Avatar src={profile.avatar_url} alt={profile.first_name || 'Profile'} size="lg" />
-                    <div>
-                      <h2 className="font-heading text-xl font-semibold text-text-primary">
-                        {[profile.first_name, profile.last_name].filter(Boolean).join(' ') ||
-                          profile.full_name ||
-                          'Researcher'}
-                      </h2>
-                      <p className="text-sm text-text-muted">
-                        {[profile.title, profile.field_of_study, profile.location].filter(Boolean).join(' · ') ||
-                          'Researcher'}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-text-secondary leading-relaxed flex-1 overflow-y-auto">
-                    {profile.bio || 'No bio yet.'}
-                  </p>
-                  {!!profile.skills?.length && (
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {profile.skills.slice(0, 6).map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-xs px-2 py-0.5 rounded-md bg-accent-muted text-accent-primary"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </TinderCard>
+                <ProfileCardContent profile={profile} />
+              </div>
             ))}
+
+            {current ? (
+              <TinderCard
+                key={current.id}
+                className="absolute inset-0 z-10"
+                onSwipe={(dir) => {
+                  if (dir === 'left' || dir === 'right') {
+                    void recordSwipe(dir, current.id);
+                  }
+                }}
+                preventSwipe={isSwiping ? ['left', 'right', 'up', 'down'] : ['up', 'down']}
+              >
+                <ProfileCardContent profile={current} />
+              </TinderCard>
+            ) : null}
           </div>
         )}
 

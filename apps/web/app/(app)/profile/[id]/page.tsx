@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { ResearchPostCard } from '@/components/research/ResearchPostCard';
+import { formatBio } from '@/lib/format-bio';
 import { Avatar } from '@/components/ui/Avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { 
@@ -348,7 +349,7 @@ export default function ProfilePage() {
             )}
             {activeTab === 'about' && (
               <div className="prose prose-sm sm:prose-base max-w-none text-text-primary space-y-4 font-sans">
-                {profile.bio && <p>{profile.bio}</p>}
+                {profile.bio && <p>{formatBio(profile.bio)}</p>}
                 {!profile.bio && <p>No bio available.</p>}
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 pt-4">

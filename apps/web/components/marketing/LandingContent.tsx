@@ -3,12 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { BeeLogo } from '@/components/ui/BeeLogo';
-import { StatCard } from '@/components/ui/StatCard';
-import { type PlatformStats } from '@/lib/platform-stats';
 import {
-  FiUsers,
-  FiBriefcase,
-  FiMessageSquare,
   FiSearch,
   FiHeart,
   FiLayers,
@@ -41,15 +36,7 @@ const fadeUp = {
   }),
 };
 
-function formatStat(value: number) {
-  return value.toLocaleString();
-}
-
-interface LandingContentProps {
-  stats: PlatformStats;
-}
-
-export function LandingContent({ stats }: LandingContentProps) {
+export function LandingContent() {
   return (
     <div className="min-h-screen bg-bg-primary text-text-primary flex flex-col">
       <header className="w-full sticky top-0 z-50 bg-bg-primary/90 backdrop-blur-sm border-b border-border-medium">
@@ -138,51 +125,6 @@ export function LandingContent({ stats }: LandingContentProps) {
             animate="visible"
             variants={fadeUp}
             custom={0.2}
-            className="mb-3"
-          >
-            <p className="text-xs font-ui font-medium uppercase tracking-wide text-text-muted">
-              Live platform stats
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            custom={0.2}
-            className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-14"
-          >
-            <StatCard
-              label="Users"
-              value={formatStat(stats.researchers)}
-              hint="Registered on the platform"
-              icon={<FiUsers size={16} />}
-            />
-            <StatCard
-              label="Projects"
-              value={formatStat(stats.projects)}
-              hint="Research projects"
-              icon={<FiBriefcase size={16} />}
-            />
-            <StatCard
-              label="Matches"
-              value={formatStat(stats.matches)}
-              hint="Mutual connections"
-              icon={<FiHeart size={16} />}
-            />
-            <StatCard
-              label="Workspaces"
-              value={formatStat(stats.workspaces)}
-              hint="Collaboration rooms"
-              icon={<FiMessageSquare size={16} />}
-            />
-          </motion.div>
-
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            custom={0.25}
             className="rounded-md border border-border-medium bg-surface-primary overflow-hidden shadow-panel"
           >
             <div className="flex border-b border-border-medium">

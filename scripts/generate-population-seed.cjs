@@ -141,7 +141,7 @@ function persona(i) {
   const email = `${emailLocal}@${pick(domains, i)}`;
   const location = pick(CITIES, i);
   const focus = fieldMeta.interests.slice(0, 2).join(' and ');
-  const bio = `${title} in ${fieldMeta.field}. Based in ${location}. Focused on ${focus}. Open to careful, long-term collaboration.`;
+  const bio = `${title} in ${fieldMeta.field}. Focused on ${focus}. Open to careful, long-term collaboration.`;
   const pitch = `Looking for collaborators who bring complementary strengths in ${fieldMeta.skills[0]} and ${fieldMeta.skills[1] || 'experimental design'}. Prefer clear scope and reproducible workflows.`;
   return {
     i,

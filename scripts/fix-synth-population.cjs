@@ -86,7 +86,7 @@ function uniquePersona(i) {
   const title = TITLES[i % TITLES.length];
   const location = CITIES[i % CITIES.length];
   const focus = ['methods', 'analysis', 'fieldwork', 'writing', 'instrumentation'][i % 5];
-  const bio = `${title} in ${field}. Based in ${location}. Interested in ${focus} and long-horizon collaboration with clear deliverables.`;
+  const bio = `${title} in ${field}. Interested in ${focus} and long-horizon collaboration with clear deliverables.`;
   const pitch = `Open to partners with complementary skills — prefer written scope and shared milestones.`;
   return { first, last, full_name: `${first} ${last}`, title, field, location, bio, pitch };
 }

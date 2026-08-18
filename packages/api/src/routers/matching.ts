@@ -204,6 +204,33 @@ export const matchingRouter = router({
         throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot swipe on yourself.' });
       }
 
+      const { data: existing, error: existingError } = await ctx.supabase
+        .from('profile_matches')
+        .select('status')
+        .eq('matcher_user_id', userId)
+        .eq('matchee_user_id', targetUserId)
+        .maybeSingle();
+
+      if (existingError) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to check existing swipe.',
+          cause: existingError,
+        });
+      }
+
+      if (existing) {
+        if (existing.status === 'matched') {
+          const matchId = await ensureMatchesRow(ctx.supabase, userId, targetUserId);
+          return { status: 'matched' as const, isMutual: true, matchId };
+        }
+        return {
+          status: existing.status as 'rejected' | 'pending' | 'matched',
+          isMutual: false,
+          matchId: null,
+        };
+      }
+
       if (direction === 'left') {
         const { error } = await ctx.supabase.from('profile_matches').upsert(
           {
