@@ -29,7 +29,7 @@ export default function DiscoverPage() {
         .select('*')
         .eq('is_public', true)
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(600);
 
       if (searchQuery.trim()) {
         query = query.or(
@@ -96,7 +96,7 @@ export default function DiscoverPage() {
             Discover projects
           </h1>
           <p className="text-sm text-text-muted mt-1">
-            Browse public research projects and request to join collaborations.
+            Browse {projects.length > 0 ? `${projects.length} public ` : ''}research projects and request to join collaborations.
           </p>
         </div>
         <div className="flex gap-2">

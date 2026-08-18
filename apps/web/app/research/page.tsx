@@ -37,7 +37,7 @@ export default function ResearchPage() {
         .select('*')
         .eq('is_public', true)
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(600);
       
       if (projectsError) throw projectsError;
       
